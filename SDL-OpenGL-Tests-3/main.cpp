@@ -35,6 +35,7 @@
 
 #include "utils.hpp"
 #include "coreTriangle.hpp"
+#include "uniformVar.hpp"
 
 using namespace glm;
 
@@ -108,6 +109,7 @@ int main(int argc, const char * argv[]) {
     
     
     CoreTriangle testTriangle(&basicShader, &renderData);
+    UniformVar<glm::mat4> scale(&basicShader, "model");
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -142,6 +144,10 @@ int main(int argc, const char * argv[]) {
                     render = false;
             }
             
+            if(windowEvent.type == SDL_MOUSEWHEEL) {
+//                scale.setVar(scale.getVar() + vec2(float(windowEvent.wheel.x) * 0.15f, float(windowEvent.wheel.y) * 0.15f));
+            }
+            
             if(windowEvent.type == SDL_KEYDOWN) {
                 if(windowEvent.key.keysym.sym == SDLK_ESCAPE) {
                     render = false;
@@ -163,7 +169,12 @@ int main(int argc, const char * argv[]) {
             
             
             basicShader.use();
+            scale.setVar(glm::rotate(mat4(1), 3.14f / 4.0f, vec3(0.0f, 0.0f, 1.0f)));
             testTriangle.render();
+            printf("Model\n");
+            printMat4x4(glm::rotate(mat4(1), 3.14f / 4.0f, vec3(0.0f, 0.0f, 1.0f)));
+            printf("Shader\n");
+            printMat4x4(scale.getVar());
             
             
             SDL_GL_SwapWindow(window);

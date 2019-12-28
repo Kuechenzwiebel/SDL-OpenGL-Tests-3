@@ -10,6 +10,6 @@ uniform mat4 projection;
 //out vec4 Colors;
 
 void main() {
-    gl_Position = vec4(position, 1.0f);
+    gl_Position = model * vec4(position, 1.0f);
 //    Colors = colors;
 }
