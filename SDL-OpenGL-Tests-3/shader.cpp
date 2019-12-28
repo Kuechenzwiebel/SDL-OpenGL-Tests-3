@@ -24,6 +24,10 @@ void Shader::use() {
     }
 }
 
+GLuint Shader::getProgram() {
+    return program;
+}
+
 void Shader::compile(const char* vertexCode, const char* fragmentCode) {
     GLuint vertex = 0, fragment = 0;
     GLint success = 0;

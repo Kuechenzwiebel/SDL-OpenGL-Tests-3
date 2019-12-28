@@ -28,6 +28,8 @@ public:
     Shader(hg::File vertexFile, hg::File fragmentFile);
     ~Shader();
     
+    GLuint getProgram();
+    
     void use();
     
 private:
