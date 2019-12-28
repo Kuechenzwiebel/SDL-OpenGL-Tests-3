@@ -39,9 +39,9 @@ using namespace glm;
 
 
 int windowWidth = 1080, windowHeight = 760;
-std::string windowTitle = "SDL-OpenGL-Tests-2";
 
 bool running = true;
+bool render = true;
 
 int main(int argc, const char * argv[]) {
     std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
@@ -56,7 +56,7 @@ int main(int argc, const char * argv[]) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     
-    SDL_Window *window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    SDL_Window *window = SDL_CreateWindow("SDL-OpenGL-Tests-2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SDL_Event windowEvent;
 
@@ -89,11 +89,40 @@ int main(int argc, const char * argv[]) {
     glDepthFunc(GL_LEQUAL);
     
     
+    int frame = 0;
+    long nextMeasure = SDL_GetTicks() + 1e3;
+    int fps = 0;
+    unsigned long long totalFrames = 0;
     
+    float lastFrame = 0.0f;
+    float currentFrame = 0.0f;
+    float deltaTime = 0.0f;
     
-    
-    
-    
+    while(running) {
+        if(SDL_GetTicks() > nextMeasure) {
+            fps = frame;
+            frame = 0;
+            nextMeasure += 1000;
+        }
+        
+        currentFrame = SDL_GetTicks() / 1000.0f;
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        
+        while(SDL_PollEvent(&windowEvent) != 0) {
+            if(windowEvent.type == SDL_QUIT)
+                running = false;
+        }
+        
+        if(render) {
+            
+            
+            frame ++;
+            totalFrames++;
+        }
+        else
+            SDL_Delay(33);
+    }
     
     SDL_SetRelativeMouseMode(SDL_FALSE);
     
