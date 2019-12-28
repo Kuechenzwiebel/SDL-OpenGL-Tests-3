@@ -42,6 +42,7 @@ int windowWidth = 1080, windowHeight = 760;
 
 bool running = true;
 bool render = true;
+bool checkMouse = false;
 
 int main(int argc, const char * argv[]) {
     std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
@@ -112,10 +113,48 @@ int main(int argc, const char * argv[]) {
         while(SDL_PollEvent(&windowEvent) != 0) {
             if(windowEvent.type == SDL_QUIT)
                 running = false;
+            
+            if(windowEvent.type == SDL_MOUSEBUTTONDOWN) {
+                if(windowEvent.button.button == SDL_BUTTON_LEFT) {
+                    checkMouse = true;
+                    render = true;
+                }
+            }
+            
+            if(windowEvent.type == SDL_WINDOWEVENT) {
+                if(windowEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+                
+                if(windowEvent.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+                    render = true;
+                
+                if(windowEvent.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+                    render = false;
+            }
+            
+            if(windowEvent.type == SDL_KEYDOWN) {
+                if(windowEvent.key.keysym.sym == SDLK_ESCAPE) {
+                    render = false;
+                    checkMouse = false;
+                }
+            }
         }
         
+        if(checkMouse)
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+        else
+            SDL_SetRelativeMouseMode(SDL_FALSE);
+        
         if(render) {
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
+            glViewport(0, 0, windowWidth, windowHeight);
+            
+            
+            
+            SDL_GL_SwapWindow(window);
+            glFlush();
             
             frame ++;
             totalFrames++;
