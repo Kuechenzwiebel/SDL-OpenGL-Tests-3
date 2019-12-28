@@ -6,41 +6,112 @@
 //  Copyright © 2019 Tobias Pflüger. All rights reserved.
 //
 
-#ifndef dynamicArrayBuffer_hpp
-#define dynamicArrayBuffer_hpp
+#ifndef dynamicDynamicArrayBuffer_hpp
+#define dynamicDynamicArrayBuffer_hpp
 
 #include <stdio.h>
 #include <glm/glm.hpp>
 #include <GL/glew.h>
-#include "arrayBuffer.hpp"
 
+template <typename T>
 class DynamicArrayBuffer {
 public:
-    DynamicArrayBuffer(const GLfloat *data, int dataSize, int shaderPos, arrayBufferType type);
-    DynamicArrayBuffer(const glm::vec3 *data, int dataSize, int shaderPos);
-    DynamicArrayBuffer(const glm::vec2 *data, int dataSize, int shaderPos);
-    DynamicArrayBuffer(const GLint *data, int dataSize, int shaderPos);
-    DynamicArrayBuffer();
-    
-    void setData(const glm::vec3 *data, int dataSize, int shaderPos);
-    void setData(const glm::vec2 *data, int dataSize, int shaderPos);
-    void setData(const GLfloat *data, int dataSize, int shaderPos, arrayBufferType type);
-    
-    void changeData(const glm::vec3 *data, int dataSize, int shaderPos);
-    void changeData(const glm::vec2 *data, int dataSize, int shaderPos);
-    void changeData(const GLfloat *data, int dataSize, int shaderPos, arrayBufferType type);
-    
+    DynamicArrayBuffer() = delete;
     ~DynamicArrayBuffer();
+};
+
+
+template<>
+class DynamicArrayBuffer<GLuint> {
+public:
+    DynamicArrayBuffer(const GLuint *data, unsigned long dataSize, int shaderPos);
+    DynamicArrayBuffer();
+    ~DynamicArrayBuffer();
+    
+    void setData(const GLuint *data, unsigned long dataSize, int shaderPos);
     
     void activate();
     
 private:
     bool dataSet = false;
     
-    GLenum varType;
     GLuint buffer;
-    int shaderSize;
     int shaderPos;
 };
 
-#endif /* dynamicArrayBuffer_hpp */
+
+template<>
+class DynamicArrayBuffer<GLfloat> {
+public:
+    DynamicArrayBuffer(const GLfloat *data, unsigned long dataSize, int shaderPos);
+    DynamicArrayBuffer();
+    ~DynamicArrayBuffer();
+    
+    void setData(const GLfloat *data, unsigned long dataSize, int shaderPos);
+    
+    void activate();
+    
+private:
+    bool dataSet = false;
+    
+    GLuint buffer;
+    int shaderPos;
+};
+
+
+template<>
+class DynamicArrayBuffer<glm::vec2> {
+public:
+    DynamicArrayBuffer(const glm::vec2 *data, unsigned long dataSize, int shaderPos);
+    DynamicArrayBuffer();
+    ~DynamicArrayBuffer();
+    
+    void setData(const glm::vec2 *data, unsigned long dataSize, int shaderPos);
+    
+    void activate();
+    
+private:
+    bool dataSet = false;
+    
+    GLuint buffer;
+    int shaderPos;
+};
+
+template<>
+class DynamicArrayBuffer<glm::vec3> {
+public:
+    DynamicArrayBuffer(const glm::vec3 *data, unsigned long dataSize, int shaderPos);
+    DynamicArrayBuffer();
+    ~DynamicArrayBuffer();
+    
+    void setData(const glm::vec3 *data, unsigned long dataSize, int shaderPos);
+    
+    void activate();
+    
+private:
+    bool dataSet = false;
+    
+    GLuint buffer;
+    int shaderPos;
+};
+
+template<>
+class DynamicArrayBuffer<glm::vec4> {
+public:
+    DynamicArrayBuffer(const glm::vec4 *data, unsigned long dataSize, int shaderPos);
+    DynamicArrayBuffer();
+    ~DynamicArrayBuffer();
+    
+    void setData(const glm::vec4 *data, unsigned long dataSize, int shaderPos);
+    
+    void activate();
+    
+private:
+    bool dataSet = false;
+    
+    GLuint buffer;
+    int shaderPos;
+};
+
+
+#endif /* dynamicDynamicArrayBuffer_hpp */

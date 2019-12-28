@@ -169,10 +169,10 @@ int main(int argc, const char * argv[]) {
             
             
             basicShader.use();
-            scale.setVar(glm::rotate(mat4(1), 3.14f / 4.0f, vec3(0.0f, 0.0f, 1.0f)));
+            scale.setVar(glm::rotate(mat4(1), 3.14f / 2.0f, vec3(0.0f, 0.0f, 1.0f)));
             testTriangle.render();
             printf("Model\n");
-            printMat4x4(glm::rotate(mat4(1), 3.14f / 4.0f, vec3(0.0f, 0.0f, 1.0f)));
+            printMat4x4(glm::rotate(mat4(1), 3.14f / 2.0f, vec3(0.0f, 0.0f, 1.0f)));
             printf("Shader\n");
             printMat4x4(scale.getVar());
             

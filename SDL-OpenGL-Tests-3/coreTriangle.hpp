@@ -30,8 +30,8 @@ public:
     
 private:
     GLuint VAO;
-    ArrayBuffer vertex;
-    ArrayBuffer texCoord;
+    ArrayBuffer<glm::vec3> vertex;
+    ArrayBuffer<glm::vec2> texCoord;
     
     Shader *shader;
     const RenderData *data;

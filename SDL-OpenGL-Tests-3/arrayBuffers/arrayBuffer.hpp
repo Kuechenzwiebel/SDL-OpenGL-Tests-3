@@ -14,42 +14,105 @@
 #include <GL/glew.h>
 #include <string>
 
-enum arrayBufferType {
-    Float = 1,
-    Vector2D = 2,
-    Vector3D = 3,
-    Vector4D = 4
-};
-
 static std::string dataSetErrorMessage = "Data for ArrayBuffer is allready set! Use a dynamic ArrayBuffer if you need to change the data!\n";
 
+template <typename T>
 class ArrayBuffer {
 public:
-    ArrayBuffer(const GLfloat *data, unsigned long dataSize, int shaderPos, arrayBufferType type);
-    ArrayBuffer(const glm::vec4 *data, unsigned long dataSize, int shaderPos);
-    ArrayBuffer(const glm::vec3 *data, unsigned long dataSize, int shaderPos);
-    ArrayBuffer(const glm::vec2 *data, unsigned long dataSize, int shaderPos);
-    ArrayBuffer(const GLint *data, unsigned long dataSize, int shaderPos);
-    ArrayBuffer();
-    
-    ArrayBuffer(const ArrayBuffer& other);
-    ArrayBuffer& operator=(const ArrayBuffer& other);
-    
-    void setData(const GLfloat *data, unsigned long dataSize, int shaderPos, arrayBufferType type);
-    void setData(const glm::vec4 *data, unsigned long dataSize, int shaderPos);
-    void setData(const glm::vec3 *data, unsigned long dataSize, int shaderPos);
-    void setData(const glm::vec2 *data, unsigned long dataSize, int shaderPos);
-    
+    ArrayBuffer() = delete;
     ~ArrayBuffer();
+};
+
+
+template<>
+class ArrayBuffer<GLuint> {
+public:
+    ArrayBuffer(const GLuint *data, unsigned long dataSize, int shaderPos);
+    ArrayBuffer();
+    ~ArrayBuffer();
+    
+    void setData(const GLuint *data, unsigned long dataSize, int shaderPos);
     
     void activate();
     
 private:
     bool dataSet = false;
     
-    GLenum varType;
     GLuint buffer;
-    int shaderSize;
+    int shaderPos;
+};
+
+
+template<>
+class ArrayBuffer<GLfloat> {
+public:
+    ArrayBuffer(const GLfloat *data, unsigned long dataSize, int shaderPos);
+    ArrayBuffer();
+    ~ArrayBuffer();
+    
+    void setData(const GLfloat *data, unsigned long dataSize, int shaderPos);
+    
+    void activate();
+    
+private:
+    bool dataSet = false;
+    
+    GLuint buffer;
+    int shaderPos;
+};
+
+
+template<>
+class ArrayBuffer<glm::vec2> {
+public:
+    ArrayBuffer(const glm::vec2 *data, unsigned long dataSize, int shaderPos);
+    ArrayBuffer();
+    ~ArrayBuffer();
+    
+    void setData(const glm::vec2 *data, unsigned long dataSize, int shaderPos);
+    
+    void activate();
+    
+private:
+    bool dataSet = false;
+    
+    GLuint buffer;
+    int shaderPos;
+};
+
+template<>
+class ArrayBuffer<glm::vec3> {
+public:
+    ArrayBuffer(const glm::vec3 *data, unsigned long dataSize, int shaderPos);
+    ArrayBuffer();
+    ~ArrayBuffer();
+    
+    void setData(const glm::vec3 *data, unsigned long dataSize, int shaderPos);
+    
+    void activate();
+    
+private:
+    bool dataSet = false;
+    
+    GLuint buffer;
+    int shaderPos;
+};
+
+template<>
+class ArrayBuffer<glm::vec4> {
+public:
+    ArrayBuffer(const glm::vec4 *data, unsigned long dataSize, int shaderPos);
+    ArrayBuffer();
+    ~ArrayBuffer();
+    
+    void setData(const glm::vec4 *data, unsigned long dataSize, int shaderPos);
+    
+    void activate();
+    
+private:
+    bool dataSet = false;
+    
+    GLuint buffer;
     int shaderPos;
 };
 
