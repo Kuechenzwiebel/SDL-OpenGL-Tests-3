@@ -34,6 +34,7 @@
 #include <glm/gtx/norm.hpp>
 
 #include "utils.hpp"
+#include "coreTriangle.hpp"
 
 using namespace glm;
 
@@ -99,6 +100,15 @@ int main(int argc, const char * argv[]) {
     float currentFrame = 0.0f;
     float deltaTime = 0.0f;
     
+    
+    hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
+    Shader basicShader(basicShaderVertex, basicShaderFragment);
+    
+    RenderData renderData;
+    
+    
+    CoreTriangle testTriangle(&basicShader, &renderData);
+    
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
             fps = frame;
@@ -151,6 +161,9 @@ int main(int argc, const char * argv[]) {
             
             glViewport(0, 0, windowWidth, windowHeight);
             
+            
+            basicShader.use();
+            testTriangle.render();
             
             
             SDL_GL_SwapWindow(window);

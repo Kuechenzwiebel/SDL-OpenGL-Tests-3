@@ -1,2 +1,2 @@
 MacOS:
-clang++ -o run      main.cpp utils.cpp arrayBuffers/arrayBuffer.cpp arrayBuffers/dynamicArrayBuffer.cpp arrayBuffers/instancingArrayBuffer.cpp          -std=c++14 -L/usr/local/lib -I/usr/local/Cellar/glew/2.1.0_1/include -I/usr/local/include -lGLEW -F/Library/Frameworks -framework SOIL2 -framework SDL2 -framework CoreFoundation -framework OpenGL -framework HG_List
+clang++ -o run      main.cpp shader.cpp utils.cpp coreTriangle.cpp arrayBuffers/arrayBuffer.cpp arrayBuffers/dynamicArrayBuffer.cpp arrayBuffers/instancingArrayBuffer.cpp         -std=c++14 -L/usr/local/lib -I/usr/local/Cellar/glew/2.1.0_1/include -I/usr/local/include -lGLEW -F/Library/Frameworks -framework SOIL2 -framework SDL2 -framework CoreFoundation -framework OpenGL -framework HG_List
