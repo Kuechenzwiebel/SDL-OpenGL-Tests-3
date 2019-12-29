@@ -13,8 +13,8 @@ static GLint getLoc(GLuint program, std::string name) {
 }
 
 
-UniformVar<float>::UniformVar(Shader *shader, std::string varName):
-shader(shader) {
+UniformVar<float>::UniformVar(Shader *shader, std::string varName, float *var):
+shader(shader), var(var) {
     location = getLoc(shader->getProgram(), varName);
     
     if(location == -1) {
@@ -25,19 +25,17 @@ shader(shader) {
     }
 }
 
-float UniformVar<float>::getVar() {
-    float f;
-    glGetUniformfv(shader->getProgram(), location, &f);
-    return f;
+void UniformVar<float>::getVar() {
+    glGetUniformfv(shader->getProgram(), location, var);
 }
 
-void UniformVar<float>::setVar(float var) {
-    glUniform1f(location, var);
+void UniformVar<float>::setVar() {
+    glUniform1f(location, *var);
 }
 
 
-UniformVar<int>::UniformVar(Shader *shader, std::string varName):
-shader(shader) {
+UniformVar<int>::UniformVar(Shader *shader, std::string varName, int *var):
+shader(shader), var(var) {
     location = getLoc(shader->getProgram(), varName);
     
     if(location == -1) {
@@ -48,20 +46,18 @@ shader(shader) {
     }
 }
 
-int UniformVar<int>::getVar() {
-    int f;
-    glGetUniformiv(shader->getProgram(), location, &f);
-    return f;
+void UniformVar<int>::getVar() {
+    glGetUniformiv(shader->getProgram(), location, var);
 }
 
-void UniformVar<int>::setVar(int var) {
-    glUniform1i(location, var);
+void UniformVar<int>::setVar() {
+    glUniform1i(location, *var);
 }
 
 
 
-UniformVar<glm::vec2>::UniformVar(Shader *shader, std::string varName):
-shader(shader) {
+UniformVar<glm::vec2>::UniformVar(Shader *shader, std::string varName, glm::vec2 *var):
+shader(shader), var(var) {
     location = getLoc(shader->getProgram(), varName);
     
     if(location == -1) {
@@ -72,19 +68,17 @@ shader(shader) {
     }
 }
 
-glm::vec2 UniformVar<glm::vec2>::getVar() {
-    float f[2];
-    glGetUniformfv(shader->getProgram(), location, &f[0]);
-    return glm::vec2(f[0], f[1]);
+void UniformVar<glm::vec2>::getVar() {
+    glGetUniformfv(shader->getProgram(), location, &var->x);
 }
 
-void UniformVar<glm::vec2>::setVar(glm::vec2 var) {
-    glUniform2f(location, var.x, var.y);
+void UniformVar<glm::vec2>::setVar() {
+    glUniform2f(location, var->x, var->y);
 }
 
 
-UniformVar<glm::vec3>::UniformVar(Shader *shader, std::string varName):
-shader(shader) {
+UniformVar<glm::vec3>::UniformVar(Shader *shader, std::string varName, glm::vec3 *var):
+shader(shader), var(var) {
     location = getLoc(shader->getProgram(), varName);
     
     if(location == -1) {
@@ -95,19 +89,17 @@ shader(shader) {
     }
 }
 
-glm::vec3 UniformVar<glm::vec3>::getVar() {
-    float f[3];
-    glGetUniformfv(shader->getProgram(), location, &f[0]);
-    return glm::vec3(f[0], f[1], f[2]);
+void UniformVar<glm::vec3>::getVar() {
+    glGetUniformfv(shader->getProgram(), location, &var->x);
 }
 
-void UniformVar<glm::vec3>::setVar(glm::vec3 var) {
-    glUniform3f(location, var.x, var.y, var.z);
+void UniformVar<glm::vec3>::setVar() {
+    glUniform3f(location, var->x, var->y, var->z);
 }
 
 
-UniformVar<glm::vec4>::UniformVar(Shader *shader, std::string varName):
-shader(shader) {
+UniformVar<glm::vec4>::UniformVar(Shader *shader, std::string varName, glm::vec4 *var):
+shader(shader), var(var) {
     location = getLoc(shader->getProgram(), varName);
     
     if(location == -1) {
@@ -118,20 +110,18 @@ shader(shader) {
     }
 }
 
-glm::vec4 UniformVar<glm::vec4>::getVar() {
-    float f[4];
-    glGetUniformfv(shader->getProgram(), location, &f[0]);
-    return glm::vec4(f[0], f[1], f[2], f[3]);
+void UniformVar<glm::vec4>::getVar() {
+    glGetUniformfv(shader->getProgram(), location, &var->x);
 }
 
-void UniformVar<glm::vec4>::setVar(glm::vec4 var) {
-    glUniform4f(location, var.x, var.y, var.z, var.w);
+void UniformVar<glm::vec4>::setVar() {
+    glUniform4f(location, var->x, var->y, var->z, var->w);
 }
 
 
 
-UniformVar<glm::mat4>::UniformVar(Shader *shader, std::string varName):
-shader(shader) {
+UniformVar<glm::mat4>::UniformVar(Shader *shader, std::string varName, glm::mat4 *var):
+shader(shader), var(var) {
     location = getLoc(shader->getProgram(), varName);
     
     if(location == -1) {
@@ -142,13 +132,11 @@ shader(shader) {
     }
 }
 
-glm::mat4 UniformVar<glm::mat4>::getVar() {
-    glm::mat4 mat(1);
-    glGetUniformfv(shader->getProgram(), location, &mat[0][0]);
-    return mat;
+void UniformVar<glm::mat4>::getVar() {
+    glGetUniformfv(shader->getProgram(), location, &(*var)[0][0]);
 }
 
-void UniformVar<glm::mat4>::setVar(glm::mat4 var) {
-    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(var));
+void UniformVar<glm::mat4>::setVar() {
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(*var));
 }
 

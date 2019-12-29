@@ -30,81 +30,87 @@ public:
 template<>
 class UniformVar<float> {
 public:
-    UniformVar(Shader *shader, std::string varName);
+    UniformVar(Shader *shader, std::string varName, float *var);
     
-    float getVar();
-    void setVar(float var);
+    void getVar();
+    void setVar();
     
 private:
     Shader *shader;
     GLuint location;
+    float *var;
 };
 
 template<>
 class UniformVar<int> {
 public:
-    UniformVar(Shader *shader, std::string varName);
+    UniformVar(Shader *shader, std::string varName, int *var);
     
-    int getVar();
-    void setVar(int var);
+    void getVar();
+    void setVar();
     
 private:
     Shader *shader;
     GLuint location;
+    int *var;
 };
 
 
 template<>
 class UniformVar<glm::vec2> {
 public:
-    UniformVar(Shader *shader, std::string varName);
+    UniformVar(Shader *shader, std::string varName, glm::vec2 *var);
     
-    glm::vec2 getVar();
-    void setVar(glm::vec2 var);
+    void getVar();
+    void setVar();
     
 private:
     Shader *shader;
     GLuint location;
+    glm::vec2 *var;
 };
 
 template<>
 class UniformVar<glm::vec3> {
 public:
-    UniformVar(Shader *shader, std::string varName);
+    UniformVar(Shader *shader, std::string varName, glm::vec3 *var);
     
-    glm::vec3 getVar();
-    void setVar(glm::vec3 var);
+    void getVar();
+    void setVar();
     
 private:
     Shader *shader;
     GLuint location;
+    glm::vec3 *var;
 };
 
 template<>
 class UniformVar<glm::vec4> {
 public:
-    UniformVar(Shader *shader, std::string varName);
+    UniformVar(Shader *shader, std::string varName, glm::vec4 *var);
     
-    glm::vec4 getVar();
-    void setVar(glm::vec4 var);
+    void getVar();
+    void setVar();
     
 private:
     Shader *shader;
     GLuint location;
+    glm::vec4 *var;
 };
 
 
 template<>
 class UniformVar<glm::mat4> {
 public:
-    UniformVar(Shader *shader, std::string varName);
+    UniformVar(Shader *shader, std::string varName, glm::mat4 *var);
     
-    glm::mat4 getVar();
-    void setVar(glm::mat4 var);
+    void getVar();
+    void setVar();
     
 private:
     Shader *shader;
     GLuint location;
+    glm::mat4 *var;
 };
 
 #endif /* uniformVar_hpp */
