@@ -59,7 +59,7 @@ int main(int argc, const char * argv[]) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     
-    SDL_Window *window = SDL_CreateWindow("SDL-OpenGL-Tests-2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    SDL_Window *window = SDL_CreateWindow("SDL-OpenGL-Tests-3", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SDL_Event windowEvent;
 
@@ -101,15 +101,40 @@ int main(int argc, const char * argv[]) {
     float currentFrame = 0.0f;
     float deltaTime = 0.0f;
     
+    std::list<std::pair<float, CoreTriangle*>> objects;
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
     Shader basicShader(basicShaderVertex, basicShaderFragment);
     
+    
+    
+    mat4 modelMat(1),
+    viewMat = glm::lookAt(vec3(-5.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)),
+    projectionMat = infinitePerspective(radians(46.9f), float(windowWidth) / float(windowHeight), 0.005f);
+    
     RenderData renderData;
+    renderData.projection = &projectionMat;
+    renderData.viewMat = &viewMat;
     
     
     CoreTriangle testTriangle(&basicShader, &renderData);
-    UniformVar<glm::mat4> scale(&basicShader, "model");
+    
+    
+    vec4 inColorVec(1.0f, 0.0f, 1.0f, 0.1f);
+    UniformVar<glm::vec4> inColor(&basicShader, "inColor", &inColorVec);
+    float y = 2.0f;
+    
+    std::vector<std::unique_ptr<CoreTriangle>> tris(20);
+    
+    tris.clear();
+    
+    for(int i = 0; i < 20; i++) {
+        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData));
+        objects.push_back(std::make_pair(0.0f, &(*tris[i])));
+
+        modelMat = glm::translate(mat4(1), vec3(float(i) - 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f)) * rotate(mat4(1), HALF_PI, vec3(0.0f, 1.0f, 0.0f));
+        tris[i]->setModelMat(modelMat);
+    }
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -145,7 +170,7 @@ int main(int argc, const char * argv[]) {
             }
             
             if(windowEvent.type == SDL_MOUSEWHEEL) {
-//                scale.setVar(scale.getVar() + vec2(float(windowEvent.wheel.x) * 0.15f, float(windowEvent.wheel.y) * 0.15f));
+                y += float(windowEvent.wheel.y) * 0.15f;
             }
             
             if(windowEvent.type == SDL_KEYDOWN) {
@@ -167,16 +192,23 @@ int main(int argc, const char * argv[]) {
             
             glViewport(0, 0, windowWidth, windowHeight);
             
+            for(int i = 0; i < tris.size(); i++) {
+                modelMat = glm::translate(mat4(1), vec3(float(i) - y, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f)) * rotate(mat4(1), HALF_PI, vec3(0.0f, 1.0f, 0.0f));
+                tris[i]->setModelMat(modelMat);
+            }
             
+            for(std::list<std::pair<float, CoreTriangle*>>::iterator it = objects.begin(); it != objects.end(); it++) {
+                it->first = glm::length(vec3(-5.0f, 0.0f, 0.0f)) - glm::length(it->second->getMaxVertex());
+            }
+            
+            objects.sort();
+
             basicShader.use();
-            scale.setVar(glm::rotate(mat4(1), 3.14f / 2.0f, vec3(0.0f, 0.0f, 1.0f)));
-            testTriangle.render();
-            printf("Model\n");
-            printMat4x4(glm::rotate(mat4(1), 3.14f / 2.0f, vec3(0.0f, 0.0f, 1.0f)));
-            printf("Shader\n");
-            printMat4x4(scale.getVar());
-            
-            
+            for(std::list<std::pair<float, CoreTriangle*>>::reverse_iterator it = objects.rbegin(); it != objects.rend(); it++) {
+                inColor.setVar();
+                it->second->render();
+            }
+
             SDL_GL_SwapWindow(window);
             glFlush();
             

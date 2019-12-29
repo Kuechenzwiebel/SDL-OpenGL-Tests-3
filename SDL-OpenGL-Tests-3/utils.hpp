@@ -9,7 +9,10 @@
 #ifndef utils_hpp
 #define utils_hpp
 
+#define DOUBLE_PI 6.283185307179586f
 #define PI 3.1415926535897932384626433f
+#define HALF_PI 1.570796326794897f
+
 
 #define GLM_FORCE_SWIZZLE
 
