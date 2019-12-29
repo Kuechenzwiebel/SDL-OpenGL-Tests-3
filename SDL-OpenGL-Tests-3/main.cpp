@@ -117,7 +117,7 @@ int main(int argc, const char * argv[]) {
     renderData.viewMat = &viewMat;
     
     
-    CoreTriangle testTriangle(&basicShader, &renderData);
+//    CoreTriangle testTriangle(&basicShader, &renderData);
     
     
     vec4 inColorVec(1.0f, 0.0f, 1.0f, 0.1f);
@@ -128,13 +128,21 @@ int main(int argc, const char * argv[]) {
     
     tris.clear();
     
+    glm::vec3 triangleVertices[] = {
+        glm::vec3(-0.5f, -0.5f, 0.0f),
+        glm::vec3(0.5f, -1.0f, 0.5f),
+        glm::vec3(0.0f,  0.5f, 0.0f)
+    };
+    
     for(int i = 0; i < 20; i++) {
-        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData));
+        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices));
         objects.push_back(std::make_pair(0.0f, &(*tris[i])));
 
         modelMat = glm::translate(mat4(1), vec3(float(i) - 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f)) * rotate(mat4(1), HALF_PI, vec3(0.0f, 1.0f, 0.0f));
         tris[i]->setModelMat(modelMat);
     }
+    
+    
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {

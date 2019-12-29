@@ -24,7 +24,7 @@
 
 class CoreTriangle {
 public:
-    CoreTriangle(Shader *shader, const RenderData *data);
+    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[]);
     ~CoreTriangle();
     
     void setModelMat(glm::mat4 model);
@@ -37,6 +37,8 @@ private:
     GLuint VAO;
     ArrayBuffer<glm::vec3> vertex;
     ArrayBuffer<glm::vec2> texCoord;
+    
+    const glm::vec3 *vertices;
     
     Shader *shader;
     const RenderData *data;
