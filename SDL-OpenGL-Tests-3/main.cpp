@@ -108,9 +108,9 @@ int main(int argc, const char * argv[]) {
     
     
     
-    mat4 modelMat(1),
-    viewMat = glm::lookAt(vec3(-5.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)),
-    projectionMat = infinitePerspective(radians(46.9f), float(windowWidth) / float(windowHeight), 0.005f);
+     
+    mat4 viewMat = glm::lookAt(vec3(-5.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+    mat4 projectionMat = infinitePerspective(radians(46.9f), float(windowWidth) / float(windowHeight), 0.005f);
     
     RenderData renderData;
     renderData.projection = &projectionMat;
@@ -124,9 +124,7 @@ int main(int argc, const char * argv[]) {
     UniformVar<glm::vec4> inColor(&basicShader, "inColor", &inColorVec);
     float y = 2.0f;
     
-    std::vector<std::unique_ptr<CoreTriangle>> tris(20);
-    
-    tris.clear();
+    std::vector<std::unique_ptr<CoreTriangle>> tris;
     
     glm::vec3 triangleVertices[] = {
         glm::vec3(-0.5f, -0.5f, 0.0f),
@@ -136,11 +134,13 @@ int main(int argc, const char * argv[]) {
     
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices));
-        objects.push_back(std::make_pair(0.0f, &(*tris[i])));
 
-        modelMat = glm::translate(mat4(1), vec3(float(i) - 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f)) * rotate(mat4(1), HALF_PI, vec3(0.0f, 1.0f, 0.0f));
-        tris[i]->setModelMat(modelMat);
+        tris[i]->setTranslation(vec3(float(i) - 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
+        tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
+    
+    for(int i = 0; i < 20; i++)
+        objects.push_back(std::make_pair(0.0f, &(*tris[i])));
     
     
     
@@ -200,16 +200,16 @@ int main(int argc, const char * argv[]) {
             
             glViewport(0, 0, windowWidth, windowHeight);
             
-            for(int i = 0; i < tris.size(); i++) {
-                modelMat = glm::translate(mat4(1), vec3(float(i) - y, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f)) * rotate(mat4(1), HALF_PI, vec3(0.0f, 1.0f, 0.0f));
-                tris[i]->setModelMat(modelMat);
-            }
-            
             for(std::list<std::pair<float, CoreTriangle*>>::iterator it = objects.begin(); it != objects.end(); it++) {
-                it->first = glm::length(vec3(-5.0f, 0.0f, 0.0f)) - glm::length(it->second->getMaxVertex());
+                it->first = glm::length(vec3(-5.0f, 0.0f, 0.0f) - it->second->getMaxVertex());
             }
             
             objects.sort();
+            
+            for(std::list<std::pair<float, CoreTriangle*>>::iterator it = objects.begin(); it != objects.end(); it++) {
+                printf("Lenght: %f\t\t", it->first);
+                printVec3(it->second->getMaxVertex());
+            }
 
             basicShader.use();
             for(std::list<std::pair<float, CoreTriangle*>>::reverse_iterator it = objects.rbegin(); it != objects.rend(); it++) {
@@ -222,6 +222,7 @@ int main(int argc, const char * argv[]) {
             
             frame ++;
             totalFrames++;
+            printf("\n");
         }
         else
             SDL_Delay(33);

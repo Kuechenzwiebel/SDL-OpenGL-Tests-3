@@ -27,7 +27,16 @@ public:
     CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[]);
     ~CoreTriangle();
     
+    void setTranslation(glm::vec3 translation);
+    void setRotation(glm::vec4 rotation);
+    void setScale(glm::vec3 scale);
     void setModelMat(glm::mat4 model);
+    
+    glm::vec3 getTranslation();
+    glm::vec4 getRotation();
+    glm::vec3 getScale();
+    glm::mat4 getModelMat();
+    
     glm::vec3 getMaxVertex();
     
     virtual void prepareRender();
@@ -48,6 +57,15 @@ private:
     UniformVar<glm::mat4> projection;
     
     glm::mat4 modelMat;
+    
+    virtual void calculateModelMat();
+    
+    glm::vec3 translation;
+    glm::vec4 rotation;
+    glm::vec3 scale;
 };
+
+bool operator<(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r);
+bool operator>(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r);
 
 #endif /* coreTriangle_hpp */
