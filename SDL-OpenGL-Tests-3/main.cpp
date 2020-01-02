@@ -34,8 +34,10 @@
 #include <glm/gtx/norm.hpp>
 
 #include "utils.hpp"
+#include "object.hpp"
 #include "coreTriangle.hpp"
 #include "uniformVar.hpp"
+#include "equilateralTriangle.hpp"
 
 using namespace glm;
 
@@ -101,7 +103,7 @@ int main(int argc, const char * argv[]) {
     float currentFrame = 0.0f;
     float deltaTime = 0.0f;
     
-    std::list<std::pair<float, CoreTriangle*>> objects;
+    std::list<std::pair<float, Object*>> objects;
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
     Shader basicShader(basicShaderVertex, basicShaderFragment);
@@ -122,7 +124,6 @@ int main(int argc, const char * argv[]) {
     
     vec4 inColorVec(1.0f, 0.0f, 1.0f, 0.1f);
     UniformVar<glm::vec4> inColor(&basicShader, "inColor", &inColorVec);
-    float y = 2.0f;
     
     std::vector<std::unique_ptr<CoreTriangle>> tris;
     
@@ -134,15 +135,13 @@ int main(int argc, const char * argv[]) {
     
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices));
+        objects.push_back(std::make_pair(0.0f, &(*tris[i])));
 
         tris[i]->setTranslation(vec3(float(i) - 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
     
-    for(int i = 0; i < 20; i++)
-        objects.push_back(std::make_pair(0.0f, &(*tris[i])));
-    
-    
+    EquilateralTriangle e(&basicShader, &renderData);
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -177,10 +176,6 @@ int main(int argc, const char * argv[]) {
                     render = false;
             }
             
-            if(windowEvent.type == SDL_MOUSEWHEEL) {
-                y += float(windowEvent.wheel.y) * 0.15f;
-            }
-            
             if(windowEvent.type == SDL_KEYDOWN) {
                 if(windowEvent.key.keysym.sym == SDLK_ESCAPE) {
                     render = false;
@@ -200,19 +195,21 @@ int main(int argc, const char * argv[]) {
             
             glViewport(0, 0, windowWidth, windowHeight);
             
-            for(std::list<std::pair<float, CoreTriangle*>>::iterator it = objects.begin(); it != objects.end(); it++) {
+            for(std::list<std::pair<float, Object*>>::iterator it = objects.begin(); it != objects.end(); it++) {
                 it->first = glm::length(vec3(-5.0f, 0.0f, 0.0f) - it->second->getMaxVertex());
             }
             
             objects.sort();
-            
-            for(std::list<std::pair<float, CoreTriangle*>>::iterator it = objects.begin(); it != objects.end(); it++) {
-                printf("Lenght: %f\t\t", it->first);
-                printVec3(it->second->getMaxVertex());
-            }
 
             basicShader.use();
-            for(std::list<std::pair<float, CoreTriangle*>>::reverse_iterator it = objects.rbegin(); it != objects.rend(); it++) {
+            
+            inColorVec = vec4(1.0f);
+            inColor.setVar();
+            e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
+            e.render();
+            
+            inColorVec = vec4(1.0f, 0.0f, 1.0f, 0.1f);
+            for(std::list<std::pair<float, Object*>>::reverse_iterator it = objects.rbegin(); it != objects.rend(); it++) {
                 inColor.setVar();
                 it->second->render();
             }
@@ -222,7 +219,6 @@ int main(int argc, const char * argv[]) {
             
             frame ++;
             totalFrames++;
-            printf("\n");
         }
         else
             SDL_Delay(33);

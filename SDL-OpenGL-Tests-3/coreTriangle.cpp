@@ -9,7 +9,7 @@
 #include "coreTriangle.hpp"
 
 CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[]):
-vertices(vertices), shader(shader), data(data), vertex(vertices, sizeof(glm::vec3) * 3, 0), translation(0.0f), scale(1.0f), rotation(0.0f), modelMat(1), model(shader, "model", &modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection) {
+vertices(vertices), shader(shader), data(data), vertex(vertices, sizeof(glm::vec3) * 3, 0), model(shader, "model", &modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
@@ -20,50 +20,6 @@ vertices(vertices), shader(shader), data(data), vertex(vertices, sizeof(glm::vec
 
 CoreTriangle::~CoreTriangle() {
     glDeleteVertexArrays(1, &VAO);
-}
-
-void CoreTriangle::setTranslation(glm::vec3 translation) {
-    this->translation = translation;
-    calculateModelMat();
-}
-
-void CoreTriangle::setRotation(glm::vec4 rotation) {
-    this->rotation = rotation;
-    calculateModelMat();
-}
-
-void CoreTriangle::setScale(glm::vec3 scale) {
-    this->scale = scale;
-    calculateModelMat();
-}
-   
-void CoreTriangle::setModelMat(glm::mat4 model) {
-    modelMat = model;
-}
-   
-glm::vec3 CoreTriangle::getTranslation() {
-    return translation;
-}
-
-glm::vec4 CoreTriangle::getRotation() {
-    return rotation;
-}
-
-glm::vec3 CoreTriangle::getScale() {
-    return scale;
-}
-
-glm::mat4 CoreTriangle::getModelMat() {
-    return modelMat;
-}
-
-void CoreTriangle::calculateModelMat() {
-    modelMat = glm::translate(glm::mat4(1), translation) * glm::rotate(glm::mat4(1), rotation.w, rotation.xyz()) * glm::scale(glm::mat4(1), scale);
-}
-
-
-void CoreTriangle::prepareRender() {
-    
 }
 
 void CoreTriangle::render() {
@@ -98,24 +54,4 @@ glm::vec3 CoreTriangle::getMaxVertex() {
     }
     
     return (modelMat * glm::vec4(vertices[i], 1.0f)).xyz();
-}
-
-
-
-bool operator<(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r) {
-    if(l.first < r.first) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-bool operator>(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r) {
-    if(l.first > r.first) {
-        return true;
-    }
-    else {
-        return false;
-    }
 }
