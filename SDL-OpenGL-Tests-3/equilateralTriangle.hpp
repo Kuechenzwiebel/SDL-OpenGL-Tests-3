@@ -15,7 +15,7 @@
 
 class EquilateralTriangle: public CoreTriangle {
 public:
-    EquilateralTriangle(Shader *shader, const RenderData *data);
+    EquilateralTriangle(Shader *shader, const RenderData *data, Texture *texture);
     ~EquilateralTriangle();
     
 private:

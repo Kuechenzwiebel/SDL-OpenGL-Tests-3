@@ -34,6 +34,8 @@
 #include <glm/gtx/norm.hpp>
 
 #include "utils.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
 #include "object.hpp"
 #include "coreTriangle.hpp"
 #include "uniformVar.hpp"
@@ -119,11 +121,7 @@ int main(int argc, const char * argv[]) {
     renderData.viewMat = &viewMat;
     
     
-//    CoreTriangle testTriangle(&basicShader, &renderData);
-    
-    
-    vec4 inColorVec(1.0f, 0.0f, 1.0f, 0.1f);
-    UniformVar<glm::vec4> inColor(&basicShader, "inColor", &inColorVec);
+    Texture debugTexture("resources/texture/debug.png");
     
     std::vector<std::unique_ptr<CoreTriangle>> tris;
     
@@ -133,15 +131,22 @@ int main(int argc, const char * argv[]) {
         glm::vec3(0.0f,  0.5f, 0.0f)
     };
     
+    glm::vec2 triangleUVs[] = {
+        glm::vec2(0.0f, 0.0f),
+        glm::vec2(1.0f, 0.0f),
+        glm::vec2(0.5f, 1.0f)
+    };
+    
     for(int i = 0; i < 20; i++) {
-        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices));
+        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &debugTexture, triangleUVs));
         objects.push_back(std::make_pair(0.0f, &(*tris[i])));
 
         tris[i]->setTranslation(vec3(float(i) - 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
     
-    EquilateralTriangle e(&basicShader, &renderData);
+    EquilateralTriangle e(&basicShader, &renderData, &debugTexture);
+    e.setTranslation(vec3(0.0f, 0.0f, -2.0f));
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -203,14 +208,10 @@ int main(int argc, const char * argv[]) {
 
             basicShader.use();
             
-            inColorVec = vec4(1.0f);
-            inColor.setVar();
             e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
             e.render();
             
-            inColorVec = vec4(1.0f, 0.0f, 1.0f, 0.1f);
             for(std::list<std::pair<float, Object*>>::reverse_iterator it = objects.rbegin(); it != objects.rend(); it++) {
-                inColor.setVar();
                 it->second->render();
             }
 

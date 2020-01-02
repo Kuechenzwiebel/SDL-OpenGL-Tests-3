@@ -2,9 +2,10 @@
 
 out vec4 color;
 
-uniform vec4 inColor;
+in vec2 UVs;
+uniform sampler2D tex;
 
 void main() {
-    color = inColor;
+    color = texture(tex, UVs);
 }
 

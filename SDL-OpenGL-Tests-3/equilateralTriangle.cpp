@@ -8,18 +8,25 @@
 
 #include "equilateralTriangle.hpp"
 
-glm::vec3 eTriangleVertices[] = {
+static glm::vec3 equilateralTriangleVertices[] = {
     glm::vec3(-0.5f, -0.433f, 0.0f),
     glm::vec3(0.5f, -0.433f, 0.0f),
     glm::vec3(0.0f,  0.433f, 0.0f)
 };
 
-EquilateralTriangle::EquilateralTriangle(Shader *shader, const RenderData *data):
-CoreTriangle(shader, data, eTriangleVertices) {
+static glm::vec2 equilateralTriangleUVs[] = {
+    glm::vec2(0.0f, 0.0f),
+    glm::vec2(1.0f, 0.0f),
+    glm::vec2(0.5f, 1.0f)
+};
+
+EquilateralTriangle::EquilateralTriangle(Shader *shader, const RenderData *data, Texture *texture):
+CoreTriangle(shader, data, equilateralTriangleVertices, texture, equilateralTriangleUVs) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
     vertex.activate();
+    texCoord.activate();
     
     glBindVertexArray(0);
 }

@@ -8,12 +8,15 @@
 
 #include "coreTriangle.hpp"
 
-CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[]):
-vertices(vertices), shader(shader), data(data), vertex(vertices, sizeof(glm::vec3) * 3, 0), model(shader, "model", &modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection) {
+CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[]):
+vertices(vertices), uvs(uvs), shader(shader), data(data),
+vertex(vertices, sizeof(glm::vec3) * 3, 0), texCoord(uvs, sizeof(glm::vec2) * 3, 1),
+model(shader, "model", &modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), texture(texture) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
     vertex.activate();
+    texCoord.activate();
     
     glBindVertexArray(0);
 }
@@ -26,10 +29,14 @@ void CoreTriangle::render() {
     prepareRender();
     
     vertex.activate();
+    texCoord.activate();
     
     projection.setVar();
     view.setVar();
     model.setVar();
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture->getTextureID());
     
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);

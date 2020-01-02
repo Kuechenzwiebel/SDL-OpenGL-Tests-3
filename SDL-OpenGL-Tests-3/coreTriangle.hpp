@@ -12,10 +12,11 @@
 #include <stdio.h>
 
 #include "object.hpp"
+#include "texture.hpp"
 
 class CoreTriangle: public Object {
 public:
-    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[]);
+    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[]);
     ~CoreTriangle();
     
     glm::vec3 getMaxVertex();
@@ -28,6 +29,8 @@ protected:
     ArrayBuffer<glm::vec2> texCoord;
     
     const glm::vec3 *vertices;
+    const glm::vec2 *uvs;
+    Texture *texture;
     
     Shader *shader;
     const RenderData *data;
