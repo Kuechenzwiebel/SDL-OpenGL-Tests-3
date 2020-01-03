@@ -26,8 +26,6 @@ CoreTriangle::~CoreTriangle() {
 }
 
 void CoreTriangle::render() {
-    prepareRender();
-    
     vertex.activate();
     texCoord.activate();
     
@@ -41,6 +39,10 @@ void CoreTriangle::render() {
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
+}
+
+void CoreTriangle::addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles) {
+    printf("Please add your CoreTriangle directly!\n");
 }
 
 glm::vec3 CoreTriangle::getMaxVertex() {
@@ -61,4 +63,24 @@ glm::vec3 CoreTriangle::getMaxVertex() {
     }
     
     return (modelMat * glm::vec4(vertices[i], 1.0f)).xyz();
+}
+
+
+
+bool operator<(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r) {
+    if(l.first < r.first) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool operator>(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r) {
+    if(l.first > r.first) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }

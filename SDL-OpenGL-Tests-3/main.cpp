@@ -105,7 +105,7 @@ int main(int argc, const char * argv[]) {
     float currentFrame = 0.0f;
     float deltaTime = 0.0f;
     
-    std::list<std::pair<float, Object*>> objects;
+    std::list<std::pair<float, CoreTriangle*>> triangles;
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
     Shader basicShader(basicShaderVertex, basicShaderFragment);
@@ -139,7 +139,7 @@ int main(int argc, const char * argv[]) {
     
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &debugTexture, triangleUVs));
-        objects.push_back(std::make_pair(0.0f, &(*tris[i])));
+        triangles.push_back(std::make_pair(0.0f, &(*tris[i])));
 
         tris[i]->setTranslation(vec3(float(i) - 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
@@ -147,6 +147,8 @@ int main(int argc, const char * argv[]) {
     
     EquilateralTriangle e(&basicShader, &renderData, &debugTexture);
     e.setTranslation(vec3(0.0f, 0.0f, -2.0f));
+    e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
+    e.addToTriangleList(&triangles);
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -200,18 +202,15 @@ int main(int argc, const char * argv[]) {
             
             glViewport(0, 0, windowWidth, windowHeight);
             
-            for(std::list<std::pair<float, Object*>>::iterator it = objects.begin(); it != objects.end(); it++) {
+            for(std::list<std::pair<float, CoreTriangle*>>::iterator it = triangles.begin(); it != triangles.end(); it++) {
                 it->first = glm::length(vec3(-5.0f, 0.0f, 0.0f) - it->second->getMaxVertex());
             }
             
-            objects.sort();
+            triangles.sort();
 
             basicShader.use();
             
-            e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
-            e.render();
-            
-            for(std::list<std::pair<float, Object*>>::reverse_iterator it = objects.rbegin(); it != objects.rend(); it++) {
+            for(std::list<std::pair<float, CoreTriangle*>>::reverse_iterator it = triangles.rbegin(); it != triangles.rend(); it++) {
                 it->second->render();
             }
 

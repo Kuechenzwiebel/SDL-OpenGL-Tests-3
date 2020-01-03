@@ -17,16 +17,8 @@ Object::~Object() {
     
 }
 
-void Object::prepareRender() {
+void Object::addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles) {
     
-}
-
-void Object::render() {
-    
-}
-
-glm::vec3 Object::getMaxVertex() {
-    return glm::vec3(0.0f);
 }
 
 void Object::setTranslation(glm::vec3 translation) {
@@ -68,21 +60,3 @@ void Object::calculateModelMat() {
     modelMat = glm::translate(glm::mat4(1), translation) * glm::rotate(glm::mat4(1), rotation.w, rotation.xyz()) * glm::scale(glm::mat4(1), scale);
 }
 
-
-bool operator<(std::pair<float, Object*> l, std::pair<float, Object*> r) {
-    if(l.first < r.first) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-bool operator>(std::pair<float, Object*> l, std::pair<float, Object*> r) {
-    if(l.first > r.first) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}

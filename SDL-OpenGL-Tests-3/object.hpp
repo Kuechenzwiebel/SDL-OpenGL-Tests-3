@@ -10,6 +10,8 @@
 #define object_hpp
 
 #include <stdio.h>
+#include <list>
+#include <utility>
 
 #include <GL/glew.h>
 #define GLM_FORCE_SWIZZLE
@@ -21,6 +23,8 @@
 #include "shader.hpp"
 #include "uniformVar.hpp"
 #include "arrayBuffers/arrayBuffer.hpp"
+
+class CoreTriangle;
 
 class Object {
 protected:
@@ -39,10 +43,7 @@ public:
     virtual glm::vec3 getScale();
     virtual glm::mat4 getModelMat();
     
-    virtual glm::vec3 getMaxVertex();
-    
-    virtual void prepareRender();
-    virtual void render();
+    virtual void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);
     
 protected:
     glm::mat4 modelMat;
@@ -53,9 +54,5 @@ protected:
     glm::vec4 rotation;
     glm::vec3 scale;
 };
-
-
-bool operator<(std::pair<float, Object*> l, std::pair<float, Object*> r);
-bool operator>(std::pair<float, Object*> l, std::pair<float, Object*> r);
 
 #endif /* object_hpp */

@@ -23,6 +23,8 @@ public:
     
     void render();
     
+    void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);
+    
 protected:
     GLuint VAO;
     ArrayBuffer<glm::vec3> vertex;
@@ -39,5 +41,8 @@ protected:
     UniformVar<glm::mat4> view;
     UniformVar<glm::mat4> projection;
 };
+
+bool operator<(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r);
+bool operator>(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r);
 
 #endif /* coreTriangle_hpp */
