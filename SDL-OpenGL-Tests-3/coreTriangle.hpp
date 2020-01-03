@@ -19,7 +19,7 @@ public:
     CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[]);
     ~CoreTriangle();
     
-    glm::vec3 getMaxVertex();
+    glm::vec3 getMinVertex(glm::vec3 cameraPosition);
     
     void render();
     

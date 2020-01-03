@@ -9,7 +9,7 @@
 #include "camera.hpp"
 
 Camera::Camera(const float *deltaTime, const SDL_Event *windowEvent, bool *checkMouse):
-deltaTime(deltaTime), windowEvent(windowEvent), checkMouse(checkMouse), viewMat(1), mouseSensitivity(0.25f), zoom(45.0f), front(0.0f, 0.0f, -1.0f), right(1.0f, 0.0f, 0.0f), up(0.0f, 1.0f, 0.0f), footPosition(0.0f), eyePosition(footPosition + glm::vec3(0.0f, 1.73f, 0.0f)) {
+deltaTime(deltaTime), windowEvent(windowEvent), checkMouse(checkMouse), viewMat(1), yaw(0.0f), pitch(0.0f), mouseSensitivity(0.25f), zoom(45.0f), front(0.0f, 0.0f, -1.0f), right(1.0f, 0.0f, 0.0f), up(0.0f, 1.0f, 0.0f), footPosition(0.0f), eyePosition(footPosition + glm::vec3(0.0f, 1.73f, 0.0f)) {
     
 }
 

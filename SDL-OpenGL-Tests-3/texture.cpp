@@ -38,7 +38,7 @@ textureName("tex") {
 }
 
 Texture::Texture(unsigned char *data, unsigned int texWidth, unsigned int texHeight, bool bitmap):
-textureName("tex"), textureSize(texHeight, texWidth) {
+textureName("tex"), textureSize(texWidth, texHeight) {
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     

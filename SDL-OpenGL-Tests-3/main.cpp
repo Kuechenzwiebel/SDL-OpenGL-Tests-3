@@ -36,6 +36,7 @@
 #include "utils.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
+#include "camera.hpp"
 #include "object.hpp"
 #include "coreTriangle.hpp"
 #include "uniformVar.hpp"
@@ -112,22 +113,29 @@ int main(int argc, const char * argv[]) {
     
     
     
-     
-    mat4 viewMat = glm::lookAt(vec3(-5.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-    mat4 projectionMat = infinitePerspective(radians(46.9f), float(windowWidth) / float(windowHeight), 0.005f);
+    Camera cam(&deltaTime, &windowEvent, &checkMouse);
+    mat4 projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
     
     RenderData renderData;
     renderData.projection = &projectionMat;
-    renderData.viewMat = &viewMat;
+    renderData.viewMat = cam.getViewMatPointer();
     
     
     Texture debugTexture("resources/texture/debug.png");
+    
+    unsigned char data[] = {
+    255,
+    255,
+    255,
+    100};
+    
+    Texture transparentTexture(data, 1, 1, false);
     
     std::vector<std::unique_ptr<CoreTriangle>> tris;
     
     glm::vec3 triangleVertices[] = {
         glm::vec3(-0.5f, -0.5f, 0.0f),
-        glm::vec3(0.5f, -1.0f, 0.5f),
+        glm::vec3(0.5f, -0.5f, 1.5f),
         glm::vec3(0.0f,  0.5f, 0.0f)
     };
     
@@ -138,14 +146,13 @@ int main(int argc, const char * argv[]) {
     };
     
     for(int i = 0; i < 20; i++) {
-        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &debugTexture, triangleUVs));
-        triangles.push_back(std::make_pair(0.0f, &(*tris[i])));
-
-        tris[i]->setTranslation(vec3(float(i) - 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
+        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &transparentTexture, triangleUVs));
+        tris[i]->addToTriangleList(&triangles);
+        tris[i]->setTranslation(vec3(float(i), (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
     
-    EquilateralTriangle e(&basicShader, &renderData, &debugTexture);
+    EquilateralTriangle e(&basicShader, &renderData, &transparentTexture);
     e.setTranslation(vec3(0.0f, 0.0f, -2.0f));
     e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     e.addToTriangleList(&triangles);
@@ -172,6 +179,8 @@ int main(int argc, const char * argv[]) {
                 }
             }
             
+            cam.processMouseInput();
+            
             if(windowEvent.type == SDL_WINDOWEVENT) {
                 if(windowEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                     SDL_GetWindowSize(window, &windowWidth, &windowHeight);
@@ -197,13 +206,17 @@ int main(int argc, const char * argv[]) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
         
         if(render) {
+            cam.processInput();
+            projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
+            
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             glViewport(0, 0, windowWidth, windowHeight);
             
+            
             for(std::list<std::pair<float, CoreTriangle*>>::iterator it = triangles.begin(); it != triangles.end(); it++) {
-                it->first = glm::length(vec3(-5.0f, 0.0f, 0.0f) - it->second->getMaxVertex());
+                it->first = glm::distance(cam.getEyePosition(), it->second->getMinVertex(cam.getEyePosition()));
             }
             
             triangles.sort();
@@ -213,11 +226,11 @@ int main(int argc, const char * argv[]) {
             for(std::list<std::pair<float, CoreTriangle*>>::reverse_iterator it = triangles.rbegin(); it != triangles.rend(); it++) {
                 it->second->render();
             }
-
+            
             SDL_GL_SwapWindow(window);
             glFlush();
             
-            frame ++;
+            frame++;
             totalFrames++;
         }
         else

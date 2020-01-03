@@ -34,7 +34,3 @@ CoreTriangle(shader, data, equilateralTriangleVertices, texture, equilateralTria
 EquilateralTriangle::~EquilateralTriangle() {
     glDeleteVertexArrays(1, &VAO);
 }
-
-void EquilateralTriangle::addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles) {
-    triangles->push_back(std::make_pair(0.0f, this));
-}

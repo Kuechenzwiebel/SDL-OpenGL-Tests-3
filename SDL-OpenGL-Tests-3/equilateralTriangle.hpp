@@ -20,8 +20,6 @@ public:
     
     void render() = delete;
     
-    void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);
-    
 private:
     
 };
