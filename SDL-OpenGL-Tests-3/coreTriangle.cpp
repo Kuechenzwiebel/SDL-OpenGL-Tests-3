@@ -8,15 +8,16 @@
 
 #include "coreTriangle.hpp"
 
-CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[]):
-vertices(vertices), uvs(uvs), shader(shader), data(data),
-vertex(vertices, sizeof(glm::vec3) * 3, 0), texCoord(uvs, sizeof(glm::vec2) * 3, 1),
+CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[]):
+vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data),
+vertex(vertices, sizeof(glm::vec3) * 3, 0), texCoord(uvs, sizeof(glm::vec2) * 3, 1), normal(normals, sizeof(glm::vec3) * 3, 2),
 model(shader, "model", &modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), texture(texture) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
     vertex.activate();
     texCoord.activate();
+    normal.activate();
     
     glBindVertexArray(0);
 }
@@ -28,6 +29,7 @@ CoreTriangle::~CoreTriangle() {
 void CoreTriangle::render() {
     vertex.activate();
     texCoord.activate();
+    normal.activate();
     
     projection.setVar();
     view.setVar();

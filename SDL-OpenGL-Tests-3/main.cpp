@@ -67,7 +67,7 @@ int main(int argc, const char * argv[]) {
     SDL_Window *window = SDL_CreateWindow("SDL-OpenGL-Tests-3", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SDL_Event windowEvent;
-
+    
     SDL_GL_SetSwapInterval(1);
     
     if (window == NULL) {
@@ -124,10 +124,10 @@ int main(int argc, const char * argv[]) {
     Texture debugTexture("resources/texture/debug.png");
     
     unsigned char data[] = {
-    255,
-    255,
-    255,
-    100};
+        255,
+        255,
+        255,
+        100};
     
     Texture transparentTexture(data, 1, 1, false);
     
@@ -145,8 +145,14 @@ int main(int argc, const char * argv[]) {
         glm::vec2(0.5f, 1.0f)
     };
     
+    glm::vec3 triangleNormals[] = {
+        glm::vec3(-0.5f, -0.5f, 0.0f),
+        glm::vec3(0.5f, -0.5f, 1.5f),
+        glm::vec3(0.0f,  0.5f, 0.0f)
+    };
+    
     for(int i = 0; i < 20; i++) {
-        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &transparentTexture, triangleUVs));
+        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &transparentTexture, triangleUVs, triangleNormals));
         tris[i]->addToTriangleList(&triangles);
         tris[i]->setTranslation(vec3(float(i), (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
@@ -220,7 +226,7 @@ int main(int argc, const char * argv[]) {
             }
             
             triangles.sort();
-
+            
             basicShader.use();
             
             for(std::list<std::pair<float, CoreTriangle*>>::reverse_iterator it = triangles.rbegin(); it != triangles.rend(); it++) {

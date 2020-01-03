@@ -16,7 +16,7 @@
 
 class CoreTriangle: public Object {
 public:
-    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[]);
+    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[]);
     ~CoreTriangle();
     
     glm::vec3 getMinVertex(glm::vec3 cameraPosition);
@@ -29,9 +29,11 @@ protected:
     GLuint VAO;
     ArrayBuffer<glm::vec3> vertex;
     ArrayBuffer<glm::vec2> texCoord;
+    ArrayBuffer<glm::vec3> normal;
     
     const glm::vec3 *vertices;
     const glm::vec2 *uvs;
+    const glm::vec3 *normals;
     Texture *texture;
     
     Shader *shader;

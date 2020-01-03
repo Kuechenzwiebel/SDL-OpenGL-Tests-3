@@ -11,6 +11,9 @@
 
 #include <stdio.h>
 
+#include <glm/gtx/normal.hpp>
+#include <glm/gtx/norm.hpp>
+
 #include "coreTriangle.hpp"
 
 class EquilateralTriangle: public CoreTriangle {
