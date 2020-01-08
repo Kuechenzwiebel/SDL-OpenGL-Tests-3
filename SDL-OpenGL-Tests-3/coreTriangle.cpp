@@ -47,42 +47,28 @@ void CoreTriangle::addToTriangleList(std::list<std::pair<float, CoreTriangle*>> 
     triangles->push_back(std::make_pair(0.0f, this));
 }
 
-glm::vec3 CoreTriangle::getMinVertex(glm::vec3 cameraPosition) {
-    int i = 0;
-    
-    float distance1 = glm::distance(cameraPosition, (modelMat * glm::vec4(vertices[0], 1.0f)).xyz());
-    float distance2 = glm::distance(cameraPosition, (modelMat * glm::vec4(vertices[1], 1.0f)).xyz());
-    float distance3 = glm::distance(cameraPosition, (modelMat * glm::vec4(vertices[2], 1.0f)).xyz());
-    
-    if(distance1 < distance2 && distance1 < distance3) {
-        i = 0;
-    }
-    else if(distance2 < distance1 && distance2 < distance3) {
-        i = 1;
-    }
-    else if(distance3 < distance1 && distance3 < distance2) {
-        i = 2;
-    }
-    
-    return (modelMat * glm::vec4(vertices[i], 1.0f)).xyz();
+glm::vec3 CoreTriangle::getCenter() {
+    return (modelMat * glm::vec4(vertices[0], 1.0f) + modelMat * glm::vec4(vertices[1], 1.0f) + modelMat * glm::vec4(vertices[2], 1.0f)) / 3.0f;
 }
-
 
 
 bool operator<(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r) {
-    if(l.first < r.first) {
+    if(l.first < r.first)
         return true;
-    }
-    else {
+    else
         return false;
-    }
 }
 
 bool operator>(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r) {
-    if(l.first > r.first) {
+    if(l.first > r.first)
         return true;
-    }
-    else {
+    else
         return false;
-    }
+}
+
+bool operator==(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r) {
+    if(l.first == r.first)
+        return true;
+    else
+        return false;
 }

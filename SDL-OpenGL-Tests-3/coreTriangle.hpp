@@ -18,8 +18,8 @@ class CoreTriangle: public Object {
 public:
     CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[]);
     ~CoreTriangle();
-    
-    glm::vec3 getMinVertex(glm::vec3 cameraPosition);
+
+    glm::vec3 getCenter();
     
     void render();
     
@@ -46,5 +46,6 @@ protected:
 
 bool operator<(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r);
 bool operator>(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r);
+bool operator==(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r);
 
 #endif /* coreTriangle_hpp */

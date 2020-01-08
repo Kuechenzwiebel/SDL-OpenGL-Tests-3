@@ -1,0 +1,9 @@
+Whats going on with transparency?
+
+Sorting triangles how they should be rendered requires some algorithm that I wasn't able to figure out. If you know somethign that could help me with that, feel free to contact me.
+I also asked about some algorithm on stackoverflow, this is the question: https://stackoverflow.com/questions/59598819/opengl-render-closed-transparent-objects
+
+So now to continue the development I decided to end working on such an algorithm and start wworking on other subjects. 
+
+What works now?
+Triangles that are in one line are rendered without any glitches so windows etc. will work.

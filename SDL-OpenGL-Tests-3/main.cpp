@@ -13,6 +13,7 @@
 #include <string>
 #include <cmath>
 #include <list>
+#include <algorithm>
 #include <utility>
 #include <chrono>
 #include <thread>
@@ -41,6 +42,7 @@
 #include "coreTriangle.hpp"
 #include "uniformVar.hpp"
 #include "equilateralTriangle.hpp"
+#include "cube.hpp"
 
 using namespace glm;
 
@@ -122,6 +124,7 @@ int main(int argc, const char * argv[]) {
     
     
     Texture debugTexture("resources/texture/debug.png");
+    Texture debug2Texture("resources/texture/debug2.png");
     
     unsigned char data[] = {
         255,
@@ -134,9 +137,9 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<CoreTriangle>> tris;
     
     glm::vec3 triangleVertices[] = {
-        glm::vec3(-0.5f, -0.5f, 0.0f),
-        glm::vec3(0.5f, -0.5f, 1.5f),
-        glm::vec3(0.0f,  0.5f, 0.0f)
+        glm::vec3(-1.0f, -0.5f, 0.0f),
+        glm::vec3(1.0f, -0.5f, 0.0f),
+        glm::vec3(-1.0f,  0.5f, 0.0f)
     };
     
     glm::vec2 triangleUVs[] = {
@@ -146,15 +149,16 @@ int main(int argc, const char * argv[]) {
     };
     
     glm::vec3 triangleNormals[] = {
-        glm::vec3(-0.5f, -0.5f, 0.0f),
-        glm::vec3(0.5f, -0.5f, 1.5f),
-        glm::vec3(0.0f,  0.5f, 0.0f)
+        glm::triangleNormal(triangleVertices[0], triangleVertices[1], triangleVertices[2]),
+        glm::triangleNormal(triangleVertices[0], triangleVertices[1], triangleVertices[2]),
+        glm::triangleNormal(triangleVertices[0], triangleVertices[1], triangleVertices[2])
     };
     
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &transparentTexture, triangleUVs, triangleNormals));
         tris[i]->addToTriangleList(&triangles);
-        tris[i]->setTranslation(vec3(float(i), (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
+//        tris[i]->setTranslation(vec3(float(i) + 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
+        tris[i]->setTranslation(vec3(float(i / 3.0f) + 2.0f, 0.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
     
@@ -162,6 +166,12 @@ int main(int argc, const char * argv[]) {
     e.setTranslation(vec3(0.0f, 0.0f, -2.0f));
     e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     e.addToTriangleList(&triangles);
+    
+    Cube cube(&basicShader, &renderData, &debug2Texture);
+    cube.setModelMat(translate(mat4(1), vec3(1.0f)));
+    cube.addToTriangleList(&triangles);
+    
+    printf("%lu of %E possible triangles registerd\n", triangles.size(), double(triangles.max_size()));
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -220,21 +230,23 @@ int main(int argc, const char * argv[]) {
             
             glViewport(0, 0, windowWidth, windowHeight);
             
+            cube.setModelMat(rotate(mat4(1), SDL_GetTicks() / 1000.0f, vec3(1.0f)));
             
-            for(std::list<std::pair<float, CoreTriangle*>>::iterator it = triangles.begin(); it != triangles.end(); it++) {
-                it->first = glm::distance(cam.getEyePosition(), it->second->getMinVertex(cam.getEyePosition()));
+            for(auto it = triangles.begin(); it != triangles.end(); it++) {
+                it->first = glm::distance(cam.getEyePosition(), it->second->getCenter());
             }
             
             triangles.sort();
             
             basicShader.use();
             
-            for(std::list<std::pair<float, CoreTriangle*>>::reverse_iterator it = triangles.rbegin(); it != triangles.rend(); it++) {
+            for(auto it = triangles.rbegin(); it != triangles.rend(); it++) {
                 it->second->render();
             }
             
             SDL_GL_SwapWindow(window);
             glFlush();
+            
             
             frame++;
             totalFrames++;
