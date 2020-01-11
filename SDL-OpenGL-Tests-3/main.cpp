@@ -192,7 +192,7 @@ int main(int argc, const char * argv[]) {
     
     Cube cube(&basicShader, &renderData, &debug2Texture);
     cube.setModelMat(translate(mat4(1), vec3(1.0f)));
-//    cube.addToTriangleList(&triangles);
+    cube.addToTriangleList(&triangles);
     
     float mouseWheel = 0.0f;
     

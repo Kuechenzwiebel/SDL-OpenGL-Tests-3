@@ -10,9 +10,7 @@
 #define cube_hpp
 
 #include <stdio.h>
-#include <vector>
 #include <array>
-#include <memory>
 
 #include "object.hpp"
 #include "texture.hpp"
@@ -32,8 +30,7 @@ private:
     const RenderData *data;
     Texture *texture;
     
-    std::vector<std::unique_ptr<CoreTriangle>> tris;
-    std::array<CoreTriangle, 2> ntris;
+    std::array<CoreTriangle, 12> tris;
 };
 
 #endif /* cube_hpp */
