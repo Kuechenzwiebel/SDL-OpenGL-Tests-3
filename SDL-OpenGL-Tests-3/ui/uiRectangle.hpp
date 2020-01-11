@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "../coreTriangle.hpp"
+#include "../object.hpp"
 
 class UIRectangle: public Object {
 public:
@@ -20,16 +21,12 @@ public:
     
     void addToTriangleList(std::vector<CoreTriangle*> *triangles);
     
-    void setModelMat(glm::mat4 model);
-    
 private:
-    void calculateModelMat();
-    
     CoreTriangle tri1, tri2;
     
-    Texture *texture;
     Shader *shader;
     const RenderData *data;
+    Texture *texture;
 };
 
 #endif /* uiRectangle_hpp */

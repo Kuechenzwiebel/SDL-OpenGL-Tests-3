@@ -23,14 +23,12 @@ public:
     
     void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);
     
-    void setModelMat(glm::mat4 model);
+private:    
+    std::array<CoreTriangle, 12> tris;
     
-private:
     Shader *shader;
     const RenderData *data;
     Texture *texture;
-    
-    std::array<CoreTriangle, 12> tris;
 };
 
 #endif /* cube_hpp */

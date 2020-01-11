@@ -8,10 +8,10 @@
 
 #include "coreTriangle.hpp"
 
-CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[]):
-vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data),
+CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat):
+vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
 vertex(vertices, sizeof(glm::vec3) * 3, 0), texCoord(uvs, sizeof(glm::vec2) * 3, 1), normal(normals, sizeof(glm::vec3) * 3, 2),
-model(shader, "model", &modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), texture(texture) {
+model(shader, "model", modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), texture(texture) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
@@ -43,12 +43,8 @@ void CoreTriangle::render() {
     glBindVertexArray(0);
 }
 
-void CoreTriangle::addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles) {
-    triangles->push_back(std::make_pair(0.0f, this));
-}
-
 glm::vec3 CoreTriangle::getCenter() {
-    return (modelMat * glm::vec4(vertices[0], 1.0f) + modelMat * glm::vec4(vertices[1], 1.0f) + modelMat * glm::vec4(vertices[2], 1.0f)) / 3.0f;
+    return (*modelMatPointer * glm::vec4(vertices[0], 1.0f) + *modelMatPointer * glm::vec4(vertices[1], 1.0f) + *modelMatPointer * glm::vec4(vertices[2], 1.0f)) / 3.0f;
 }
 
 

@@ -12,18 +12,15 @@
 #include <stdio.h>
 
 #include "object.hpp"
-#include "texture.hpp"
 
-class CoreTriangle: public Object {
+class CoreTriangle {
 public:
-    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[]);
+    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
     ~CoreTriangle();
 
     glm::vec3 getCenter();
     
     void render();
-    
-    void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);
     
 protected:
     GLuint VAO;
@@ -38,6 +35,8 @@ protected:
     Texture *texture;
     Shader *shader;
     const RenderData *data;
+    
+    glm::mat4 *modelMatPointer;
     
     UniformVar<glm::mat4> model;
     UniformVar<glm::mat4> view;

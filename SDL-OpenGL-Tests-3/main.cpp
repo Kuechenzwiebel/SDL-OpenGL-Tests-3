@@ -150,36 +150,13 @@ int main(int argc, const char * argv[]) {
     Texture transparentTexture(data, 1, 1, false);
     Texture blackTexture(data2, 1, 1, false);
     
-    std::vector<std::unique_ptr<CoreTriangle>> tris;
-    
-    glm::vec3 triangleVertices[] = {
-        glm::vec3(-1.0f, -1.0f, 0.0f),
-        glm::vec3(1.0f, -1.0f, 0.0f),
-        glm::vec3(-1.0f,  1.0f, 0.0f)
-    };
-    
-    glm::vec2 triangleUVs[] = {
-        glm::vec2(0.0f, 0.0f),
-        glm::vec2(1.0f, 0.0f),
-        glm::vec2(0.0f, 1.0f)
-    };
-    
-    glm::vec3 triangleNormals[] = {
-        glm::triangleNormal(triangleVertices[0], triangleVertices[1], triangleVertices[2]),
-        glm::triangleNormal(triangleVertices[0], triangleVertices[1], triangleVertices[2]),
-        glm::triangleNormal(triangleVertices[0], triangleVertices[1], triangleVertices[2])
-    };
-    
-    
-    CoreTriangle uiTriangle(&basicShader, &uiData, triangleVertices, &debug2Texture, triangleUVs, triangleNormals);
-//    uiTriangles.push_back(&uiTriangle);
+    std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
     UIRectangle uiRect(&basicShader, &uiData, &debug2Texture);
     uiRect.addToTriangleList(&uiTriangles);
     
-    
     for(int i = 0; i < 20; i++) {
-        tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &transparentTexture, triangleUVs, triangleNormals));
+        tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture));
         tris[i]->addToTriangleList(&triangles);
         tris[i]->setTranslation(vec3(float(i / 3.0f) + 2.0f, 0.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));

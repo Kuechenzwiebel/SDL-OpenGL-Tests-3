@@ -21,6 +21,7 @@
 
 #include "utils.hpp"
 #include "shader.hpp"
+#include "texture.hpp"
 #include "uniformVar.hpp"
 #include "arrayBuffers/arrayBuffer.hpp"
 
