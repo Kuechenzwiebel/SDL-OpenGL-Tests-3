@@ -9,7 +9,7 @@
 #include "object.hpp"
 
 Object::Object():
-translation(0.0f), scale(1.0f), rotation(0.0f), modelMat(1) {
+translation(0.0f), scale(1.0f), rotation(1.0f, 0.0f, 0.0f, 0.0f), modelMat(1) {
     
 }
 

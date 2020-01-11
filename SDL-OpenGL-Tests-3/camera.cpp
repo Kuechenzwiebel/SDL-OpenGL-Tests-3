@@ -10,7 +10,7 @@
 
 Camera::Camera(const float *deltaTime, const SDL_Event *windowEvent, bool *checkMouse):
 deltaTime(deltaTime), windowEvent(windowEvent), checkMouse(checkMouse), viewMat(1), yaw(0.0f), pitch(0.0f), mouseSensitivity(0.25f), zoom(45.0f), front(0.0f, 0.0f, -1.0f), right(1.0f, 0.0f, 0.0f), up(0.0f, 1.0f, 0.0f), footPosition(-2.0f, -1.73f, 0.0f), eyePosition(footPosition + glm::vec3(0.0f, 1.73f, 0.0f)) {
-    viewMat = glm::lookAt(this->eyePosition, this->eyePosition + this->front, this->up);
+    viewMat = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 glm::mat4* Camera::getViewMatPointer() {
@@ -23,13 +23,11 @@ void Camera::processMouseInput() {
             this->yaw += windowEvent->motion.xrel * this->mouseSensitivity;
             this->pitch -= windowEvent->motion.yrel * this->mouseSensitivity;
             
-            if (this->pitch >= 90.0f) {
+            if(this->pitch >= 90.0f)
                 this->pitch = 89.99f;
-            }
             
-            if (this->pitch <= -90.0f) {
+            if(this->pitch <= -90.0f)
                 this->pitch = -89.99f;
-            }
             
             front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
             front.y = sin(glm::radians(pitch));

@@ -34,8 +34,8 @@ protected:
     const glm::vec3 *vertices;
     const glm::vec2 *uvs;
     const glm::vec3 *normals;
-    Texture *texture;
     
+    Texture *texture;
     Shader *shader;
     const RenderData *data;
     

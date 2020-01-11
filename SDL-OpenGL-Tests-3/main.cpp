@@ -43,6 +43,7 @@
 #include "uniformVar.hpp"
 #include "equilateralTriangle.hpp"
 #include "cube.hpp"
+#include "ui/uiRectangle.hpp"
 
 using namespace glm;
 
@@ -109,6 +110,7 @@ int main(int argc, const char * argv[]) {
     float deltaTime = 0.0f;
     
     std::list<std::pair<float, CoreTriangle*>> triangles;
+    std::vector<CoreTriangle*> uiTriangles;
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
     Shader basicShader(basicShaderVertex, basicShaderFragment);
@@ -118,9 +120,16 @@ int main(int argc, const char * argv[]) {
     Camera cam(&deltaTime, &windowEvent, &checkMouse);
     mat4 projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
     
+    mat4 uiProjection = ortho(-0.5f * windowWidth, 0.5f * windowWidth, -0.5f * windowHeight, 0.5f * windowHeight, -1.0f, 1.0f);
+    mat4 uiView = lookAt(vec3(0.0f, 0.0f, -1.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+    
     RenderData renderData;
     renderData.projection = &projectionMat;
     renderData.viewMat = cam.getViewMatPointer();
+    
+    RenderData uiData;
+    uiData.projection = &uiProjection;
+    uiData.viewMat = &uiView;
     
     
     Texture debugTexture("resources/texture/debug.png");
@@ -132,20 +141,27 @@ int main(int argc, const char * argv[]) {
         255,
         100};
     
+    unsigned char data2[] = {
+           0,
+           0,
+           0,
+           0xff};
+    
     Texture transparentTexture(data, 1, 1, false);
+    Texture blackTexture(data2, 1, 1, false);
     
     std::vector<std::unique_ptr<CoreTriangle>> tris;
     
     glm::vec3 triangleVertices[] = {
-        glm::vec3(-1.0f, -0.5f, 0.0f),
-        glm::vec3(1.0f, -0.5f, 0.0f),
-        glm::vec3(-1.0f,  0.5f, 0.0f)
+        glm::vec3(-1.0f, -1.0f, 0.0f),
+        glm::vec3(1.0f, -1.0f, 0.0f),
+        glm::vec3(-1.0f,  1.0f, 0.0f)
     };
     
     glm::vec2 triangleUVs[] = {
         glm::vec2(0.0f, 0.0f),
         glm::vec2(1.0f, 0.0f),
-        glm::vec2(0.5f, 1.0f)
+        glm::vec2(0.0f, 1.0f)
     };
     
     glm::vec3 triangleNormals[] = {
@@ -154,10 +170,17 @@ int main(int argc, const char * argv[]) {
         glm::triangleNormal(triangleVertices[0], triangleVertices[1], triangleVertices[2])
     };
     
+    
+    CoreTriangle uiTriangle(&basicShader, &uiData, triangleVertices, &debug2Texture, triangleUVs, triangleNormals);
+//    uiTriangles.push_back(&uiTriangle);
+    
+    UIRectangle uiRect(&basicShader, &uiData, &debug2Texture);
+    uiRect.addToTriangleList(&uiTriangles);
+    
+    
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<CoreTriangle>(&basicShader, &renderData, triangleVertices, &transparentTexture, triangleUVs, triangleNormals));
         tris[i]->addToTriangleList(&triangles);
-//        tris[i]->setTranslation(vec3(float(i) + 2.0f, (float(i) - 20.0f) / 8.0f + 2.0f, 0.0f));
         tris[i]->setTranslation(vec3(float(i / 3.0f) + 2.0f, 0.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
@@ -169,10 +192,12 @@ int main(int argc, const char * argv[]) {
     
     Cube cube(&basicShader, &renderData, &debug2Texture);
     cube.setModelMat(translate(mat4(1), vec3(1.0f)));
-    cube.addToTriangleList(&triangles);
+//    cube.addToTriangleList(&triangles);
+    
+    float mouseWheel = 0.0f;
     
     printf("%lu of %E possible triangles registerd\n", triangles.size(), double(triangles.max_size()));
-    
+
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
             fps = frame;
@@ -214,6 +239,10 @@ int main(int argc, const char * argv[]) {
                     checkMouse = false;
                 }
             }
+            
+            if(windowEvent.type == SDL_MOUSEWHEEL) {
+                mouseWheel += float(windowEvent.wheel.y) * 0.15f;
+            }
         }
         
         if(checkMouse)
@@ -224,6 +253,7 @@ int main(int argc, const char * argv[]) {
         if(render) {
             cam.processInput();
             projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
+            uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1.0f, 1.0f);
             
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -232,6 +262,10 @@ int main(int argc, const char * argv[]) {
             
             cube.setModelMat(rotate(mat4(1), SDL_GetTicks() / 1000.0f, vec3(1.0f)));
             
+            uiRect.setScale(vec3(500.0f));
+            uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - 250.0f, -float(windowHeight) / 2.0f + 250.0f, 0.0f));
+            uiRect.setRotation(vec4(0.0f, 0.0f, 1.0f, mouseWheel));
+
             for(auto it = triangles.begin(); it != triangles.end(); it++) {
                 it->first = glm::distance(cam.getEyePosition(), it->second->getCenter());
             }
@@ -244,9 +278,17 @@ int main(int argc, const char * argv[]) {
                 it->second->render();
             }
             
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            
+            for(int i = 0; i < uiTriangles.size(); i++) {
+                uiTriangles[i]->render();
+            }
+            
             SDL_GL_SwapWindow(window);
             glFlush();
             
+            std::cout << mouseWheel << std::endl;
             
             frame++;
             totalFrames++;
