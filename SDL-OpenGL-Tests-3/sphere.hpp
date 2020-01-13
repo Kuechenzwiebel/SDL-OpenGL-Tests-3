@@ -16,8 +16,7 @@
 #include "object.hpp"
 #include "coreTriangle.hpp"
 
-const static float sphereResolution = 10.0f;
-//const static int sphereArraySize = round((360.0f / sphereResolution) * (360.0f / sphereResolution) * 6 * 0.5);
+const static float sphereResolution = 5.0f;
 
 class Sphere: public Object {
 public:

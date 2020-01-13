@@ -48,8 +48,6 @@ shader(shader), data(data), texture(texture) {
             tris.push_back(std::make_unique<CoreTriangle>(shader, data, triangleVertices[1], texture, triangleUVs[1], triangleVertices[1], &modelMat));
         }
     }
-    
-    
 }
 
 Sphere::~Sphere() {
