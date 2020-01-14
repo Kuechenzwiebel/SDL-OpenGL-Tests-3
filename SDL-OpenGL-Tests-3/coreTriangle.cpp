@@ -47,6 +47,14 @@ glm::vec3 CoreTriangle::getCenter() {
     return (*modelMatPointer * glm::vec4(vertices[0], 1.0f) + *modelMatPointer * glm::vec4(vertices[1], 1.0f) + *modelMatPointer * glm::vec4(vertices[2], 1.0f)) / 3.0f;
 }
 
+Shader* CoreTriangle::getShaderPointer() {
+    return shader;
+}
+
+Texture* CoreTriangle::getTexturePointer() {
+    return texture;
+}
+
 
 bool operator<(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r) {
     if(l.first < r.first)

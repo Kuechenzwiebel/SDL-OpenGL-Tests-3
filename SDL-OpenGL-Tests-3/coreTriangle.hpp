@@ -18,6 +18,9 @@ public:
     CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
     ~CoreTriangle();
 
+    Shader* getShaderPointer();
+    Texture* getTexturePointer();
+    
     glm::vec3 getCenter();
     
     void render();

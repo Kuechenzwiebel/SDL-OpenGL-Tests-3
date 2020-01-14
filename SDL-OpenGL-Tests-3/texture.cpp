@@ -9,7 +9,7 @@
 #include "texture.hpp"
 
 Texture::Texture(std::string file, bool bitmap):
-textureName("tex") {
+textureName("tex"), transparent(false) {
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     
@@ -34,11 +34,20 @@ textureName("tex") {
     
     glBindTexture(GL_TEXTURE_2D, 0);
     
+    for(int i = 3; i < texWidth * texHeight * 4; i+= 4) {
+        if(data[i] != 0xff) {
+            transparent = true;
+            break;
+        }
+    }
+    
+    textureSize = glm::vec2(texWidth, texHeight);
+    
     SOIL_free_image_data(data);
 }
 
 Texture::Texture(unsigned char *data, unsigned int texWidth, unsigned int texHeight, bool bitmap):
-textureName("tex"), textureSize(texWidth, texHeight) {
+textureName("tex"), textureSize(texWidth, texHeight), transparent(false) {
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     
@@ -56,6 +65,13 @@ textureName("tex"), textureSize(texWidth, texHeight) {
     else {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    
+    for(int i = 3; i < texWidth * texHeight * 4; i+= 4) {
+        if(data[i] != 0xff) {
+            transparent = true;
+            break;
+        }
     }
     
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -82,4 +98,8 @@ glm::vec2 Texture::getTextureSize() {
 
 void Texture::setTextureName(std::string name) {
     textureName = name;
+}
+
+bool Texture::isTransparent() {
+    return transparent;
 }

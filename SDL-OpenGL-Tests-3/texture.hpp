@@ -26,6 +26,7 @@ public:
     GLuint getTextureID();
     std::string getTextureName();
     glm::vec2 getTextureSize();
+    bool isTransparent();
     
     void setTextureName(std::string name);
     
@@ -33,6 +34,8 @@ private:
     GLuint tex;
     std::string textureName;
     glm::vec2 textureSize;
+    
+    bool transparent;
 };
 
 #endif /* texture_hpp */

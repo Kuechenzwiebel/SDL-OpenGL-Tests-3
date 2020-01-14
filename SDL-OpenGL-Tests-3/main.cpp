@@ -72,7 +72,7 @@ int main(int argc, const char * argv[]) {
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SDL_Event windowEvent;
     
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(0);
     
     if (window == NULL) {
         printf(PRINTF_RED);
@@ -110,7 +110,9 @@ int main(int argc, const char * argv[]) {
     float currentFrame = 0.0f;
     float deltaTime = 0.0f;
     
-    std::list<std::pair<float, CoreTriangle*>> triangles;
+    std::list<std::pair<float, CoreTriangle*>> transparentTriangles;
+    std::vector<CoreTriangle*> opaqueTriangles;
+    
     std::vector<CoreTriangle*> uiTriangles;
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
@@ -158,7 +160,7 @@ int main(int argc, const char * argv[]) {
     
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture));
-        tris[i]->addToTriangleList(&triangles);
+        tris[i]->addToTriangleList(&transparentTriangles);
         tris[i]->setTranslation(vec3(float(i / 3.0f) + 2.0f, 0.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
@@ -166,17 +168,26 @@ int main(int argc, const char * argv[]) {
     EquilateralTriangle e(&basicShader, &renderData, &transparentTexture);
     e.setTranslation(vec3(0.0f, 0.0f, -2.0f));
     e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
-    e.addToTriangleList(&triangles);
+    e.addToTriangleList(&transparentTriangles);
     
     Cube cube(&basicShader, &renderData, &debug2Texture);
-//    cube.addToTriangleList(&triangles);
+//    cube.addToTriangleList(&transparentTriangles);
     
     Sphere sphere(&basicShader, &renderData, &debugTexture);
-    sphere.addToTriangleList(&triangles);
+    sphere.addToTriangleList(&transparentTriangles);
     
     float mouseWheel = 0.0f;
     
-    printf("%lu of %E possible triangles registerd\n", triangles.size(), double(triangles.max_size()));
+    printf("%lu of %E possible triangles registerd\n", transparentTriangles.size(), double(transparentTriangles.max_size()));
+    
+    for(auto it = transparentTriangles.begin(); it != transparentTriangles.end(); it++) {
+        if(it->second->getTexturePointer()->isTransparent() == false) {
+            opaqueTriangles.push_back(it->second);
+            transparentTriangles.erase(it);
+        }
+    }
+    
+    printf("%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size(), opaqueTriangles.size());
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -246,14 +257,19 @@ int main(int argc, const char * argv[]) {
             uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - 250.0f, -float(windowHeight) / 2.0f + 250.0f, 0.0f));
             uiRect.setRotation(vec4(0.0f, 0.0f, 1.0f, mouseWheel));
 
-            for(auto it = triangles.begin(); it != triangles.end(); it++) {
+            for(auto it = transparentTriangles.begin(); it != transparentTriangles.end(); it++) {
                 it->first = glm::distance(cam.getEyePosition(), it->second->getCenter());
             }
             
-            triangles.sort();
+            transparentTriangles.sort();
+            basicShader.use();
+            for(int i = 0; i < opaqueTriangles.size(); i++) {
+//                opaqueTriangles[i]->getShaderPointer()->use();
+                opaqueTriangles[i]->render();
+            }
             
-            for(auto it = triangles.rbegin(); it != triangles.rend(); it++) {
-                basicShader.use();
+            for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
+//                it->second->getShaderPointer()->use();
                 it->second->render();
             }
             
@@ -270,6 +286,8 @@ int main(int argc, const char * argv[]) {
             
             frame++;
             totalFrames++;
+            
+            printf("%d\n", fps);
         }
         else
             SDL_Delay(33);
