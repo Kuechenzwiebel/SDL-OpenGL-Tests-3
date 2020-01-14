@@ -44,8 +44,6 @@ public:
     virtual glm::vec3 getScale();
     virtual glm::mat4 getModelMat();
     
-    virtual void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);
-    
 protected:
     glm::mat4 modelMat;
     

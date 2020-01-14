@@ -15,16 +15,17 @@
 #include "object.hpp"
 #include "texture.hpp"
 #include "coreTriangle.hpp"
+#include "coreTriangleArray.hpp"
 
 class Cube: public Object {
 public:
     Cube(Shader *shader, const RenderData *data, Texture *texture);
     ~Cube();
     
-    void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);
+    void addToTriangleList(std::vector<CoreTriangleArray*> *triangles);
     
 private:    
-    std::array<CoreTriangle, 12> tris;
+    CoreTriangleArray tris;
     
     Shader *shader;
     const RenderData *data;

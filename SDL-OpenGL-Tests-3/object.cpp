@@ -17,10 +17,6 @@ Object::~Object() {
     
 }
 
-void Object::addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles) {
-    
-}
-
 void Object::setTranslation(glm::vec3 translation) {
     this->translation = translation;
     calculateModelMat();

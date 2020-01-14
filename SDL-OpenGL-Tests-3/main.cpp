@@ -45,6 +45,7 @@
 #include "cube.hpp"
 #include "ui/uiRectangle.hpp"
 #include "sphere.hpp"
+#include "coreTriangleArray.hpp"
 
 using namespace glm;
 
@@ -111,7 +112,7 @@ int main(int argc, const char * argv[]) {
     float deltaTime = 0.0f;
     
     std::list<std::pair<float, CoreTriangle*>> transparentTriangles;
-    std::vector<CoreTriangle*> opaqueTriangles;
+    std::vector<CoreTriangleArray*> opaqueTriangles;
     
     std::vector<CoreTriangle*> uiTriangles;
     
@@ -156,7 +157,7 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
     UIRectangle uiRect(&basicShader, &uiData, &debug2Texture);
-//    uiRect.addToTriangleList(&uiTriangles);
+    uiRect.addToTriangleList(&uiTriangles);
     
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture));
@@ -171,22 +172,14 @@ int main(int argc, const char * argv[]) {
     e.addToTriangleList(&transparentTriangles);
     
     Cube cube(&basicShader, &renderData, &debug2Texture);
-//    cube.addToTriangleList(&transparentTriangles);
+    cube.addToTriangleList(&opaqueTriangles);
     
     Sphere sphere(&basicShader, &renderData, &debugTexture);
-    sphere.addToTriangleList(&transparentTriangles);
+    sphere.addToTriangleList(&opaqueTriangles);
     
     float mouseWheel = 0.0f;
     
     printf("%lu of %E possible triangles registerd\n", transparentTriangles.size(), double(transparentTriangles.max_size()));
-    
-    for(auto it = transparentTriangles.begin(); it != transparentTriangles.end(); it++) {
-        if(it->second->getTexturePointer()->isTransparent() == false) {
-            opaqueTriangles.push_back(it->second);
-            transparentTriangles.erase(it);
-        }
-    }
-    
     printf("%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size(), opaqueTriangles.size());
     
     while(running) {
@@ -194,6 +187,8 @@ int main(int argc, const char * argv[]) {
             fps = frame;
             frame = 0;
             nextMeasure += 1000;
+            
+            printf("%d\n", fps);
         }
         
         currentFrame = SDL_GetTicks() / 1000.0f;
@@ -264,12 +259,12 @@ int main(int argc, const char * argv[]) {
             transparentTriangles.sort();
             basicShader.use();
             for(int i = 0; i < opaqueTriangles.size(); i++) {
-//                opaqueTriangles[i]->getShaderPointer()->use();
+                opaqueTriangles[i]->getShaderPointer()->use();
                 opaqueTriangles[i]->render();
             }
             
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
-//                it->second->getShaderPointer()->use();
+                it->second->getShaderPointer()->use();
                 it->second->render();
             }
             
@@ -286,8 +281,6 @@ int main(int argc, const char * argv[]) {
             
             frame++;
             totalFrames++;
-            
-            printf("%d\n", fps);
         }
         else
             SDL_Delay(33);
