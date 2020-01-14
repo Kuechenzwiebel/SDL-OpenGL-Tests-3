@@ -23,6 +23,7 @@ public:
     Texture* getTexturePointer();
     
     glm::vec3 getCenter();
+    unsigned int getSize();
     
     void render();
     

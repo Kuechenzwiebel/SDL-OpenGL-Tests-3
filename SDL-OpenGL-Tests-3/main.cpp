@@ -157,7 +157,7 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
     UIRectangle uiRect(&basicShader, &uiData, &debug2Texture);
-    uiRect.addToTriangleList(&uiTriangles);
+//    uiRect.addToTriangleList(&uiTriangles);
     
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture));
@@ -172,6 +172,7 @@ int main(int argc, const char * argv[]) {
     e.addToTriangleList(&transparentTriangles);
     
     Cube cube(&basicShader, &renderData, &debug2Texture);
+    cube.setTranslation(vec3(3.0f, 4.0f, -1.0f));
     cube.addToTriangleList(&opaqueTriangles);
     
     Sphere sphere(&basicShader, &renderData, &debugTexture);
@@ -179,8 +180,13 @@ int main(int argc, const char * argv[]) {
     
     float mouseWheel = 0.0f;
     
-    printf("%lu of %E possible triangles registerd\n", transparentTriangles.size(), double(transparentTriangles.max_size()));
-    printf("%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size(), opaqueTriangles.size());
+    unsigned long triangleAmount = 0;
+    
+    for(int i = 0; i < opaqueTriangles.size(); i++) {
+        triangleAmount += opaqueTriangles[i]->getSize();
+    }
+    
+    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount, double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount);
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {

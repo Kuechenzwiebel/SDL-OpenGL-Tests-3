@@ -26,10 +26,6 @@ CoreTriangleArray::~CoreTriangleArray() {
     glDeleteVertexArrays(1, &VAO);
 }
    
-glm::vec3 CoreTriangleArray::getCenter() {
-    return glm::vec3(0.0f);
-}
-   
 void CoreTriangleArray::render() {
     vertex.activate();
     texCoord.activate();
@@ -53,4 +49,12 @@ Shader* CoreTriangleArray::getShaderPointer() {
 
 Texture* CoreTriangleArray::getTexturePointer() {
     return texture;
+}
+
+glm::vec3 CoreTriangleArray::getCenter() {
+    return glm::vec3(0.0f);
+}
+
+unsigned int CoreTriangleArray::getSize() {
+    return size;
 }
