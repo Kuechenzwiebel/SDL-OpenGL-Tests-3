@@ -14,7 +14,7 @@
 #include <memory>
 
 #include "object.hpp"
-#include "coreTriangleArray.hpp"
+#include "coreTriangleCluster.hpp"
 
 const static float sphereResolution = 6.0f;
 const static int sphereArraySize = round((360.0f / sphereResolution) * (360.0f / sphereResolution) * 6 * 0.5);
@@ -24,10 +24,10 @@ public:
     Sphere(Shader *shader, const RenderData *data, Texture *texture);
     ~Sphere();
     
-    void addToTriangleList(std::vector<CoreTriangleArray*> *triangles);
+    void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);
     
 private:
-    std::unique_ptr<CoreTriangleArray> tris;
+    std::unique_ptr<CoreTriangleCluster> tris;
     
     Shader *shader;
     const RenderData *data;

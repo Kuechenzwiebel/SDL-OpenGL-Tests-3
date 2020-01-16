@@ -145,6 +145,6 @@ Cube::~Cube() {
     
 }
 
-void Cube::addToTriangleList(std::vector<CoreTriangleArray*> *triangles) {
+void Cube::addToTriangleList(std::vector<CoreTriangleCluster*> *triangles) {
     triangles->push_back(&tris);
 }

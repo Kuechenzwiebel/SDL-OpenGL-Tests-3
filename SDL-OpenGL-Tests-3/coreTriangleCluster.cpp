@@ -6,9 +6,9 @@
 //  Copyright © 2020 Tobias Pflüger. All rights reserved.
 //
 
-#include "coreTriangleArray.hpp"
+#include "coreTriangleCluster.hpp"
 
-CoreTriangleArray::CoreTriangleArray(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat):
+CoreTriangleCluster::CoreTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat):
 size(size), vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
 vertex(vertices, sizeof(glm::vec3) * 3 * size, 0), texCoord(uvs, sizeof(glm::vec2) * 3 * size, 1), normal(normals, sizeof(glm::vec3) * 3 * size, 2),
 model(shader, "model", modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), texture(texture){
@@ -22,11 +22,11 @@ model(shader, "model", modelMat), view(shader, "view", data->viewMat), projectio
     glBindVertexArray(0);
 }
 
-CoreTriangleArray::~CoreTriangleArray() {
+CoreTriangleCluster::~CoreTriangleCluster() {
     glDeleteVertexArrays(1, &VAO);
 }
    
-void CoreTriangleArray::render() {
+void CoreTriangleCluster::render() {
     vertex.activate();
     texCoord.activate();
     normal.activate();
@@ -43,18 +43,18 @@ void CoreTriangleArray::render() {
     glBindVertexArray(0);
 }
 
-Shader* CoreTriangleArray::getShaderPointer() {
+Shader* CoreTriangleCluster::getShaderPointer() {
     return shader;
 }
 
-Texture* CoreTriangleArray::getTexturePointer() {
+Texture* CoreTriangleCluster::getTexturePointer() {
     return texture;
 }
 
-glm::vec3 CoreTriangleArray::getCenter() {
+glm::vec3 CoreTriangleCluster::getCenter() {
     return glm::vec3(0.0f);
 }
 
-unsigned int CoreTriangleArray::getSize() {
+unsigned int CoreTriangleCluster::getSize() {
     return size;
 }

@@ -14,10 +14,10 @@
 #include "object.hpp"
 #include "coreTriangle.hpp"
 
-class CoreTriangleArray: public Object {
+class CoreTriangleCluster: public Object {
 public:
-    CoreTriangleArray(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
-    ~CoreTriangleArray();
+    CoreTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
+    ~CoreTriangleCluster();
     
     Shader* getShaderPointer();
     Texture* getTexturePointer();

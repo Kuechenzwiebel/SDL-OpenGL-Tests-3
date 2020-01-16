@@ -45,7 +45,7 @@
 #include "cube.hpp"
 #include "ui/uiRectangle.hpp"
 #include "sphere.hpp"
-#include "coreTriangleArray.hpp"
+#include "coreTriangleCluster.hpp"
 
 using namespace glm;
 
@@ -113,7 +113,7 @@ int main(int argc, const char * argv[]) {
     float deltaTime = 0.0f;
     
     std::list<std::pair<float, CoreTriangle*>> transparentTriangles;
-    std::vector<CoreTriangleArray*> opaqueTriangles;
+    std::vector<CoreTriangleCluster*> opaqueTriangles;
     
     std::vector<CoreTriangle*> uiTriangles;
     

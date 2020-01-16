@@ -63,7 +63,7 @@ shader(shader), data(data), texture(texture) {
         initSphere();
     }
     
-    tris = std::make_unique<CoreTriangleArray>(shader, data, sphereArraySize / 3, triangleVertices, texture, triangleUVs, triangleVertices, &modelMat);
+    tris = std::make_unique<CoreTriangleCluster>(shader, data, sphereArraySize / 3, triangleVertices, texture, triangleUVs, triangleVertices, &modelMat);
 }
 
 Sphere::~Sphere() {
@@ -72,6 +72,6 @@ Sphere::~Sphere() {
     }
 }
 
-void Sphere::addToTriangleList(std::vector<CoreTriangleArray*> *triangles) {
+void Sphere::addToTriangleList(std::vector<CoreTriangleCluster*> *triangles) {
     triangles->push_back(tris.get());
 }
