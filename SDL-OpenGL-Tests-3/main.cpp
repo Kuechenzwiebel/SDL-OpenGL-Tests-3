@@ -57,6 +57,43 @@ bool render = true;
 bool wireframe = false;
 bool checkMouse = false;
 
+
+std::thread sortThread;
+std::mutex sortMutex;
+bool sortDone = false;
+bool sort = false;
+
+glm::vec3 oldCamFootPos;
+
+void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *transparentTriangles) {
+    std::cout << "Sort Thread ID: " << std::this_thread::get_id() << std::endl;
+    
+    while(running) {
+        if(sort) {
+            sortMutex.lock();
+            sortDone = false;
+            sortMutex.unlock();
+            
+            if(cam->getFootPosition() != oldCamFootPos) {
+                for(auto it = transparentTriangles->begin(); it != transparentTriangles->end(); it++) {
+                    it->first = glm::distance(cam->getEyePosition(), it->second->getCenter());
+                }
+                
+                transparentTriangles->sort();
+            }
+            
+            sortMutex.lock();
+            sortDone = true;
+            sort = false;
+            sortMutex.unlock();
+        }
+        else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    }
+}
+
+
 int main(int argc, const char * argv[]) {
     std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
     
@@ -123,8 +160,8 @@ int main(int argc, const char * argv[]) {
     
     
     Camera cam(&deltaTime, &windowEvent, &checkMouse);
-    mat4 projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
     
+    mat4 projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
     mat4 uiProjection = ortho(-0.5f * windowWidth, 0.5f * windowWidth, -0.5f * windowHeight, 0.5f * windowHeight, -1.0f, 1.0f);
     mat4 uiView = lookAt(vec3(0.0f, 0.0f, -1.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
     
@@ -189,13 +226,15 @@ int main(int argc, const char * argv[]) {
     
     printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount, double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount);
     
+    sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
+    
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
             fps = frame;
             frame = 0;
             nextMeasure += 1000;
             
-            printf("%d\n", fps);
+            printf("%d FPS \t\t %f ms average frametime\n", fps, 1000.0f / fps);
         }
         
         currentFrame = SDL_GetTicks() / 1000.0f;
@@ -248,6 +287,11 @@ int main(int argc, const char * argv[]) {
         
         if(render) {
             cam.processInput();
+            
+            sortMutex.lock();
+            sort = true;
+            sortMutex.unlock();
+            
             projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
             uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
             
@@ -270,18 +314,16 @@ int main(int argc, const char * argv[]) {
             uiRect.setRotation(vec4(0.0f, 0.0f, 1.0f, mouseWheel));
 
             
+    
             
-            
-            for(auto it = transparentTriangles.begin(); it != transparentTriangles.end(); it++) {
-                it->first = glm::distance(cam.getEyePosition(), it->second->getCenter());
-            }
-            
-            transparentTriangles.sort();
-            basicShader.use();
             for(int i = 0; i < opaqueTriangles.size(); i++) {
                 opaqueTriangles[i]->getShaderPointer()->use();
                 opaqueTriangles[i]->render();
             }
+            
+            
+            while(!sortDone)
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
@@ -299,6 +341,8 @@ int main(int argc, const char * argv[]) {
             }
             
             
+            oldCamFootPos = cam.getFootPosition();
+            
             SDL_GL_SwapWindow(window);
             glFlush();
             
@@ -308,6 +352,8 @@ int main(int argc, const char * argv[]) {
         else
             SDL_Delay(33);
     }
+    
+    sortThread.detach();
     
     SDL_SetRelativeMouseMode(SDL_FALSE);
     
