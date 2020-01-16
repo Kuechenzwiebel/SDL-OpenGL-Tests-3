@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <utility>
 #include <chrono>
+#include <atomic>
 #include <thread>
 #include <mutex>
 #include <iomanip>
@@ -59,9 +60,8 @@ bool checkMouse = false;
 
 
 std::thread sortThread;
-std::mutex sortMutex;
-bool sortDone = false;
-bool sort = false;
+std::atomic<bool> sortDone;
+std::atomic<bool> sort;
 
 glm::vec3 oldCamFootPos;
 
@@ -70,9 +70,7 @@ void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *tran
     
     while(running) {
         if(sort) {
-            sortMutex.lock();
             sortDone = false;
-            sortMutex.unlock();
             
             if(cam->getFootPosition() != oldCamFootPos) {
                 for(auto it = transparentTriangles->begin(); it != transparentTriangles->end(); it++) {
@@ -82,13 +80,11 @@ void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *tran
                 transparentTriangles->sort();
             }
             
-            sortMutex.lock();
             sortDone = true;
             sort = false;
-            sortMutex.unlock();
         }
         else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
         }
     }
 }
@@ -288,9 +284,7 @@ int main(int argc, const char * argv[]) {
         if(render) {
             cam.processInput();
             
-            sortMutex.lock();
             sort = true;
-            sortMutex.unlock();
             
             projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
             uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
@@ -323,7 +317,7 @@ int main(int argc, const char * argv[]) {
             
             
             while(!sortDone)
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
             
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
