@@ -54,6 +54,7 @@ int windowWidth = 1080, windowHeight = 760;
 
 bool running = true;
 bool render = true;
+bool wireframe = false;
 bool checkMouse = false;
 
 int main(int argc, const char * argv[]) {
@@ -230,6 +231,9 @@ int main(int argc, const char * argv[]) {
                     render = false;
                     checkMouse = false;
                 }
+                
+                if(windowEvent.key.keysym.sym == SDLK_f)
+                    swapBool(&wireframe);
             }
             
             if(windowEvent.type == SDL_MOUSEWHEEL) {
@@ -249,8 +253,15 @@ int main(int argc, const char * argv[]) {
             
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            
             glViewport(0, 0, windowWidth, windowHeight);
+            
+            
+            if(wireframe == true)
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            else
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        
+            
             
             cube.setRotation(vec4(1.0f, 1.0f, 1.0f, SDL_GetTicks() / 1000.0f));
             
@@ -258,6 +269,9 @@ int main(int argc, const char * argv[]) {
             uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - 250.0f, -float(windowHeight) / 2.0f + 250.0f, 0.0f));
             uiRect.setRotation(vec4(0.0f, 0.0f, 1.0f, mouseWheel));
 
+            
+            
+            
             for(auto it = transparentTriangles.begin(); it != transparentTriangles.end(); it++) {
                 it->first = glm::distance(cam.getEyePosition(), it->second->getCenter());
             }
@@ -275,12 +289,15 @@ int main(int argc, const char * argv[]) {
             }
             
             
+            
             glClear(GL_DEPTH_BUFFER_BIT);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             
             for(int i = 0; i < uiTriangles.size(); i++) {
+                uiTriangles[i]->getShaderPointer()->use();
                 uiTriangles[i]->render();
             }
+            
             
             SDL_GL_SwapWindow(window);
             glFlush();
