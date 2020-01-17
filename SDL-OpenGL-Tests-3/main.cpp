@@ -139,8 +139,11 @@ int main(int argc, const char * argv[]) {
     
     int frame = 0;
     long nextMeasure = SDL_GetTicks() + 1e3;
-    int fps = 0;
+    unsigned int fps = 0;
     unsigned long long totalFrames = 0;
+    
+    unsigned long fpsSum = 0;
+    unsigned int measures = 0;
     
     float lastFrame = 0.0f;
     float currentFrame = 0.0f;
@@ -214,7 +217,7 @@ int main(int argc, const char * argv[]) {
     sphere.addToTriangleList(&opaqueTriangles);
     
     ObjModel cone("resources/model/untitled.obj", &basicShader, &renderData);
-//    cone.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    cone.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     cone.setTranslation(vec3(-4.0f));
     
     float mouseWheel = 0.0f;
@@ -235,7 +238,10 @@ int main(int argc, const char * argv[]) {
             frame = 0;
             nextMeasure += 1000;
             
-            printf("%d FPS \t\t %f ms average frametime\n", fps, 1000.0f / fps);
+            fpsSum += fps;
+            measures++;
+            
+            printf("%d FPS \t\t %f ms average frametime last second\n", fps, 1000.0f / fps);
         }
         
         currentFrame = SDL_GetTicks() / 1000.0f;
@@ -353,6 +359,10 @@ int main(int argc, const char * argv[]) {
     }
     
     sortThread.detach();
+    
+    printf(PRINTF_RED);
+    printf("Average %lu FPS \t\t %f ms average frametime\n", fpsSum / measures, 1000.0f / (fpsSum / measures));
+    printf(PRINTF_DEFAULT);
     
     SDL_SetRelativeMouseMode(SDL_FALSE);
     
