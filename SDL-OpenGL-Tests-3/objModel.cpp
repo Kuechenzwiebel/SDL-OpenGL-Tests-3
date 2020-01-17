@@ -8,7 +8,7 @@
 
 #include "objModel.hpp"
 
-bool operator==(std::pair<std::string, std::unique_ptr<Texture>> &l, std::pair<std::string, std::unique_ptr<Texture>> &r) {
+bool operator==(const std::pair<std::string, std::unique_ptr<Texture>> &l, const std::pair<std::string, std::unique_ptr<Texture>> &r) {
     if(l.first == r.first)
         return true;
     else
@@ -28,32 +28,37 @@ shader(shader), data(data) {
     std::vector<glm::vec3> readNormals;
     
     for(int i = 0; i < fileLines.size(); i++) {
-        line = fileLines[i];
+        if(fileLines[i].substr(0, 2) == "o ") {
+            objectInfo.push_back(ObjModelComponentInfo{std::make_pair(vertices.size(), 0), hg::substr(file, 0, int(file.find_last_of("/"))) + "/" + hg::substr(fileLines[i], 2, int(fileLines[i].length())) + ".png"});
+            if(vertices.size() != 0) {
+                objectInfo[objectInfo.size() - 2].objectBounds.second = (unsigned int)vertices.size();
+            }
+        }
         
-        if(line.substr(0, 2) == "v ") {
+        else if(fileLines[i].substr(0, 2) == "v ") {
             float x, y, z;
-            lineStream.str(hg::substr(fileLines[i], 2, int(fileLines[i].length())));
+            lineStream = std::stringstream(hg::substr(fileLines[i], 2, int(fileLines[i].length())));
             lineStream >> x >> y >> z;
             readVertices.push_back(glm::vec3(x, y, z));
         }
         
-        else if(line.substr(0, 2) == "vt") {
+        else if(fileLines[i].substr(0, 2) == "vt") {
             float u, v;
-            lineStream.str(hg::substr(fileLines[i], 2, int(fileLines[i].length())));
+            lineStream = std::stringstream(hg::substr(fileLines[i], 2, int(fileLines[i].length())));
             lineStream >> u >> v;
             readUVs.push_back(glm::vec2(u, v));
         }
         
-        else if(line.substr(0, 2) == "vn") {
+        else if(fileLines[i].substr(0, 2) == "vn") {
             float x, y, z;
-            lineStream.str(hg::substr(fileLines[i], 2, int(fileLines[i].length())));
+            lineStream = std::stringstream(hg::substr(fileLines[i], 2, int(fileLines[i].length())));
             lineStream >> x >> y >> z;
             readNormals.push_back(glm::vec3(x, y, z));
         }
         
-        else if(line.substr(0, 2) == "f ") {
+        else if(fileLines[i].substr(0, 2) == "f ") {
             std::replace(fileLines[i].begin(), fileLines[i].end(), '/', ' ');
-            lineStream.str(hg::substr(fileLines[i], 2, int(fileLines[i].length())));
+            lineStream = std::stringstream(hg::substr(fileLines[i], 2, int(fileLines[i].length())));
             
             int v1, v2, v3;
             int t1, t2, t3;
@@ -77,20 +82,27 @@ shader(shader), data(data) {
             normals.push_back(readNormals[n3 - 1]);
         }
     }
+    objectInfo[objectInfo.size() - 1].objectBounds.second = (unsigned int)vertices.size();
     
-    
+    int objectIndex = 0;
     for(int i = 0; i < fileLines.size(); i++) {
-        line = fileLines[i];
-        
-        
-        if(line.substr(0, 2) == "o ") {
-//            if(std::find(textures.begin(), textures.end(), std::make_pair(hg::substr(fileLines[i], 2, int(fileLines[i].length())), nullptr)) == textures.end()) {
-//                textures.push_back(std::make_pair(hg::substr(fileLines[i], 2, int(fileLines[i].length())), std::make_unique<Texture>(hg::substr(line, 0, int(line.find_last_of("/"))) + "/" + hg::substr(fileLines[i], 2, int(fileLines[i].length())) + ".png")));
-                
-//                std::cout << "Opening Texture " << hg::substr(line, 0, int(line.find_last_of("/"))) + "/" + hg::substr(fileLines[i], 2, int(fileLines[i].length())) + ".png" << std::endl;
-//            }
+        if(fileLines[i].substr(0, 2) == "o ") {
+            auto texture = std::find(textures.begin(), textures.end(), std::make_pair(objectInfo[objectIndex].textureName, nullptr));
+            if(texture == textures.end()) {
+                textures.push_back(std::make_pair(objectInfo[objectIndex].textureName, std::make_unique<Texture>(objectInfo[objectIndex].textureName)));
+                texture = std::find(textures.begin(), textures.end(), std::make_pair(objectInfo[objectIndex].textureName, nullptr));
+            }
             
-            
+            if(texture->second->isTransparent()) {
+                for(int j = objectInfo[objectIndex].objectBounds.first; j < objectInfo[objectIndex].objectBounds.second; j += 3) {
+                    transparentTriangles.push_back(std::make_unique<CoreTriangle>(shader, data, &vertices[j], texture->second.get(), &uvs[j], &normals[j], &modelMat));
+                }
+            }
+            else {
+                opaqueTriangleClusters.push_back(std::make_unique<CoreTriangleCluster>(shader, data, (objectInfo[objectIndex].objectBounds.second - objectInfo[objectIndex].objectBounds.first) / 3, &vertices[objectInfo[objectIndex].objectBounds.first], texture->second.get(), &uvs[objectInfo[objectIndex].objectBounds.first], &normals[objectInfo[objectIndex].objectBounds.first], &modelMat));
+            }
+    
+            objectIndex++;
         }
     }
 }
@@ -100,7 +112,9 @@ ObjModel::~ObjModel() {
 }
 
 void ObjModel::addToTriangleList(std::vector<CoreTriangleCluster*> *oTriangles, std::list<std::pair<float, CoreTriangle*>> *tTriangles) {
-    oTriangles->push_back(opaqueTriangleCluster.get());
+    for(int i = 0; i < opaqueTriangleClusters.size(); i++) {
+        oTriangles->push_back(opaqueTriangleClusters[i].get());
+    }
     
     for(int i = 0; i < transparentTriangles.size(); i++) {
         tTriangles->push_back(std::make_pair(0.0f, transparentTriangles[i].get()));

@@ -22,6 +22,13 @@
 #include "coreTriangle.hpp"
 #include "coreTriangleCluster.hpp"
 
+struct ObjModelComponentInfo {
+    std::pair<unsigned int, unsigned int> objectBounds;
+    std::string textureName;
+};
+
+bool operator==(const std::pair<std::string, std::unique_ptr<Texture>> &l, const std::pair<std::string, std::unique_ptr<Texture>> &r);
+
 class ObjModel: public Object {
 public:
     ObjModel(std::string file, Shader *shader, const RenderData *data);
@@ -32,8 +39,10 @@ public:
 private:
     std::vector<std::pair<std::string, std::unique_ptr<Texture>>> textures;
     
-    std::unique_ptr<CoreTriangleCluster> opaqueTriangleCluster;
+    std::vector<std::unique_ptr<CoreTriangleCluster>> opaqueTriangleClusters;
     std::vector<std::unique_ptr<CoreTriangle>> transparentTriangles;
+    
+    std::vector<ObjModelComponentInfo> objectInfo;
     
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
@@ -44,6 +53,5 @@ private:
     Texture *texture;
 };
 
-bool operator==(std::pair<std::string, std::unique_ptr<Texture>> &l, std::pair<std::string, std::unique_ptr<Texture>> &r);
 
 #endif /* objModel_hpp */

@@ -47,6 +47,7 @@
 #include "ui/uiRectangle.hpp"
 #include "sphere.hpp"
 #include "coreTriangleCluster.hpp"
+#include "objModel.hpp"
 
 using namespace glm;
 
@@ -211,6 +212,10 @@ int main(int argc, const char * argv[]) {
     
     Sphere sphere(&basicShader, &renderData, &debugTexture);
     sphere.addToTriangleList(&opaqueTriangles);
+    
+    ObjModel cone("resources/model/untitled.obj", &basicShader, &renderData);
+//    cone.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    cone.setTranslation(vec3(-4.0f));
     
     float mouseWheel = 0.0f;
     
