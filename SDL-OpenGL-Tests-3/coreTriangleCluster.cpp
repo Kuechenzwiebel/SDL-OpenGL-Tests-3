@@ -51,10 +51,6 @@ Texture* CoreTriangleCluster::getTexturePointer() {
     return texture;
 }
 
-glm::vec3 CoreTriangleCluster::getCenter() {
-    return glm::vec3(0.0f);
-}
-
 unsigned int CoreTriangleCluster::getSize() {
     return size;
 }
