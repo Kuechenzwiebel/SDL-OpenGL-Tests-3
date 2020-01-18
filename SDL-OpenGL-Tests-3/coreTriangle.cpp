@@ -26,7 +26,13 @@ CoreTriangle::~CoreTriangle() {
     glDeleteVertexArrays(1, &VAO);
 }
 
+void CoreTriangle::prepareRender() {
+    
+}
+
 void CoreTriangle::render() {
+    prepareRender();
+    
     vertex.activate();
     texCoord.activate();
     normal.activate();

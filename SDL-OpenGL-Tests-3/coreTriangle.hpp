@@ -23,6 +23,7 @@ public:
     
     glm::vec3 getCenter();
     
+    virtual void prepareRender();
     void render();
     
 protected:
