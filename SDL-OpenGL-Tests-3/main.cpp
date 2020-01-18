@@ -108,7 +108,7 @@ int main(int argc, const char * argv[]) {
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SDL_Event windowEvent;
     
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetSwapInterval(1);
     
     if (window == NULL) {
         printf(PRINTF_RED);
@@ -197,8 +197,7 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
     UIRectangle uiRect(&uiShader, &uiData, &debug2Texture);
-    uiRect.setTextureOffset(vec2(0.5f));
-//    uiRect.addToTriangleList(&uiTriangles);
+    uiRect.addToTriangleList(&uiTriangles);
     
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture));
@@ -273,6 +272,11 @@ int main(int argc, const char * argv[]) {
                 
                 if(windowEvent.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
                     render = false;
+                
+                projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
+                uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
+            
+                glViewport(0, 0, windowWidth, windowHeight);
             }
             
             if(windowEvent.type == SDL_KEYDOWN) {
@@ -300,12 +304,8 @@ int main(int argc, const char * argv[]) {
             
             sort = true;
             
-            projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
-            uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
-            
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glViewport(0, 0, windowWidth, windowHeight);
             
             
             if(wireframe == true)
@@ -317,8 +317,11 @@ int main(int argc, const char * argv[]) {
             
             cube.setRotation(vec4(1.0f, 1.0f, 1.0f, SDL_GetTicks() / 1000.0f));
             
-            uiRect.setScale(vec3(500.0f));
-            uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - 250.0f, -float(windowHeight) / 2.0f + 250.0f, 0.0f));
+
+            uiRect.setTextureOffset(vec2(SDL_GetTicks() / 10000.0f));
+            
+            uiRect.setScale(vec3(250.0f));
+            uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - uiRect.getScale().x / 2.0f, -float(windowHeight) / 2.0f + uiRect.getScale().y / 2.0f, 0.0f));
             uiRect.setRotation(vec4(0.0f, 0.0f, 1.0f, mouseWheel));
 
             
