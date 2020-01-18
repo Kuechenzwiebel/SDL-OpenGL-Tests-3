@@ -155,7 +155,9 @@ int main(int argc, const char * argv[]) {
     std::vector<CoreTriangle*> uiTriangles;
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
+    hg::File uiShaderVertex("resources/shader/ui.vs"), uiShaderFragment("resources/shader/ui.fs");
     Shader basicShader(basicShaderVertex, basicShaderFragment);
+    Shader uiShader(uiShaderVertex, uiShaderFragment);
     
     
     
@@ -194,7 +196,8 @@ int main(int argc, const char * argv[]) {
     
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
-    UIRectangle uiRect(&basicShader, &uiData, &debug2Texture);
+    UIRectangle uiRect(&uiShader, &uiData, &debug2Texture);
+    uiRect.setTextureOffset(vec2(0.5f));
 //    uiRect.addToTriangleList(&uiTriangles);
     
     for(int i = 0; i < 20; i++) {
@@ -332,6 +335,7 @@ int main(int argc, const char * argv[]) {
             
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
+                it->second->prepareRender();
                 it->second->render();
             }
             
@@ -342,6 +346,7 @@ int main(int argc, const char * argv[]) {
             
             for(int i = 0; i < uiTriangles.size(); i++) {
                 uiTriangles[i]->getShaderPointer()->use();
+                uiTriangles[i]->prepareRender();
                 uiTriangles[i]->render();
             }
             

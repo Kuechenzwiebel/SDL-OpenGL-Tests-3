@@ -36,12 +36,28 @@ static glm::vec3 uiRectangleNormals[] = {
 
 UIRectangle::UIRectangle(Shader *shader, const RenderData *data, Texture *texture):
 shader(shader), data(data), texture(texture),
-tri1(shader, data, uiRectangleVertices[0], texture, uiRectangleUVs[0], uiRectangleNormals, &modelMat),
-tri2(shader, data, uiRectangleVertices[1], texture, uiRectangleUVs[1], uiRectangleNormals, &modelMat) {
+tri1(shader, data, uiRectangleVertices[0], texture, uiRectangleUVs[0], uiRectangleNormals, &modelMat, &offset),
+tri2(shader, data, uiRectangleVertices[1], texture, uiRectangleUVs[1], uiRectangleNormals, &modelMat, &offset) {
+    
+}
+
+
+UIRectangle::UIRectangle(Shader *shader, const RenderData *data, Texture *texture, const glm::vec2 *customUVs[]):
+shader(shader), data(data), texture(texture),
+tri1(shader, data, uiRectangleVertices[0], texture, customUVs[0], uiRectangleNormals, &modelMat, &offset),
+tri2(shader, data, uiRectangleVertices[1], texture, customUVs[1], uiRectangleNormals, &modelMat, &offset) {
     
 }
 
 void UIRectangle::addToTriangleList(std::vector<CoreTriangle*> *triangles) {
-    triangles->push_back(&tri1);
-    triangles->push_back(&tri2);
+    tri1.addToTriangleList(triangles);
+    tri2.addToTriangleList(triangles);
+}
+
+void UIRectangle::setTextureOffset(glm::vec2 offset) {
+    this->offset = offset;
+}
+
+glm::vec2 UIRectangle::getTextureOffset() {
+    return offset;
 }
