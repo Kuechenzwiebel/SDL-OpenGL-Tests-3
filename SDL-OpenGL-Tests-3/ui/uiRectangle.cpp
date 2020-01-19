@@ -42,11 +42,10 @@ tri2(shader, data, uiRectangleVertices[1], texture, uiRectangleUVs[1], uiRectang
 }
 
 
-UIRectangle::UIRectangle(Shader *shader, const RenderData *data, Texture *texture, const glm::vec2 *customUVs[]):
+UIRectangle::UIRectangle(Shader *shader, const RenderData *data, Texture *texture, const glm::vec2 customUVs[2][3]):
 shader(shader), data(data), texture(texture),
-tri1(shader, data, uiRectangleVertices[0], texture, customUVs[0], uiRectangleNormals, &modelMat, &offset),
-tri2(shader, data, uiRectangleVertices[1], texture, customUVs[1], uiRectangleNormals, &modelMat, &offset) {
-    
+tri1(shader, data, uiRectangleVertices[0], texture, &customUVs[0][0], uiRectangleNormals, &modelMat, &offset),
+tri2(shader, data, uiRectangleVertices[1], texture, &customUVs[1][0], uiRectangleNormals, &modelMat, &offset) {
 }
 
 void UIRectangle::addToTriangleList(std::vector<CoreTriangle*> *triangles) {

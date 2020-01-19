@@ -13,5 +13,5 @@ uniform vec2 texOffset;
 
 void main() {
     gl_Position = projection * view * model * vec4(vertex, 1.0f);
-    UV = (vec2(0.0f, 1.0f) - uv) + vec2(-1.0f, 1.0f) * texOffset;
+    UV = vec2(uv.x, 1.0f - uv.y) + vec2(texOffset.x, -texOffset.y);
 }

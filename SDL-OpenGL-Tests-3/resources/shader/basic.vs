@@ -11,5 +11,5 @@ out vec2 UV;
 
 void main() {
     gl_Position = projection * view * model * vec4(vertex, 1.0f);
-    UV = vec2(0.0f, 1.0f) - uv;
+    UV = vec2(uv.x, 1.0f - uv.y);
 }

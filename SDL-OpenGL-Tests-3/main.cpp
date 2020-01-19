@@ -48,6 +48,7 @@
 #include "sphere.hpp"
 #include "coreTriangleCluster.hpp"
 #include "objModel.hpp"
+#include "ui/uiText.hpp"
 
 using namespace glm;
 
@@ -58,6 +59,9 @@ bool running = true;
 bool render = true;
 bool wireframe = false;
 bool checkMouse = false;
+
+
+float mouseWheel = 0.0f;
 
 
 std::thread sortThread;
@@ -153,6 +157,7 @@ int main(int argc, const char * argv[]) {
     std::vector<CoreTriangleCluster*> opaqueTriangles;
     
     std::vector<CoreTriangle*> uiTriangles;
+    std::vector<UIText*> uiTexts;
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
     hg::File uiShaderVertex("resources/shader/ui.vs"), uiShaderFragment("resources/shader/ui.fs");
@@ -165,7 +170,7 @@ int main(int argc, const char * argv[]) {
     
     mat4 projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
     mat4 uiProjection = ortho(-0.5f * windowWidth, 0.5f * windowWidth, -0.5f * windowHeight, 0.5f * windowHeight, -1.0f, 1.0f);
-    mat4 uiView = lookAt(vec3(0.0f, 0.0f, -1.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+    mat4 uiView = lookAt(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
     
     RenderData renderData;
     renderData.projection = &projectionMat;
@@ -216,13 +221,15 @@ int main(int argc, const char * argv[]) {
     cube.addToTriangleList(&opaqueTriangles);
     
     Sphere sphere(&basicShader, &renderData, &debugTexture);
-    sphere.addToTriangleList(&opaqueTriangles);
+//    sphere.addToTriangleList(&opaqueTriangles);
     
     ObjModel cone("resources/model/untitled.obj", &basicShader, &renderData);
     cone.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     cone.setTranslation(vec3(-4.0f));
     
-    float mouseWheel = 0.0f;
+    UIText text("Hallo", &uiShader, &uiData);
+    uiTexts.push_back(&text);
+    
     
     unsigned long triangleAmount = 0;
     
@@ -318,7 +325,7 @@ int main(int argc, const char * argv[]) {
             cube.setRotation(vec4(1.0f, 1.0f, 1.0f, SDL_GetTicks() / 1000.0f));
             
 
-            uiRect.setTextureOffset(vec2(SDL_GetTicks() / 10000.0f));
+            uiRect.setTextureOffset(vec2(SDL_GetTicks() / 10000.0f, 0.0f).yx());
             
             uiRect.setScale(vec3(250.0f));
             uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - uiRect.getScale().x / 2.0f, -float(windowHeight) / 2.0f + uiRect.getScale().y / 2.0f, 0.0f));
@@ -351,6 +358,10 @@ int main(int argc, const char * argv[]) {
                 uiTriangles[i]->getShaderPointer()->use();
                 uiTriangles[i]->prepareRender();
                 uiTriangles[i]->render();
+            }
+            
+            for(int i = 0; i < uiTexts.size(); i++) {
+                uiTexts[i]->render();
             }
             
             
