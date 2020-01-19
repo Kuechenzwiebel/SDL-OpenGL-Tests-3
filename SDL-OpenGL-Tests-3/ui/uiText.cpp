@@ -33,16 +33,16 @@ static void prepareAsciiBandUVs() {
 UIText::UIText(std::string text, Shader *shader, const RenderData *data):
 shader(shader), data(data), asciiBandTexture("resources/font/asciiBand.png") {
     
-//    if(asciiBandCharUVs[0][1][0] == 1.0f) {
+    if(asciiBandCharUVs[0][1][0] == 1.0f) {
         prepareAsciiBandUVs();
-//    }
+    }
     
     int xOffsetLoc = hg::getLocationFromName(&asciiBandInfo, "XOffsetNorm"), yOffsetLoc = hg::getLocationFromName(&asciiBandInfo, "YOffsetNorm"), charWidthNormLoc = hg::getLocationFromName(&asciiBandInfo, "CharWidthNorm"),  charWidthLoc = hg::getLocationFromName(&asciiBandInfo, "CharWidth"), charHeightLoc = hg::getLocationFromName(&asciiBandInfo, "CharHeight");
     
     for(int i = 0; i < text.size(); i++) {
         if(text[i] >= 0 && text[i] <= 127) {
             chars.push_back(std::make_unique<UIRectangle>(shader, data, &asciiBandTexture, asciiBandCharUVs));
-            chars[chars.size() - 1]->setTextureOffset(glm::vec2(float(text[i] - 32) * asciiBandInfo[charWidthNormLoc].getDoubleValue(), 0.0f));
+            chars[chars.size() - 1]->setTextureOffset(glm::vec2(float(text[i] - 32) * asciiBandInfo[charWidthNormLoc].getDoubleValue() + asciiBandInfo[xOffsetLoc].getDoubleValue(), asciiBandInfo[yOffsetLoc].getDoubleValue()));
             chars[chars.size() - 1]->setScale(glm::vec3(asciiBandInfo[charWidthLoc].getIntValue(), asciiBandInfo[charHeightLoc].getIntValue(), 0.0f));
             chars[chars.size() - 1]->setTranslation(glm::vec3(float(i * asciiBandInfo[charWidthLoc].getIntValue()), 0.0f, 0.0f));
         }

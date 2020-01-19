@@ -227,7 +227,7 @@ int main(int argc, const char * argv[]) {
     cone.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     cone.setTranslation(vec3(-4.0f));
     
-    UIText text("Hallo", &uiShader, &uiData);
+    UIText text("_Hallo^`", &uiShader, &uiData);
     uiTexts.push_back(&text);
     
     
