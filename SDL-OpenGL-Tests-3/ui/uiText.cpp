@@ -83,6 +83,10 @@ void UIText::setText(std::string newText) {
     calculateModelMat();
 }
 
+glm::vec2 UIText::getCharDimensions() {
+    return glm::vec2(float(asciiBandInfo[charWidthLoc].getIntValue()), float(asciiBandInfo[charHeightLoc].getIntValue()));
+}
+
 void UIText::render() {
     shader->use();
     

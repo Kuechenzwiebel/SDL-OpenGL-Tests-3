@@ -27,6 +27,8 @@ public:
     
     void setText(std::string newText);
     
+    glm::vec2 getCharDimensions();
+    
     void render();
     
 private:
