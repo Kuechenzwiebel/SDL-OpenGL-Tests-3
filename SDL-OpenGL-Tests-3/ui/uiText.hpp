@@ -25,17 +25,21 @@ public:
     UIText(std::string text, Shader *shader, const RenderData *data);
     ~UIText();
     
+    void setText(std::string newText);
+    
     void render();
     
 private:
-    std::vector<std::unique_ptr<UIRectangle>> chars;
+    std::vector<CoreTriangle*> triangles;
+    std::vector<std::pair<std::pair<unsigned int, unsigned int>, std::unique_ptr<UIRectangle>>> chars;
+    std::string text;
     
     void calculateModelMat();
+    
     
     Shader *shader;
     const RenderData *data;
     
-    std::vector<CoreTriangle*> triangles;
     Texture asciiBandTexture;
 };
 
