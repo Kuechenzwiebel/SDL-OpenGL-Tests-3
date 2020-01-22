@@ -227,7 +227,7 @@ int main(int argc, const char * argv[]) {
     cone.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     cone.setTranslation(vec3(-4.0f));
     
-    UIText text("_Hallo^`", &uiShader, &uiData);
+    UIText text("Hallo\nWelt", &uiShader, &uiData);
     uiTexts.push_back(&text);
     
     
@@ -330,8 +330,6 @@ int main(int argc, const char * argv[]) {
             uiRect.setScale(vec3(250.0f));
             uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - uiRect.getScale().x / 2.0f, -float(windowHeight) / 2.0f + uiRect.getScale().y / 2.0f, 0.0f));
             uiRect.setRotation(vec4(0.0f, 0.0f, 1.0f, mouseWheel));
-
-            
     
             
             for(int i = 0; i < opaqueTriangles.size(); i++) {
@@ -349,7 +347,7 @@ int main(int argc, const char * argv[]) {
                 it->second->render();
             }
             
-            
+            text.setText("Hallo\nWelt\n" + std::to_string(fps));
             
             glClear(GL_DEPTH_BUFFER_BIT);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
