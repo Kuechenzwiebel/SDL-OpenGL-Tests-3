@@ -230,6 +230,10 @@ int main(int argc, const char * argv[]) {
     UIText text("Hallo\nWelt", &uiShader, &uiData);
     uiTexts.push_back(&text);
     
+    UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
+    fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.5f);
+    uiTexts.push_back(&fpsText);
+    
     
     unsigned long triangleAmount = 0;
     
@@ -249,6 +253,9 @@ int main(int argc, const char * argv[]) {
             
             fpsSum += fps;
             measures++;
+            
+            
+            fpsText.setText("FPS:   " + std::to_string(fps) + "\nFrametime:   " + std::to_string(1000.0f / fps) + "ms");
             
             printf("%d FPS \t\t %f ms average frametime last second\n", fps, 1000.0f / fps);
         }
@@ -283,6 +290,10 @@ int main(int argc, const char * argv[]) {
                 projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
                 uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
             
+                fpsText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * fpsText.getScale().x, 0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y, 0.0f));
+
+                uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - uiRect.getScale().x / 2.0f, -float(windowHeight) / 2.0f + uiRect.getScale().y / 2.0f, 0.0f));
+                
                 glViewport(0, 0, windowWidth, windowHeight);
             }
             
@@ -328,7 +339,6 @@ int main(int argc, const char * argv[]) {
             uiRect.setTextureOffset(vec2(SDL_GetTicks() / 10000.0f, 0.0f).yx());
             
             uiRect.setScale(vec3(250.0f));
-            uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - uiRect.getScale().x / 2.0f, -float(windowHeight) / 2.0f + uiRect.getScale().y / 2.0f, 0.0f));
             uiRect.setRotation(vec4(0.0f, 0.0f, 1.0f, mouseWheel));
     
             
@@ -347,7 +357,7 @@ int main(int argc, const char * argv[]) {
                 it->second->render();
             }
             
-            text.setText("Hallo\nWelt\n" + std::to_string(fps));
+            
             
             glClear(GL_DEPTH_BUFFER_BIT);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
