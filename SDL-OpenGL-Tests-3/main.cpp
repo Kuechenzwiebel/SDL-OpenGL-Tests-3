@@ -231,7 +231,7 @@ int main(int argc, const char * argv[]) {
     uiTexts.push_back(&text);
     
     UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
-    fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.5f);
+    fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&fpsText);
     
     

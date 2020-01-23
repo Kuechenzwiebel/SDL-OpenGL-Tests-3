@@ -1,11 +1,11 @@
-i [Width] {4096}
-i [Height] {72}
+i [Width] {8192}
+i [Height] {147}
 i [XOffset] {0}
-i [YOffset] {1}
-i [CharWidth] {43}
-i [CharHeight] {71}
+i [YOffset] {0}
+i [CharWidth] {86}
+i [CharHeight] {147}
 
 d [XOffsetNorm] {0.0}
-d [YOffsetNorm] {0.013888888888889}
+d [YOffsetNorm] {0.0}
 d [CharWidthNorm] {0.010498046875}
-d [CharHeightNorm] {0.986111111111111}
+d [CharHeightNorm] {1.0}
