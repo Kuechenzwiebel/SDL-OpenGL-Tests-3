@@ -167,6 +167,9 @@ int main(int argc, const char * argv[]) {
     
     
     Camera cam(&deltaTime, &windowEvent, &checkMouse);
+    UniformVar<vec3> viewPos(&basicShader, "viewPos", cam.getEyePositionPointer());
+    cam.processMouseInput();
+    cam.processInput();
     
     mat4 projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
     mat4 uiProjection = ortho(-0.5f * windowWidth, 0.5f * windowWidth, -0.5f * windowHeight, 0.5f * windowHeight, -1.0f, 1.0f);
@@ -201,9 +204,6 @@ int main(int argc, const char * argv[]) {
     
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
-    UIRectangle uiRect(&uiShader, &uiData, &debug2Texture);
-    uiRect.addToTriangleList(&uiTriangles);
-    
     for(int i = 0; i < 20; i++) {
         tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture));
         tris[i]->addToTriangleList(&transparentTriangles);
@@ -220,15 +220,22 @@ int main(int argc, const char * argv[]) {
     cube.setTranslation(vec3(3.0f, 4.0f, -1.0f));
     cube.addToTriangleList(&opaqueTriangles);
     
+    Cube light(&basicShader, &renderData, &debugTexture);
+    light.addToTriangleList(&opaqueTriangles);
+    light.setTranslation(vec3(4.0f));
+    light.setScale(vec3(0.2f));
+    
     Sphere sphere(&basicShader, &renderData, &debugTexture);
-//    sphere.addToTriangleList(&opaqueTriangles);
+    sphere.addToTriangleList(&opaqueTriangles);
     
-    ObjModel cone("resources/model/untitled.obj", &basicShader, &renderData);
-    cone.addToTriangleList(&opaqueTriangles, &transparentTriangles);
-    cone.setTranslation(vec3(-4.0f));
+    ObjModel testModel("resources/model/untitled.obj", &basicShader, &renderData);
+    testModel.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    testModel.setTranslation(vec3(-4.0f));
     
-    UIText text("Hallo\nWelt", &uiShader, &uiData);
-    uiTexts.push_back(&text);
+    
+    UIText text("Hello\nWorld", &uiShader, &uiData);
+    text.setScale(vec3(text.getCharDimensions(), 0.0f) * 1.0f);
+//    uiTexts.push_back(&text);
     
     UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
     fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
@@ -291,8 +298,6 @@ int main(int argc, const char * argv[]) {
                 uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
             
                 fpsText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * fpsText.getScale().x, 0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y, 0.0f));
-
-                uiRect.setTranslation(vec3(float(windowWidth) / 2.0f - uiRect.getScale().x / 2.0f, -float(windowHeight) / 2.0f + uiRect.getScale().y / 2.0f, 0.0f));
                 
                 glViewport(0, 0, windowWidth, windowHeight);
             }
@@ -334,16 +339,11 @@ int main(int argc, const char * argv[]) {
             
             
             cube.setRotation(vec4(1.0f, 1.0f, 1.0f, SDL_GetTicks() / 1000.0f));
-            
-
-            uiRect.setTextureOffset(vec2(SDL_GetTicks() / 10000.0f, 0.0f).yx());
-            
-            uiRect.setScale(vec3(250.0f));
-            uiRect.setRotation(vec4(0.0f, 0.0f, 1.0f, mouseWheel));
     
             
             for(int i = 0; i < opaqueTriangles.size(); i++) {
                 opaqueTriangles[i]->getShaderPointer()->use();
+                viewPos.setVar();
                 opaqueTriangles[i]->render();
             }
             
@@ -353,7 +353,7 @@ int main(int argc, const char * argv[]) {
             
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
-                it->second->prepareRender();
+                viewPos.setVar();
                 it->second->render();
             }
             
