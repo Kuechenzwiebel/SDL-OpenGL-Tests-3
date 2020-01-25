@@ -33,6 +33,7 @@ CoreTriangle(shader, data, equilateralTriangleVertices, texture, equilateralTria
     
     vertex.activate();
     texCoord.activate();
+    normal.activate();
     
     glBindVertexArray(0);
 }
