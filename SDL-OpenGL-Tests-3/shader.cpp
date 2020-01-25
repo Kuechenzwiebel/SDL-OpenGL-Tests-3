@@ -52,7 +52,7 @@ void Shader::compile(const char* vertexCode, const char* fragmentCode) {
         glGetShaderInfoLog(vertex, errorLenght, NULL, infoLog);
         
         printf(PRINTF_RED);
-        printf("Vertex Shader failed compiliton! Infolog: %s\n", infoLog);
+        printf("Vertex Shader failed compiliton!\nInfolog: \n%s\n", infoLog);
         printf(PRINTF_DEFAULT);
         exit(2);
     }
@@ -68,7 +68,7 @@ void Shader::compile(const char* vertexCode, const char* fragmentCode) {
         glGetShaderInfoLog(fragment, errorLenght, NULL, infoLog);
         
         printf(PRINTF_RED);
-        printf("Fragment Shader failed compiliton! Infolog: %s\n", infoLog);
+        printf("Fragment Shader failed compiliton!\nInfolog: \n%s\n", infoLog);
         printf(PRINTF_DEFAULT);
         exit(3);
     }
@@ -86,7 +86,7 @@ void Shader::compile(const char* vertexCode, const char* fragmentCode) {
         glGetShaderInfoLog(fragment, errorLenght, NULL, infoLog);
         
         printf(PRINTF_RED);
-        printf("Shader linking failed! Infolog: %s\n", infoLog);
+        printf("Shader linking failed!\nInfolog: \n%s\n", infoLog);
         printf(PRINTF_DEFAULT);
     }
     
