@@ -153,6 +153,7 @@ int main(int argc, const char * argv[]) {
     float lastFrame = 0.0f;
     float currentFrame = 0.0f;
     float deltaTime = 0.0f;
+    float totalTime = 0.0f;
     
     std::list<std::pair<float, CoreTriangle*>> transparentTriangles;
     std::vector<CoreTriangleCluster*> opaqueTriangles;
@@ -253,7 +254,7 @@ int main(int argc, const char * argv[]) {
     
     sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
     
-    PointLightSource lightSource(&basicShader, 0);
+    PointLightSource lightSource(&basicShader);
     lightSource.color = vec3(0.0f, 0.8f, 0.2f);
     lightSource.position = vec3(4.0f);
     
@@ -261,9 +262,9 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<Cube>> lightCubes;
     
     for(int i = 0; i < 10; i++) {
-        lights.push_back(std::make_unique<PointLightSource>(&basicShader, i + 1));
+        lights.push_back(std::make_unique<PointLightSource>(&basicShader));
         lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
-        lights[i]->position = vec3((rand() % 50) - 25.0f, (rand() % 50) - 25.0f, (rand() % 50) - 25.0f);
+        lights[i]->position = vec3((rand() % 30) - 15.0f, (rand() % 30) - 15.0f, (rand() % 30) - 15.0f);
         
         lightCubes.push_back(std::make_unique<Cube>(&basicShader, &renderData, &debugTexture));
         lightCubes[i]->addToTriangleList(&opaqueTriangles);
@@ -277,7 +278,7 @@ int main(int argc, const char * argv[]) {
         printf("p\n");
         printVec3(lights[i]->position);
     }
-    
+
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -365,7 +366,7 @@ int main(int argc, const char * argv[]) {
         
             
             
-            cube.setRotation(vec4(1.0f, 1.0f, 1.0f, SDL_GetTicks() / 1000.0f));
+            cube.setRotation(vec4(1.0f, 1.0f, 1.0f, tan(totalTime / 5.0f)));
     
             
             for(int i = 0; i < opaqueTriangles.size(); i++) {
@@ -376,6 +377,9 @@ int main(int argc, const char * argv[]) {
                     lights[i]->activate();
                 opaqueTriangles[i]->render();
             }
+            
+            sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
+            sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
             
             
             while(!sortDone)
@@ -413,6 +417,8 @@ int main(int argc, const char * argv[]) {
             
             frame++;
             totalFrames++;
+            
+            totalTime += deltaTime;
         }
         else
             SDL_Delay(33);

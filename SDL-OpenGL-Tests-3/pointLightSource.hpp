@@ -20,9 +20,11 @@
 #include "shader.hpp"
 #include "uniformVar.hpp"
 
+void resetPointLightSourceIndex();
+
 class PointLightSource {
 public:
-    PointLightSource(Shader *shader, int arrayIndex);
+    PointLightSource(Shader *shader);
     
     void activate();
     
@@ -33,7 +35,7 @@ public:
     
 private:
     Shader *shader;
-    int arrayIndex, idx;
+    int idx;
     
     UniformVar<int> arrayIndexUniform;
     UniformVar<glm::vec3> positionUniform;
