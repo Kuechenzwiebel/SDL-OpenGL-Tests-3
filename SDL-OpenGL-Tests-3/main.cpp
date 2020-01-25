@@ -49,6 +49,7 @@
 #include "coreTriangleCluster.hpp"
 #include "objModel.hpp"
 #include "ui/uiText.hpp"
+#include "pointLightSource.hpp"
 
 using namespace glm;
 
@@ -252,6 +253,32 @@ int main(int argc, const char * argv[]) {
     
     sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
     
+    PointLightSource lightSource(&basicShader, 0);
+    lightSource.color = vec3(0.0f, 0.8f, 0.2f);
+    lightSource.position = vec3(4.0f);
+    
+    std::vector<std::unique_ptr<PointLightSource>> lights;
+    std::vector<std::unique_ptr<Cube>> lightCubes;
+    
+    for(int i = 0; i < 10; i++) {
+        lights.push_back(std::make_unique<PointLightSource>(&basicShader, i + 1));
+        lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
+        lights[i]->position = vec3((rand() % 50) - 25.0f, (rand() % 50) - 25.0f, (rand() % 50) - 25.0f);
+        
+        lightCubes.push_back(std::make_unique<Cube>(&basicShader, &renderData, &debugTexture));
+        lightCubes[i]->addToTriangleList(&opaqueTriangles);
+        lightCubes[i]->setTranslation(lights[i]->position);
+        lightCubes[i]->setScale(vec3(0.2));
+    }
+    
+    for(int i = 0; i < lights.size(); i++) {
+        printf("c\n");
+        printVec3(lights[i]->color);
+        printf("p\n");
+        printVec3(lights[i]->position);
+    }
+    
+    
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
             fps = frame;
@@ -344,6 +371,9 @@ int main(int argc, const char * argv[]) {
             for(int i = 0; i < opaqueTriangles.size(); i++) {
                 opaqueTriangles[i]->getShaderPointer()->use();
                 viewPos.setVar();
+                lightSource.activate();
+                for(int i = 0; i < lights.size(); i++)
+                    lights[i]->activate();
                 opaqueTriangles[i]->render();
             }
             
@@ -354,6 +384,9 @@ int main(int argc, const char * argv[]) {
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
                 viewPos.setVar();
+                lightSource.activate();
+                for(int i = 0; i < lights.size(); i++)
+                    lights[i]->activate();
                 it->second->render();
             }
             
