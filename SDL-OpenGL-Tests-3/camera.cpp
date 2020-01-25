@@ -88,6 +88,10 @@ float Camera::getZoom() {
     return zoom;
 }
 
+glm::vec3* Camera::getEyePositionPointer() {
+    return &eyePosition;
+}
+
 
 void Camera::setEyePosition(glm::vec3 position) {
     eyePosition = position;

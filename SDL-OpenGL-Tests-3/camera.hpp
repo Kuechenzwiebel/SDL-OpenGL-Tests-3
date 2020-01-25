@@ -24,6 +24,7 @@ public:
     Camera(const float *deltaTime, const SDL_Event *windowEvent, bool *checkMouse);
     
     glm::mat4* getViewMatPointer();
+    glm::vec3* getEyePositionPointer();
     glm::vec3 getEyePosition();
     glm::vec3 getFootPosition();
     float getMouseSensitivity();
