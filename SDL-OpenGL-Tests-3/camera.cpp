@@ -61,7 +61,7 @@ void Camera::processInput() {
             movementVector -= glm::vec3(0.0f, 1.0f, 0.0f);
         
         if(movementVector != glm::vec3(0.0f))
-            footPosition += glm::normalize(movementVector) * *deltaTime * 1.5f;
+            footPosition += glm::normalize(movementVector) * *deltaTime * 2.0f;
     }
     
     eyePosition = footPosition + glm::vec3(0.0f, 1.73f, 0.0f);
