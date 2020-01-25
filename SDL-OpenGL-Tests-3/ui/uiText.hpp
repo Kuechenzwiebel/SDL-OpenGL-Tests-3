@@ -18,8 +18,6 @@
 
 #include "uiRectangle.hpp"
 
-extern float mouseWheel;
-
 class UIText: public Object {
 public:
     UIText(std::string text, Shader *shader, const RenderData *data);
