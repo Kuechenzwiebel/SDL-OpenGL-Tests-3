@@ -20,10 +20,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "utils.hpp"
-#include "shader.hpp"
-#include "texture.hpp"
-#include "uniformVar.hpp"
-#include "arrayBuffers/arrayBuffer.hpp"
+#include "core/shader.hpp"
+#include "core/texture.hpp"
+#include "core/uniformVar.hpp"
+#include "core/arrayBuffers/arrayBuffer.hpp"
 
 class CoreTriangle;
 

@@ -18,7 +18,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "shader.hpp"
-#include "utils.hpp"
 
 template <typename T>
 class UniformVar {

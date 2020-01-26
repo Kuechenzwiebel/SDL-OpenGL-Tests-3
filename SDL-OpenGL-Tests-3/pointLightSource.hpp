@@ -17,8 +17,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "shader.hpp"
-#include "uniformVar.hpp"
+#include "core/shader.hpp"
+#include "core/uniformVar.hpp"
 
 void resetPointLightSourceIndex();
 

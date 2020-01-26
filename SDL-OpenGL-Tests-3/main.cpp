@@ -36,12 +36,12 @@
 #include <glm/gtx/norm.hpp>
 
 #include "utils.hpp"
-#include "shader.hpp"
-#include "texture.hpp"
-#include "camera.hpp"
+#include "core/shader.hpp"
+#include "core/texture.hpp"
+#include "core/camera.hpp"
 #include "object.hpp"
 #include "coreTriangle.hpp"
-#include "uniformVar.hpp"
+#include "core/uniformVar.hpp"
 #include "equilateralTriangle.hpp"
 #include "cube.hpp"
 #include "ui/uiRectangle.hpp"
@@ -353,6 +353,11 @@ int main(int argc, const char * argv[]) {
         if(render) {
             cam.processInput();
             
+//            if(length(cam.getFootPosition()) > 0.1f)
+//                cam.setFootPosition(cam.getFootPosition() - normalize(cam.getFootPosition() - vec3(0.0f)) * 9.81f * totalTime / 10.0f * deltaTime);
+            
+//            cam.setFootPosition(cam.getFootPosition() + vec3(cos(totalTime), 0.0f, sin(totalTime)) * deltaTime);
+            
             sort = true;
             
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -380,6 +385,8 @@ int main(int argc, const char * argv[]) {
             
             sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
             sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
+            
+            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
             
             
             while(!sortDone)

@@ -13,7 +13,6 @@
 #include <array>
 
 #include "object.hpp"
-#include "texture.hpp"
 #include "coreTriangle.hpp"
 #include "coreTriangleCluster.hpp"
 
