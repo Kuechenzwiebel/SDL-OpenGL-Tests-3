@@ -20,8 +20,8 @@ model(shader, "model", modelMat), view(shader, "view", data->viewMat), projectio
     normal.activate();
     
     if(initLighting) {
-        reflectionUniform = std::make_unique<UniformVar<int>>(shader, "reflection", &reflection);
-        useReflectionMapUniform = std::make_unique<UniformVar<int>>(shader, "useReflectionMap", &useReflectionMap);
+        reflectionUniform = std::make_unique<UniformVar<int>>(shader, "reflection", &this->reflection);
+        useReflectionMapUniform = std::make_unique<UniformVar<int>>(shader, "useReflectionMap", &this->useReflectionMap);
         
         if(reflectionMap == nullptr)
             useReflectionMap = false;
