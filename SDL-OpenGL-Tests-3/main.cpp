@@ -137,6 +137,7 @@ int main(int argc, const char * argv[]) {
     glEnable(GL_BLEND);
     glEnable(GL_MULTISAMPLE);
     glDisable(GL_CULL_FACE);
+    glEnable(GL_FRAMEBUFFER_SRGB);
     
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LEQUAL);
@@ -255,16 +256,15 @@ int main(int argc, const char * argv[]) {
     sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
     
     PointLightSource lightSource(&basicShader);
-    lightSource.color = vec3(0.0f, 0.8f, 0.2f) * 2.0f;
+    lightSource.color = vec3(0.0f, 0.8f, 0.2f);
     lightSource.position = vec3(4.0f);
     
     std::vector<std::unique_ptr<PointLightSource>> lights;
     std::vector<std::unique_ptr<Cube>> lightCubes;
-    /*
+
     for(int i = 0; i < 10; i++) {
         lights.push_back(std::make_unique<PointLightSource>(&basicShader));
-//        lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
-        lights[i]->color = vec3(1.0f);
+        lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
         lights[i]->position = vec3((rand() % 30) - 15.0f, (rand() % 30) - 15.0f, (rand() % 30) - 15.0f);
         
         lightCubes.push_back(std::make_unique<Cube>(&basicShader, &renderData, &debugTexture));
@@ -272,7 +272,11 @@ int main(int argc, const char * argv[]) {
         lightCubes[i]->setTranslation(lights[i]->position);
         lightCubes[i]->setScale(vec3(0.2));
     }
-*/
+    
+    int ref;
+    UniformVar<int> reflection(&basicShader, "reflection", &ref);
+
+    
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -347,14 +351,9 @@ int main(int argc, const char * argv[]) {
         if(render) {
             cam.processInput();
             
-//            if(length(cam.getFootPosition()) > 0.1f)
-//                cam.setFootPosition(cam.getFootPosition() - normalize(cam.getFootPosition() - vec3(0.0f)) * 9.81f * totalTime / 10.0f * deltaTime);
-            
-//            cam.setFootPosition(cam.getFootPosition() + vec3(cos(totalTime), 0.0f, sin(totalTime)) * deltaTime);
-            
             sort = true;
             
-            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             
@@ -365,7 +364,7 @@ int main(int argc, const char * argv[]) {
         
             
             
-//            cube.setRotation(vec4(1.0f, 1.0f, 1.0f, tan(totalTime / 5.0f)));
+            cube.setRotation(vec4(1.0f, 1.0f, 1.0f, tan(totalTime / 5.0f)));
     
             
             for(int i = 0; i < opaqueTriangles.size(); i++) {
@@ -377,10 +376,10 @@ int main(int argc, const char * argv[]) {
                 opaqueTriangles[i]->render();
             }
             
-//            sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
-//            sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
+            sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
+            sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
             
-//            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
+            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
             
             
             while(!sortDone)

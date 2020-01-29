@@ -14,7 +14,7 @@ uniform vec3 viewPos;
 const float linear = 0.09f;
 const float quadratic = 0.032f;
 
-const vec3 ambientLight = vec3(0.2f);
+const vec3 ambientLight = vec3(0.1f);
 
 
 struct LightSourceData {
@@ -30,11 +30,8 @@ uniform sampler2D reflectionMap;
 
 void main() {
     vec3 result = vec3(0.0f);
-    vec4 tex = texture(tex, UV);
     
     color = vec4(viewPos, 1.0f);
-    
-    int r = reflection;
     
     for(int i = 0; i < validObjects; i++) {
         vec3 normal = normalize(Normal);
@@ -45,11 +42,9 @@ void main() {
         vec3 viewDir = normalize(viewPos - Vertex);
         vec3 reflectDir = reflect(-lightDir, normal);
         
-        vec3 specular;
-        
         int ref;
         if(useReflectionMap == 0) {
-            ref = 128;
+            ref = reflection;
         }
         else {
             vec3 refMap = texture(reflectionMap, UV).xyz;
@@ -57,7 +52,7 @@ void main() {
             discard;
         }
         
-        specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), 32) * normalize(lights[i].lightColor);
+        vec3 specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), ref) * lights[i].lightColor;
         
         
         float dist = length(lights[i].lightPos - Vertex);
@@ -67,6 +62,7 @@ void main() {
         result += (diffuse + specular) * attenuation;
     }
     
-    color = vec4(ambientLight + result, 1.0f) * tex;
+    color = vec4(ambientLight + result, 1.0f) * texture(tex, UV);
+    color.rgb = pow(color.rgb, vec3(2.2f));
 }
 
