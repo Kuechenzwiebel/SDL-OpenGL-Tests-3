@@ -9,7 +9,7 @@
 #include "uiCoreTriangle.hpp"
 
 UICoreTriangle::UICoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, glm::vec2 *texOffset):
-CoreTriangle(shader, data, vertices, texture, uvs, normals, modelMat),
+CoreTriangle(shader, data, vertices, texture, uvs, normals, modelMat, 0, nullptr, false),
 textureOffset(shader, "texOffset", texOffset), offset(texOffset) {
     
 }

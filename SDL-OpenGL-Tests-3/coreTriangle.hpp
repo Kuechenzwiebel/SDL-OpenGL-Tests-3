@@ -15,7 +15,7 @@
 
 class CoreTriangle {
 public:
-    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
+    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
     ~CoreTriangle();
 
     Shader* getShaderPointer();
@@ -36,7 +36,13 @@ protected:
     const glm::vec2 *uvs;
     const glm::vec3 *normals;
     
+    bool initLighting;
+    
     Texture *texture;
+    Texture *reflectionMap;
+    int reflection;
+    int useReflectionMap;
+    
     Shader *shader;
     const RenderData *data;
     
@@ -45,6 +51,9 @@ protected:
     UniformVar<glm::mat4> model;
     UniformVar<glm::mat4> view;
     UniformVar<glm::mat4> projection;
+    
+    std::unique_ptr<UniformVar<int>> reflectionUniform;
+    std::unique_ptr<UniformVar<int>> useReflectionMapUniform;
 };
 
 bool operator<(std::pair<float, CoreTriangle*> l, std::pair<float, CoreTriangle*> r);

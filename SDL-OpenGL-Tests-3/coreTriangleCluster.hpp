@@ -16,7 +16,7 @@
 
 class CoreTriangleCluster: public Object {
 public:
-    CoreTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
+    CoreTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
     ~CoreTriangleCluster();
     
     Shader* getShaderPointer();
@@ -38,7 +38,13 @@ private:
     const glm::vec2 *uvs;
     const glm::vec3 *normals;
     
+    bool initLighting;
+    
     Texture *texture;
+    Texture *reflectionMap;
+    int reflection;
+    int useReflectionMap;
+    
     Shader *shader;
     const RenderData *data;
     
@@ -47,6 +53,9 @@ private:
     UniformVar<glm::mat4> model;
     UniformVar<glm::mat4> view;
     UniformVar<glm::mat4> projection;
+    
+    std::unique_ptr<UniformVar<int>> reflectionUniform;
+    std::unique_ptr<UniformVar<int>> useReflectionMapUniform;
 };
 
 #endif /* coreTriangleArray_hpp */

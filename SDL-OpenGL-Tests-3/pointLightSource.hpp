@@ -40,8 +40,6 @@ private:
     UniformVar<int> arrayIndexUniform;
     UniformVar<glm::vec3> positionUniform;
     UniformVar<glm::vec3> colorUniform;
-    UniformVar<float> specularStrengthUniform;
-    UniformVar<int> reflectionUniform;
 };
 
 #endif /* pointLightSource_hpp */

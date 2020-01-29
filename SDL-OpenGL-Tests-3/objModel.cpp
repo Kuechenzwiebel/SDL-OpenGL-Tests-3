@@ -95,11 +95,11 @@ shader(shader), data(data) {
             
             if(texture->second->isTransparent()) {
                 for(int j = objectInfo[objectIndex].objectBounds.first; j < objectInfo[objectIndex].objectBounds.second; j += 3) {
-                    transparentTriangles.push_back(std::make_unique<CoreTriangle>(shader, data, &vertices[j], texture->second.get(), &uvs[j], &normals[j], &modelMat));
+                    transparentTriangles.push_back(std::make_unique<CoreTriangle>(shader, data, &vertices[j], texture->second.get(), &uvs[j], &normals[j], &modelMat, 32, nullptr, true));
                 }
             }
             else {
-                opaqueTriangleClusters.push_back(std::make_unique<CoreTriangleCluster>(shader, data, (objectInfo[objectIndex].objectBounds.second - objectInfo[objectIndex].objectBounds.first) / 3, &vertices[objectInfo[objectIndex].objectBounds.first], texture->second.get(), &uvs[objectInfo[objectIndex].objectBounds.first], &normals[objectInfo[objectIndex].objectBounds.first], &modelMat));
+                opaqueTriangleClusters.push_back(std::make_unique<CoreTriangleCluster>(shader, data, (objectInfo[objectIndex].objectBounds.second - objectInfo[objectIndex].objectBounds.first) / 3, &vertices[objectInfo[objectIndex].objectBounds.first], texture->second.get(), &uvs[objectInfo[objectIndex].objectBounds.first], &normals[objectInfo[objectIndex].objectBounds.first], &modelMat, 32, nullptr, true));
             }
     
             objectIndex++;

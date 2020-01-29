@@ -80,7 +80,7 @@ void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *tran
             
             if(cam->getFootPosition() != oldCamFootPos) {
                 for(auto it = transparentTriangles->begin(); it != transparentTriangles->end(); it++) {
-                    it->first = glm::distance(cam->getEyePosition(), it->second->getCenter());
+                    it->first = glm::distance2(cam->getEyePosition(), it->second->getCenter());
                 }
                 
                 transparentTriangles->sort();
@@ -188,6 +188,7 @@ int main(int argc, const char * argv[]) {
     
     Texture debugTexture("resources/texture/debug.png");
     Texture debug2Texture("resources/texture/debug2.png");
+    Texture stoneTexture("resources/texture/stone.png");
     
     unsigned char data[] = {
         255,
@@ -207,13 +208,13 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
     for(int i = 0; i < 20; i++) {
-        tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture));
+        tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture, 32, nullptr, true));
         tris[i]->addToTriangleList(&transparentTriangles);
         tris[i]->setTranslation(vec3(float(i / 3.0f) + 2.0f, 0.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
     
-    EquilateralTriangle e(&basicShader, &renderData, &transparentTexture);
+    EquilateralTriangle e(&basicShader, &renderData, &transparentTexture, 32, nullptr, true);
     e.setTranslation(vec3(0.0f, 0.0f, -2.0f));
     e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     e.addToTriangleList(&transparentTriangles);
@@ -227,13 +228,12 @@ int main(int argc, const char * argv[]) {
     light.setTranslation(vec3(4.0f));
     light.setScale(vec3(0.2f));
     
-    Sphere sphere(&basicShader, &renderData, &debugTexture);
+    Sphere sphere(&basicShader, &renderData, &stoneTexture);
     sphere.addToTriangleList(&opaqueTriangles);
     
     ObjModel testModel("resources/model/untitled.obj", &basicShader, &renderData);
     testModel.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     testModel.setTranslation(vec3(-4.0f));
-    
     
     UIText text("Hello\nWorld", &uiShader, &uiData);
     text.setScale(vec3(text.getCharDimensions(), 0.0f) * 1.0f);
@@ -255,15 +255,16 @@ int main(int argc, const char * argv[]) {
     sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
     
     PointLightSource lightSource(&basicShader);
-    lightSource.color = vec3(0.0f, 0.8f, 0.2f);
+    lightSource.color = vec3(0.0f, 0.8f, 0.2f) * 2.0f;
     lightSource.position = vec3(4.0f);
     
     std::vector<std::unique_ptr<PointLightSource>> lights;
     std::vector<std::unique_ptr<Cube>> lightCubes;
-    
+    /*
     for(int i = 0; i < 10; i++) {
         lights.push_back(std::make_unique<PointLightSource>(&basicShader));
-        lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
+//        lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
+        lights[i]->color = vec3(1.0f);
         lights[i]->position = vec3((rand() % 30) - 15.0f, (rand() % 30) - 15.0f, (rand() % 30) - 15.0f);
         
         lightCubes.push_back(std::make_unique<Cube>(&basicShader, &renderData, &debugTexture));
@@ -271,14 +272,7 @@ int main(int argc, const char * argv[]) {
         lightCubes[i]->setTranslation(lights[i]->position);
         lightCubes[i]->setScale(vec3(0.2));
     }
-    
-    for(int i = 0; i < lights.size(); i++) {
-        printf("c\n");
-        printVec3(lights[i]->color);
-        printf("p\n");
-        printVec3(lights[i]->position);
-    }
-
+*/
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -371,7 +365,7 @@ int main(int argc, const char * argv[]) {
         
             
             
-            cube.setRotation(vec4(1.0f, 1.0f, 1.0f, tan(totalTime / 5.0f)));
+//            cube.setRotation(vec4(1.0f, 1.0f, 1.0f, tan(totalTime / 5.0f)));
     
             
             for(int i = 0; i < opaqueTriangles.size(); i++) {
@@ -383,10 +377,10 @@ int main(int argc, const char * argv[]) {
                 opaqueTriangles[i]->render();
             }
             
-            sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
-            sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
+//            sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
+//            sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
             
-            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
+//            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
             
             
             while(!sortDone)

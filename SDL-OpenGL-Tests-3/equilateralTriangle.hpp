@@ -19,7 +19,7 @@
 
 class EquilateralTriangle: public CoreTriangle, public Object {
 public:
-    EquilateralTriangle(Shader *shader, const RenderData *data, Texture *texture);
+    EquilateralTriangle(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap, bool initLighting);
     ~EquilateralTriangle();
     
     void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);

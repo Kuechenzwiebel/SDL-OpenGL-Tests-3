@@ -8,16 +8,26 @@
 
 #include "coreTriangle.hpp"
 
-CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat):
-vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
+CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
+vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat), reflection(reflection), reflectionMap(reflectionMap), texture(texture), useReflectionMap(false),
 vertex(vertices, sizeof(glm::vec3) * 3, 0), texCoord(uvs, sizeof(glm::vec2) * 3, 1), normal(normals, sizeof(glm::vec3) * 3, 2),
-model(shader, "model", modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), texture(texture) {
+model(shader, "model", modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), initLighting(initLighting) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
     vertex.activate();
     texCoord.activate();
     normal.activate();
+    
+    if(initLighting) {
+        reflectionUniform = std::make_unique<UniformVar<int>>(shader, "reflection", &reflection);
+        useReflectionMapUniform = std::make_unique<UniformVar<int>>(shader, "useReflectionMap", &useReflectionMap);
+        
+        if(reflectionMap == nullptr)
+            useReflectionMap = false;
+        else if(reflection == 0)
+            useReflectionMap = true;
+    }
     
     glBindVertexArray(0);
 }
@@ -40,6 +50,18 @@ void CoreTriangle::render() {
     projection.setVar();
     view.setVar();
     model.setVar();
+    
+    if(initLighting) {
+        useReflectionMapUniform->setVar();
+        
+        if(useReflectionMap) {
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, reflectionMap->getTextureID());
+        }
+        else {
+            reflectionUniform->setVar();
+        }
+    }
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture->getTextureID());
