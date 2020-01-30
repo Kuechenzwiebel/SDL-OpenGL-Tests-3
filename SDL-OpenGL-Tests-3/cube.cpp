@@ -135,9 +135,9 @@ static glm::vec3 cubeNormals[] = {
     glm::vec3( 0.0f,  1.0f,  0.0f)
 };
 
-Cube::Cube(Shader *shader, const RenderData *data, Texture *texture):
-shader(shader), data(data), texture(texture),
-tris(shader, data, 12, cubeVertices, texture, cubeTexCoords, cubeNormals, &modelMat, 32, nullptr, true) {
+Cube::Cube(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap):
+shader(shader), data(data), texture(texture), reflectionMap(reflectionMap), reflection(reflection),
+tris(shader, data, 12, cubeVertices, texture, cubeTexCoords, cubeNormals, &modelMat, reflection, reflectionMap, true) {
     
 }
 

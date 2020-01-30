@@ -57,6 +57,7 @@ void CoreTriangle::render() {
         if(useReflectionMap) {
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, reflectionMap->getTextureID());
+            glUniform1i(glGetUniformLocation(shader->getProgram(), reflectionMap->getTextureName().c_str()), 1);
         }
         else {
             reflectionUniform->setVar();
@@ -65,6 +66,7 @@ void CoreTriangle::render() {
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture->getTextureID());
+    glUniform1i(glGetUniformLocation(shader->getProgram(), texture->getTextureName().c_str()), 0);
     
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);

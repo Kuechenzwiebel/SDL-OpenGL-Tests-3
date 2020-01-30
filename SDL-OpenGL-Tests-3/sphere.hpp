@@ -21,7 +21,7 @@ const static int sphereArraySize = round((360.0f / sphereResolution) * (360.0f /
 
 class Sphere: public Object {
 public:
-    Sphere(Shader *shader, const RenderData *data, Texture *texture);
+    Sphere(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap);
     ~Sphere();
     
     void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);
@@ -29,9 +29,13 @@ public:
 private:
     std::unique_ptr<CoreTriangleCluster> tris;
     
+    Texture *texture;
+    Texture *reflectionMap;
+    int reflection;
+    int useReflectionMap;
+    
     Shader *shader;
     const RenderData *data;
-    Texture *texture;
 };
 
 #endif /* sphere_hpp */

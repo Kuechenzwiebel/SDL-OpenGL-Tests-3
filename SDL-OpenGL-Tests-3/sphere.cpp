@@ -57,13 +57,13 @@ static void deleteSphere() {
     triangleUVs = nullptr;
 }
 
-Sphere::Sphere(Shader *shader, const RenderData *data, Texture *texture):
-shader(shader), data(data), texture(texture) {
+Sphere::Sphere(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap):
+shader(shader), data(data), texture(texture), reflectionMap(reflectionMap), reflection(reflection) {
     if(triangleVertices == nullptr) {
         initSphere();
     }
     
-    tris = std::make_unique<CoreTriangleCluster>(shader, data, sphereArraySize / 3, triangleVertices, texture, triangleUVs, triangleVertices, &modelMat, 32, nullptr, true);
+    tris = std::make_unique<CoreTriangleCluster>(shader, data, sphereArraySize / 3, triangleVertices, texture, triangleUVs, triangleVertices, &modelMat, reflection, reflectionMap, true);
 }
 
 Sphere::~Sphere() {

@@ -11,10 +11,10 @@ uniform sampler2D tex;
 uniform vec3 viewPos;
 
 
-const float linear = 0.09f;
-const float quadratic = 0.032f;
+const float linear = 0.07f;
+const float quadratic = 0.017f;
 
-const vec3 ambientLight = vec3(0.1f);
+const vec3 ambientLight = vec3(0.0f);
 
 
 struct LightSourceData {
@@ -47,19 +47,25 @@ void main() {
             ref = reflection;
         }
         else {
-            vec3 refMap = texture(reflectionMap, UV).xyz;
-            ref = int((refMap.x + refMap.y + refMap.z) / 3.0f * 64);
-            discard;
+            vec3 refMap = texture(reflectionMap, UV).rgb;
+            ref = int((refMap.r + refMap.g + refMap.b) / 3.0f * 128);
         }
         
-        vec3 specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), ref) * lights[i].lightColor;
+        vec3 specular;
         
-        
+        if(ref == 0) {
+            specular = vec3(0.0f);
+        }
+        else {
+            specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), ref) * lights[i].lightColor;
+        }
+    
+    
         float dist = length(lights[i].lightPos - Vertex);
-        float attenuation = 1.0f / (linear * dist + quadratic * (dist * dist));
+        float attenuation = 1.0f / (1.0f + linear * dist + quadratic * (dist * dist));
         
         
-        result += (diffuse + specular) * attenuation;
+        result += diffuse * attenuation + specular * attenuation;
     }
     
     color = vec4(ambientLight + result, 1.0f) * texture(tex, UV);

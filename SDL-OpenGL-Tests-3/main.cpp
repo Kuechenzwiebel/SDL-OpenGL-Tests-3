@@ -191,6 +191,10 @@ int main(int argc, const char * argv[]) {
     Texture debug2Texture("resources/texture/debug2.png");
     Texture stoneTexture("resources/texture/stone.png");
     
+    Texture containerTexture("resources/texture/container.png");
+    Texture containerReflectionTexture("resources/texture/container_reflection.png", false);
+    containerReflectionTexture.setTextureName("reflectionMap");
+    
     unsigned char data[] = {
         255,
         255,
@@ -205,6 +209,7 @@ int main(int argc, const char * argv[]) {
     
     Texture transparentTexture(data, 1, 1, false);
     Texture blackTexture(data2, 1, 1, false);
+    blackTexture.setTextureName("reflectionMap");
     
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
@@ -220,16 +225,20 @@ int main(int argc, const char * argv[]) {
     e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     e.addToTriangleList(&transparentTriangles);
     
-    Cube cube(&basicShader, &renderData, &debug2Texture);
+    Cube cube(&basicShader, &renderData, &debug2Texture, 32, nullptr);
     cube.setTranslation(vec3(3.0f, 4.0f, -1.0f));
     cube.addToTriangleList(&opaqueTriangles);
     
-    Cube light(&basicShader, &renderData, &debugTexture);
+    Cube container(&basicShader, &renderData, &containerTexture, 0, &containerReflectionTexture);
+    container.addToTriangleList(&opaqueTriangles);
+    container.setTranslation(vec3(5.0f, 3.5f, 3.0f));
+    
+    Cube light(&basicShader, &renderData, &debugTexture, 0, nullptr);
     light.addToTriangleList(&opaqueTriangles);
     light.setTranslation(vec3(4.0f));
     light.setScale(vec3(0.2f));
     
-    Sphere sphere(&basicShader, &renderData, &stoneTexture);
+    Sphere sphere(&basicShader, &renderData, &stoneTexture, 32, nullptr);
     sphere.addToTriangleList(&opaqueTriangles);
     
     ObjModel testModel("resources/model/untitled.obj", &basicShader, &renderData);
@@ -256,7 +265,7 @@ int main(int argc, const char * argv[]) {
     sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
     
     PointLightSource lightSource(&basicShader);
-    lightSource.color = vec3(0.0f, 0.8f, 0.2f);
+    lightSource.color = /*vec3(0.0f, 0.8f, 0.2f)*/ vec3(1.0f);
     lightSource.position = vec3(4.0f);
     
     std::vector<std::unique_ptr<PointLightSource>> lights;
@@ -267,7 +276,7 @@ int main(int argc, const char * argv[]) {
         lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
         lights[i]->position = vec3((rand() % 30) - 15.0f, (rand() % 30) - 15.0f, (rand() % 30) - 15.0f);
         
-        lightCubes.push_back(std::make_unique<Cube>(&basicShader, &renderData, &debugTexture));
+        lightCubes.push_back(std::make_unique<Cube>(&basicShader, &renderData, &debugTexture, 0, nullptr));
         lightCubes[i]->addToTriangleList(&opaqueTriangles);
         lightCubes[i]->setTranslation(lights[i]->position);
         lightCubes[i]->setScale(vec3(0.2));
@@ -379,7 +388,7 @@ int main(int argc, const char * argv[]) {
             sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
             sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
             
-            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
+//            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
             
             
             while(!sortDone)
