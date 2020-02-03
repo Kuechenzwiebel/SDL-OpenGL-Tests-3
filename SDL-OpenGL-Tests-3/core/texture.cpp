@@ -81,6 +81,11 @@ Texture::~Texture() {
     glDeleteTextures(1, &tex);
 }
 
+void Texture::activate(Shader *shader, int textureNumber) {
+    glActiveTexture(GL_TEXTURE0 + textureNumber);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glUniform1i(glGetUniformLocation(shader->getProgram(), textureName.c_str()), textureNumber);
+}
 
 
 GLuint Texture::getTextureID() {
