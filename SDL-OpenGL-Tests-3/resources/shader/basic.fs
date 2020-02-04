@@ -36,6 +36,9 @@ uniform int reflection;
 uniform int useReflectionMap;
 uniform sampler2D reflectionMap;
 
+
+uniform DirectionalLightData data;
+
 void main() {
     vec3 result = vec3(0.0f);
     
@@ -83,18 +86,6 @@ void main() {
         result += (diffuse + specular) * attenuation;
     }
     
-    DirectionalLightData data;
-    data.position = vec3(2.0f);
-    data.direction = vec3(1.0f, 1.0f, 1.0f) - data.position;
-    data.lightColor = vec3(1.0f);
-    data.cutOff = cos(radians(25.0f));
-    data.outerCutOff = cos(radians(35.0f));
-    
-    lightDir = normalize(data.position - Vertex);
-    
-    float theta = dot(lightDir, normalize(-data.direction));
-    float epsilon = (data.cutOff - data.outerCutOff);
-    float intensity = clamp((theta - data.outerCutOff) / epsilon, 0.0, 1.0);
     
     lightDir = normalize(data.position - Vertex);
     diff = max(dot(normal, lightDir), 0.0f);
@@ -103,16 +94,16 @@ void main() {
     reflectDir = reflect(-lightDir, normal);
     
     
-    specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), 32) * data.lightColor;
-    
-    diffuse  *= intensity;
-    specular *= intensity;
+    if(internalReflection == 0)
+        specular = vec3(0.0f);
+    else
+        specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), internalReflection) * data.lightColor;
     
     
     dist = length(data.position - Vertex);
     attenuation = 1.0f / (1.0f + linear * dist + quadratic * (dist * dist));
     
-    result += (diffuse + specular);
+    result += (diffuse + specular) * attenuation * clamp((dot(lightDir, normalize(-data.direction)) - data.outerCutOff) / (data.cutOff - data.outerCutOff), 0.0f, 1.0f);
     
     
     color = vec4(ambientLight + result, 1.0f) * texture(tex, UV);

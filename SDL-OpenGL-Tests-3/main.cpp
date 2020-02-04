@@ -70,6 +70,7 @@ std::atomic<bool> sortDone;
 std::atomic<bool> sort;
 
 glm::vec3 oldCamFootPos;
+glm::vec3 oldCamEyePos;
 
 void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *transparentTriangles) {
     std::cout << "Sort Thread ID: " << std::this_thread::get_id() << std::endl;
@@ -78,7 +79,7 @@ void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *tran
         if(sort) {
             sortDone = false;
             
-            if(cam->getFootPosition() != oldCamFootPos) {
+            if(cam->getEyePosition() != oldCamEyePos) {
                 for(auto it = transparentTriangles->begin(); it != transparentTriangles->end(); it++) {
                     it->first = glm::distance2(cam->getEyePosition(), it->second->getCenter());
                 }
@@ -174,13 +175,13 @@ int main(int argc, const char * argv[]) {
     cam.processMouseInput();
     cam.processInput();
     
-    mat4 projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
+    mat4 projectionMat = infinitePerspective(radians(cam.zoom), float(windowWidth) / float(windowHeight), 0.005f);
     mat4 uiProjection = ortho(-0.5f * windowWidth, 0.5f * windowWidth, -0.5f * windowHeight, 0.5f * windowHeight, -1.0f, 1.0f);
     mat4 uiView = lookAt(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
     
     RenderData renderData;
     renderData.projection = &projectionMat;
-    renderData.viewMat = cam.getViewMatPointer();
+    renderData.viewMat = &cam.viewMat;
     
     RenderData uiData;
     uiData.projection = &uiProjection;
@@ -193,7 +194,7 @@ int main(int argc, const char * argv[]) {
     
     Texture containerTexture("resources/texture/container.png");
     Texture containerReflectionTexture("resources/texture/container_reflection.png", false);
-    containerReflectionTexture.setTextureName("reflectionMap");
+    containerReflectionTexture.textureName = "reflectionMap";
     
     unsigned char data[] = {
         255,
@@ -209,7 +210,7 @@ int main(int argc, const char * argv[]) {
     
     Texture transparentTexture(data, 1, 1, false);
     Texture blackTexture(data2, 1, 1, false);
-    blackTexture.setTextureName("reflectionMap");
+    blackTexture.textureName = "reflectionMap";
     
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
@@ -265,7 +266,6 @@ int main(int argc, const char * argv[]) {
     sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
     
     PointLightSource lightSource(&basicShader);
-    lightSource.color = /*vec3(0.0f, 0.8f, 0.2f)*/ vec3(1.0f);
     lightSource.position = vec3(4.0f);
     
     std::vector<std::unique_ptr<PointLightSource>> lights;
@@ -282,9 +282,16 @@ int main(int argc, const char * argv[]) {
         lightCubes[i]->setScale(vec3(0.2));
     }
     
-    int ref;
-    UniformVar<int> reflection(&basicShader, "reflection", &ref);
-
+    UniformVar<vec3> positionVar(&basicShader, "data.position", cam.getEyePositionPointer());
+    UniformVar<vec3> directionVar(&basicShader, "data.direction", &cam.front);
+    
+    vec3 lightColor = vec3(0.0f, 0.2f, 0.8f);
+    float cutOff = glm::cos(glm::radians(5.0f));
+    float outerCutOff = glm::cos(glm::radians(6.0f));
+    
+    UniformVar<vec3>  lightColorVar(&basicShader, "data.lightColor", &lightColor);
+    UniformVar<float> cutOffVar(&basicShader, "data.cutOff", &cutOff);
+    UniformVar<float> outerCutOffVar(&basicShader, "data.outerCutOff", &outerCutOff);
     
     
     while(running) {
@@ -329,7 +336,7 @@ int main(int argc, const char * argv[]) {
                 if(windowEvent.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
                     render = false;
                 
-                projectionMat = infinitePerspective(radians(cam.getZoom()), float(windowWidth) / float(windowHeight), 0.005f);
+                projectionMat = infinitePerspective(radians(cam.zoom), float(windowWidth) / float(windowHeight), 0.005f);
                 uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
             
                 fpsText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * fpsText.getScale().x, 0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y, 0.0f));
@@ -382,13 +389,21 @@ int main(int argc, const char * argv[]) {
                 lightSource.activate();
                 for(int i = 0; i < lights.size(); i++)
                     lights[i]->activate();
+                
+                lightColorVar.setVar();
+                cutOffVar.setVar();
+                outerCutOffVar.setVar();
+                
+                positionVar.setVar();
+                directionVar.setVar();
+                
                 opaqueTriangles[i]->render();
             }
             
             sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
             sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
             
-//            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
+            lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
             
             
             while(!sortDone)
@@ -400,6 +415,14 @@ int main(int argc, const char * argv[]) {
                 lightSource.activate();
                 for(int i = 0; i < lights.size(); i++)
                     lights[i]->activate();
+                
+                lightColorVar.setVar();
+                cutOffVar.setVar();
+                outerCutOffVar.setVar();
+                
+                positionVar.setVar();
+                directionVar.setVar();
+                
                 it->second->render();
             }
             
@@ -420,6 +443,7 @@ int main(int argc, const char * argv[]) {
             
             
             oldCamFootPos = cam.getFootPosition();
+            oldCamEyePos = cam.getEyePosition();
             
             SDL_GL_SwapWindow(window);
             glFlush();
