@@ -23,9 +23,11 @@ struct LightSourceData {
 };
 
 struct DirectionalLightData {
-    vec3  position;
-    vec3  direction;
+    vec3 position;
+    vec3 direction;
+    vec3 lightColor;
     float cutOff;
+    float outerCutOff;
 };
 
 uniform LightSourceData lights[100];
@@ -69,45 +71,48 @@ void main() {
         reflectDir = reflect(-lightDir, normal);
         
         
-        if(internalReflection == 0) {
+        if(internalReflection == 0)
             specular = vec3(0.0f);
-        }
-        else {
+        else
             specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), internalReflection) * lights[i].lightColor;
-        }
         
         
         dist = length(lights[i].lightPos - Vertex);
         attenuation = 1.0f / (1.0f + linear * dist + quadratic * (dist * dist));
         
-//        result += diffuse * attenuation + specular * attenuation;
+        result += (diffuse + specular) * attenuation;
     }
     
     DirectionalLightData data;
     data.position = vec3(2.0f);
-    data.direction = vec3(0.0f, 0.0f, 0.0f) - data.position;
-    data.cutOff = cos(radians(12.5f));
+    data.direction = vec3(1.0f, 1.0f, 1.0f) - data.position;
+    data.lightColor = vec3(1.0f);
+    data.cutOff = cos(radians(25.0f));
+    data.outerCutOff = cos(radians(35.0f));
     
     lightDir = normalize(data.position - Vertex);
     
     float theta = dot(lightDir, normalize(-data.direction));
+    float epsilon = (data.cutOff - data.outerCutOff);
+    float intensity = clamp((theta - data.outerCutOff) / epsilon, 0.0, 1.0);
     
-    if(theta > data.cutOff) {
-        lightDir = normalize(data.position - Vertex);
-        diff = max(dot(normal, lightDir), 0.0f);
-        diffuse = diff * vec3(1.0f);
-        
-        reflectDir = reflect(-lightDir, normal);
-        
-        
-        specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), 32) * vec3(1.0f, 0.0f, 0.0f);
-        
-        
-        dist = length(data.position - Vertex);
-        attenuation = 1.0f / (1.0f + linear * dist + quadratic * (dist * dist));
-        
-        result += diffuse + specular;
-    }
+    lightDir = normalize(data.position - Vertex);
+    diff = max(dot(normal, lightDir), 0.0f);
+    diffuse = diff * data.lightColor;
+    
+    reflectDir = reflect(-lightDir, normal);
+    
+    
+    specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), 32) * data.lightColor;
+    
+    diffuse  *= intensity;
+    specular *= intensity;
+    
+    
+    dist = length(data.position - Vertex);
+    attenuation = 1.0f / (1.0f + linear * dist + quadratic * (dist * dist));
+    
+    result += (diffuse + specular);
     
     
     color = vec4(ambientLight + result, 1.0f) * texture(tex, UV);
