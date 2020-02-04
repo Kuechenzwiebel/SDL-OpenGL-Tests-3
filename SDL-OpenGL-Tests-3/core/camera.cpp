@@ -13,10 +13,6 @@ deltaTime(deltaTime), windowEvent(windowEvent), checkMouse(checkMouse), viewMat(
     viewMat = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-glm::mat4* Camera::getViewMatPointer() {
-    return &viewMat;
-}
-
 void Camera::processMouseInput() {
     if(*checkMouse) {
         if(windowEvent->type == SDL_MOUSEMOTION) {
@@ -71,7 +67,6 @@ void Camera::processInput() {
 }
 
 
-
 glm::vec3 Camera::getEyePosition() {
     return eyePosition;
 }
@@ -80,18 +75,9 @@ glm::vec3 Camera::getFootPosition() {
     return footPosition;
 }
 
-float Camera::getMouseSensitivity() {
-    return mouseSensitivity;
-}
-
-float Camera::getZoom() {
-    return zoom;
-}
-
 glm::vec3* Camera::getEyePositionPointer() {
     return &eyePosition;
 }
-
 
 void Camera::setEyePosition(glm::vec3 position) {
     eyePosition = position;
@@ -101,12 +87,4 @@ void Camera::setEyePosition(glm::vec3 position) {
 void Camera::setFootPosition(glm::vec3 position) {
     footPosition = position;
     eyePosition = footPosition + glm::vec3(0.0f, 1.73f, 0.0f);
-}
-
-void Camera::setMouseSensitivity(float sensitivity) {
-    mouseSensitivity = sensitivity;
-}
-
-void Camera::setZoom(float zoom) {
-    this->zoom = zoom;
 }

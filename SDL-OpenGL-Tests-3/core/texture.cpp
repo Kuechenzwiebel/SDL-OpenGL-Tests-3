@@ -9,9 +9,9 @@
 #include "texture.hpp"
 
 Texture::Texture(std::string file, bool bitmap):
-textureName("tex"), transparent(false) {
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
+textureName("textureID"), transparent(false) {
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
     
     int texWidth, texHeight;
     
@@ -47,9 +47,9 @@ textureName("tex"), transparent(false) {
 }
 
 Texture::Texture(unsigned char *data, unsigned int texWidth, unsigned int texHeight, bool bitmap):
-textureName("tex"), textureSize(texWidth, texHeight), transparent(false) {
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
+textureName("textureID"), textureSize(texWidth, texHeight), transparent(false) {
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
     
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     
@@ -78,33 +78,11 @@ textureName("tex"), textureSize(texWidth, texHeight), transparent(false) {
 }
 
 Texture::~Texture() {
-    glDeleteTextures(1, &tex);
+    glDeleteTextures(1, &textureID);
 }
 
 void Texture::activate(Shader *shader, int textureNumber) {
     glActiveTexture(GL_TEXTURE0 + textureNumber);
-    glBindTexture(GL_TEXTURE_2D, tex);
+    glBindTexture(GL_TEXTURE_2D, textureID);
     glUniform1i(glGetUniformLocation(shader->getProgram(), textureName.c_str()), textureNumber);
-}
-
-
-GLuint Texture::getTextureID() {
-    return tex;
-}
-
-std::string Texture::getTextureName() {
-    return textureName;
-}
-
-glm::vec2 Texture::getTextureSize() {
-    return textureSize;
-}
-
-
-void Texture::setTextureName(std::string name) {
-    textureName = name;
-}
-
-bool Texture::isTransparent() {
-    return transparent;
 }

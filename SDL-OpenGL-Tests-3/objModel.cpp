@@ -93,7 +93,7 @@ shader(shader), data(data) {
                 texture = std::find(textures.begin(), textures.end(), std::make_pair(objectInfo[objectIndex].textureName, nullptr));
             }
             
-            if(texture->second->isTransparent()) {
+            if(texture->second->transparent) {
                 for(int j = objectInfo[objectIndex].objectBounds.first; j < objectInfo[objectIndex].objectBounds.second; j += 3) {
                     transparentTriangles.push_back(std::make_unique<CoreTriangle>(shader, data, &vertices[j], texture->second.get(), &uvs[j], &normals[j], &modelMat, 32, nullptr, true));
                 }

@@ -22,30 +22,28 @@
 class Camera {
 public:
     Camera(const float *deltaTime, const SDL_Event *windowEvent, bool *checkMouse);
-    
-    glm::mat4* getViewMatPointer();
+
     glm::vec3* getEyePositionPointer();
     glm::vec3 getEyePosition();
     glm::vec3 getFootPosition();
-    float getMouseSensitivity();
-    float getZoom();
     
     void setEyePosition(glm::vec3 position);
     void setFootPosition(glm::vec3 position);
-    void setMouseSensitivity(float sensitivity);
-    void setZoom(float zoom);
     
     void processMouseInput();
     void processInput();
     
-private:
+    
     glm::mat4 viewMat;
-    float yaw, pitch;
-    glm::vec3 front, right, up;
-    glm::vec3 footPosition, eyePosition;
     
     float mouseSensitivity;
     float zoom;
+    
+    glm::vec3 front, right, up;
+    
+private:
+    float yaw, pitch;
+    glm::vec3 footPosition, eyePosition;
     
     const float *deltaTime;
     const SDL_Event *windowEvent;

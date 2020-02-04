@@ -27,15 +27,7 @@ public:
     
     void activate(Shader *shader, int textureNumber);
     
-    GLuint getTextureID();
-    std::string getTextureName();
-    glm::vec2 getTextureSize();
-    bool isTransparent();
-    
-    void setTextureName(std::string name);
-    
-private:
-    GLuint tex;
+    GLuint textureID;
     std::string textureName;
     glm::vec2 textureSize;
     
