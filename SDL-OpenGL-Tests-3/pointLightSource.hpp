@@ -11,18 +11,11 @@
 
 #include <stdio.h>
 
-#include <GL/glew.h>
-#define GLM_FORCE_SWIZZLE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "core/shader.hpp"
-#include "core/uniformVar.hpp"
+#include "lightSource.hpp"
 
 void resetPointLightSourceIndex();
 
-class PointLightSource {
+class PointLightSource: public LightSource {
 public:
     PointLightSource(Shader *shader);
     
@@ -30,8 +23,6 @@ public:
     
     glm::vec3 position;
     glm::vec3 color;
-    float specularStrength;
-    int reflection;
     
 private:
     Shader *shader;

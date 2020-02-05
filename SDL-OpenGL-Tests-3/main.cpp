@@ -50,6 +50,8 @@
 #include "objModel.hpp"
 #include "ui/uiText.hpp"
 #include "pointLightSource.hpp"
+#include "lightSource.hpp"
+#include "spotLightSource.hpp"
 
 using namespace glm;
 
@@ -159,6 +161,7 @@ int main(int argc, const char * argv[]) {
     
     std::list<std::pair<float, CoreTriangle*>> transparentTriangles;
     std::vector<CoreTriangleCluster*> opaqueTriangles;
+    std::vector<LightSource*> lightSources;
     
     std::vector<CoreTriangle*> uiTriangles;
     std::vector<UIText*> uiTexts;
@@ -267,6 +270,7 @@ int main(int argc, const char * argv[]) {
     
     PointLightSource lightSource(&basicShader);
     lightSource.position = vec3(4.0f);
+    lightSource.addToLightList(&lightSources);
     
     std::vector<std::unique_ptr<PointLightSource>> lights;
     std::vector<std::unique_ptr<Cube>> lightCubes;
@@ -276,23 +280,16 @@ int main(int argc, const char * argv[]) {
         lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
         lights[i]->position = vec3((rand() % 30) - 15.0f, (rand() % 30) - 15.0f, (rand() % 30) - 15.0f);
         
+        lights[i]->addToLightList(&lightSources);
+        
         lightCubes.push_back(std::make_unique<Cube>(&basicShader, &renderData, &debugTexture, 0, nullptr));
         lightCubes[i]->addToTriangleList(&opaqueTriangles);
         lightCubes[i]->setTranslation(lights[i]->position);
         lightCubes[i]->setScale(vec3(0.2));
     }
     
-    UniformVar<vec3> positionVar(&basicShader, "data.position", cam.getEyePositionPointer());
-    UniformVar<vec3> directionVar(&basicShader, "data.direction", &cam.front);
-    
-    vec3 lightColor = vec3(0.0f, 0.2f, 0.8f);
-    float cutOff = glm::cos(glm::radians(5.0f));
-    float outerCutOff = glm::cos(glm::radians(6.0f));
-    
-    UniformVar<vec3>  lightColorVar(&basicShader, "data.lightColor", &lightColor);
-    UniformVar<float> cutOffVar(&basicShader, "data.cutOff", &cutOff);
-    UniformVar<float> outerCutOffVar(&basicShader, "data.outerCutOff", &outerCutOff);
-    
+    SpotLightSource flashlight(&basicShader);
+    flashlight.addToLightList(&lightSources);
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -381,24 +378,6 @@ int main(int argc, const char * argv[]) {
             
             
             cube.setRotation(vec4(1.0f, 1.0f, 1.0f, tan(totalTime / 5.0f)));
-    
-            
-            for(int i = 0; i < opaqueTriangles.size(); i++) {
-                opaqueTriangles[i]->getShaderPointer()->use();
-                viewPos.setVar();
-                lightSource.activate();
-                for(int i = 0; i < lights.size(); i++)
-                    lights[i]->activate();
-                
-                lightColorVar.setVar();
-                cutOffVar.setVar();
-                outerCutOffVar.setVar();
-                
-                positionVar.setVar();
-                directionVar.setVar();
-                
-                opaqueTriangles[i]->render();
-            }
             
             sphere.setTranslation(vec3(cos(totalTime), sin(totalTime), sin(totalTime)));
             sphere.setRotation(vec4(1.0f, 1.0f, 1.0f, -tan(totalTime / 3.0f)));
@@ -406,22 +385,31 @@ int main(int argc, const char * argv[]) {
             lightSource.color = normalize(vec3(0.0f, 0.8f, 0.2f)) * abs(sin(totalTime / 2.0f));
             
             
+            flashlight.position = cam.getEyePosition();
+            flashlight.direction = cam.front;
+            
+            
+            for(int i = 0; i < opaqueTriangles.size(); i++) {
+                opaqueTriangles[i]->getShaderPointer()->use();
+                
+                viewPos.setVar();
+                for(int i = 0; i < lightSources.size(); i++)
+                    lightSources[i]->activate();
+                
+                opaqueTriangles[i]->render();
+            }
+            
+            
             while(!sortDone)
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
             
+            
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
+                
                 viewPos.setVar();
-                lightSource.activate();
-                for(int i = 0; i < lights.size(); i++)
-                    lights[i]->activate();
-                
-                lightColorVar.setVar();
-                cutOffVar.setVar();
-                outerCutOffVar.setVar();
-                
-                positionVar.setVar();
-                directionVar.setVar();
+                for(int i = 0; i < lightSources.size(); i++)
+                    lightSources[i]->activate();
                 
                 it->second->render();
             }
