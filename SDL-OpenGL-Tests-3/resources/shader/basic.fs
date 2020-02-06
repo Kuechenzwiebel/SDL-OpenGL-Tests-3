@@ -33,13 +33,12 @@ struct SpotLightSourceData {
 uniform PointLightSourceData pointLights[100];
 uniform int validPointLights;
 
-uniform SpotLightSourceData spotLights[100];
+uniform SpotLightSourceData spotLights[30];
 uniform int validSpotLights;
 
 uniform int reflection;
 uniform int useReflectionMap;
 uniform sampler2D reflectionMap;
-
 
 void main() {
     vec3 result = vec3(0.0f);
@@ -108,7 +107,6 @@ void main() {
         
         result += (diffuse + specular) * attenuation * clamp((dot(lightDir, normalize(-spotLights[i].direction)) - spotLights[i].outerCutOff) / (spotLights[i].cutOff - spotLights[i].outerCutOff), 0.0f, 1.0f);
     }
-    
     
     
     
