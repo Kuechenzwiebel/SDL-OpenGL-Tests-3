@@ -52,6 +52,7 @@
 #include "pointLightSource.hpp"
 #include "lightSource.hpp"
 #include "spotLightSource.hpp"
+#include "map/mapChunk.hpp"
 
 using namespace glm;
 
@@ -290,6 +291,10 @@ int main(int argc, const char * argv[]) {
     
     SpotLightSource flashlight(&basicShader);
     flashlight.addToLightList(&lightSources);
+    
+    
+    MapChunk chunk(&basicShader, &renderData, &stoneTexture);
+    chunk.addToTriangleList(&opaqueTriangles);
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
