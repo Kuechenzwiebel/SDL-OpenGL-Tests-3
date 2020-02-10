@@ -44,12 +44,13 @@ void main() {
     vec3 result = vec3(0.0f);
     
     
-    vec3 normal = normalize(Normal);
+    vec3 forwardNormal = normalize(Normal);
+    vec3 backwardNormal = -forwardNormal;
     vec3 lightDir;
-    float diff;
+    float diffForward, diffBackward;
     vec3 diffuse;
     vec3 viewDir = normalize(viewPos - Vertex);
-    vec3 reflectDir;
+    vec3 reflectDirForward, reflectDirBackward;
     
     vec3 specular;
     
@@ -70,16 +71,18 @@ void main() {
     
     for(int i = 0; i < validPointLights; i++) {
         lightDir = normalize(pointLights[i].position - Vertex);
-        diff = max(dot(normal, lightDir), 0.0f);
-        diffuse = diff * pointLights[i].color;
+        diffForward = max(dot(forwardNormal, lightDir), 0.0f);
+        diffBackward = max(dot(backwardNormal, lightDir), 0.0f);
+        diffuse = (diffForward + diffBackward) * pointLights[i].color;
         
-        reflectDir = reflect(-lightDir, normal);
+        reflectDirForward = reflect(-lightDir, forwardNormal);
+        reflectDirBackward = reflect(-lightDir, backwardNormal);
         
         
         if(internalReflection == 0)
             specular = vec3(0.0f);
         else
-            specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), internalReflection) * pointLights[i].color;
+            specular = 0.5f * (pow(max(dot(viewDir, reflectDirForward), 0.0f), internalReflection) + pow(max(dot(viewDir, reflectDirBackward), 0.0f), internalReflection)) * pointLights[i].color;
         
         
         dist = length(pointLights[i].position - Vertex);
@@ -90,16 +93,17 @@ void main() {
     
     for(int i = 0; i < validSpotLights; i++) {
         lightDir = normalize(spotLights[i].position - Vertex);
-        diff = max(dot(normal, lightDir), 0.0f);
-        diffuse = diff * spotLights[i].color;
+        diffForward = max(dot(forwardNormal, lightDir), 0.0f);
+        diffBackward = max(dot(backwardNormal, lightDir), 0.0f);
+        diffuse = (diffForward + diffBackward) * spotLights[i].color;
         
-        reflectDir = reflect(-lightDir, normal);
+        reflectDirForward = reflect(-lightDir, forwardNormal);
         
         
         if(internalReflection == 0)
             specular = vec3(0.0f);
         else
-            specular = 0.5f * pow(max(dot(viewDir, reflectDir), 0.0f), internalReflection) * spotLights[i].color;
+            specular = 0.5f * (pow(max(dot(viewDir, reflectDirForward), 0.0f), internalReflection) + pow(max(dot(viewDir, reflectDirBackward), 0.0f), internalReflection)) * spotLights[i].color;
         
         
         dist = length(spotLights[i].position - Vertex);
