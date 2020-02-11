@@ -302,8 +302,10 @@ int main(int argc, const char * argv[]) {
             frame = 0;
             nextMeasure += 1000;
             
-            fpsSum += fps;
-            measures++;
+            if(totalFrames > 200) {
+                fpsSum += fps;
+                measures++;
+            }
             
             
             fpsText.setText("FPS:   " + std::to_string(fps) + "\nFrametime:   " + std::to_string(1000.0f / fps) + "ms");
