@@ -12,21 +12,24 @@
 #include <stdio.h>
 #include <memory>
 
+#include <HG_Noise/HG_Noise.h>
+
 #include "../coreTriangleCluster.hpp"
 #include "../object.hpp"
 
 #define CHUNK_WIDTH 32
-#define TRIANGLE_WIDTH 2.0f
-
+#define TRIANGLE_WIDTH 1.0f
 
 class MapChunk: public Object {
 public:
-    MapChunk(Shader *shader, const RenderData *data, Texture *texture);
+    MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise);
     
     void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);
     
 private:
     std::unique_ptr<CoreTriangleCluster> tris;
+    
+    hg::PerlinNoise *noise;
     
     Shader *shader;
     const RenderData *data;

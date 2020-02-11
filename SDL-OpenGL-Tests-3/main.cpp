@@ -292,8 +292,14 @@ int main(int argc, const char * argv[]) {
     SpotLightSource flashlight(&basicShader);
     flashlight.addToLightList(&lightSources);
     
+    hg::PerlinNoise noise(12345);
     
-    MapChunk chunk(&basicShader, &renderData, &stoneTexture);
+    noise.octaves = 4;
+    noise.frequency = 10.0f;
+    noise.multiplier = 2.5f;
+    noise.offset = -10.0f;
+    
+    MapChunk chunk(&basicShader, &renderData, &stoneTexture, &noise);
     chunk.addToTriangleList(&opaqueTriangles);
     
     while(running) {

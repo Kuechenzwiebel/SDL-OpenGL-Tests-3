@@ -12,17 +12,23 @@ static glm::vec3 mapVertices[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CH
 static glm::vec2 mapUVs[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
 static glm::vec3 mapNormals[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
 
-static void initMapChunk() {
+MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise):
+shader(shader), data(data), texture(texture) {
     int arrayIdx = 0;
     
     for(float x = 0.0f; x < float(CHUNK_WIDTH); x += TRIANGLE_WIDTH) {
         for(float y = 0.0f; y < float(CHUNK_WIDTH); y += TRIANGLE_WIDTH) {
-            mapVertices[arrayIdx + 0] = glm::vec3(x + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, 0.0f, y + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
-            mapVertices[arrayIdx + 1] = glm::vec3(x + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, 0.0f, y + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
-            mapVertices[arrayIdx + 2] = glm::vec3(x + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, 0.0f, y + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
-            mapVertices[arrayIdx + 3] = glm::vec3(x + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, 0.0f, y + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
-            mapVertices[arrayIdx + 4] = glm::vec3(x + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, 0.0f, y + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
-            mapVertices[arrayIdx + 5] = glm::vec3(x + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, 0.0f, y + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
+            float height0 = noise->octaveNoise(x + 0.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH),
+                  height1 = noise->octaveNoise(x + 1.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH),
+                  height2 = noise->octaveNoise(x + 0.0f * TRIANGLE_WIDTH, y + 1.0f * TRIANGLE_WIDTH),
+                  height3 = noise->octaveNoise(x + 1.0f * TRIANGLE_WIDTH, y + 1.0f * TRIANGLE_WIDTH);
+            
+            mapVertices[arrayIdx + 0] = glm::vec3(x + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, height0, y + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
+            mapVertices[arrayIdx + 1] = glm::vec3(x + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, height1, y + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
+            mapVertices[arrayIdx + 2] = glm::vec3(x + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, height2, y + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
+            mapVertices[arrayIdx + 3] = glm::vec3(x + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, height3, y + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
+            mapVertices[arrayIdx + 4] = glm::vec3(x + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, height1, y + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
+            mapVertices[arrayIdx + 5] = glm::vec3(x + 0.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f, height2, y + 1.0f * TRIANGLE_WIDTH - CHUNK_WIDTH / 2.0f);
             
             mapUVs[arrayIdx + 0] = glm::vec2(x + 0.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH);
             mapUVs[arrayIdx + 1] = glm::vec2(x + 1.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH);
@@ -38,17 +44,8 @@ static void initMapChunk() {
             mapNormals[arrayIdx + 4] = glm::vec3(0.0f, 1.0f, 0.0f);
             mapNormals[arrayIdx + 5] = glm::vec3(0.0f, 1.0f, 0.0f);
             
-            printf("Setting%d\n", arrayIdx);
-            
             arrayIdx += 6;
         }
-    }
-}
-
-MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture):
-shader(shader), data(data), texture(texture) {
-    if(mapVertices[0] == glm::vec3(0.0f)) {
-        initMapChunk();
     }
     
     tris = std::make_unique<CoreTriangleCluster>(shader, data, (int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH))) * 2, mapVertices, texture, mapUVs, mapNormals, &modelMat, 32, nullptr, true);
