@@ -12,12 +12,12 @@ static glm::vec3 mapVertices[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CH
 static glm::vec2 mapUVs[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
 static glm::vec3 mapNormals[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
 
-MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise):
-shader(shader), data(data), texture(texture) {
+MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise, glm::vec2 offset):
+shader(shader), data(data), texture(texture), trianglePointer(nullptr) {
     int arrayIdx = 0;
     
-    for(float x = 0.0f; x < float(CHUNK_WIDTH); x += TRIANGLE_WIDTH) {
-        for(float y = 0.0f; y < float(CHUNK_WIDTH); y += TRIANGLE_WIDTH) {
+    for(float x = offset.x; x < float(CHUNK_WIDTH) + offset.x; x += TRIANGLE_WIDTH) {
+        for(float y = offset.y; y < float(CHUNK_WIDTH) + offset.y; y += TRIANGLE_WIDTH) {
             float height0 = noise->octaveNoise(x + 0.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH),
                   height1 = noise->octaveNoise(x + 1.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH),
                   height2 = noise->octaveNoise(x + 0.0f * TRIANGLE_WIDTH, y + 1.0f * TRIANGLE_WIDTH),
