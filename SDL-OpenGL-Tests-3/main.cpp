@@ -308,9 +308,11 @@ int main(int argc, const char * argv[]) {
             frame = 0;
             nextMeasure += 1000;
             
-            if(totalFrames > 200) {
-                fpsSum += fps;
-                measures++;
+            if(render) {
+                if(totalFrames > 200) {
+                    fpsSum += fps;
+                    measures++;
+                }
             }
             
             
