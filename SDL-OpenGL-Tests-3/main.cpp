@@ -460,9 +460,11 @@ int main(int argc, const char * argv[]) {
     
     sortThread.detach();
     
-    printf(PRINTF_RED);
-    printf("Average %lu FPS \t\t %f ms average frametime\n", fpsSum / measures, 1000.0f / (fpsSum / measures));
-    printf(PRINTF_DEFAULT);
+    if(fpsSum != 0) {
+        printf(PRINTF_RED);
+        printf("Average %lu FPS \t\t %f ms average frametime\n", fpsSum / measures, 1000.0f / (fpsSum / measures));
+        printf(PRINTF_DEFAULT);
+    }
     
     SDL_SetRelativeMouseMode(SDL_FALSE);
     
