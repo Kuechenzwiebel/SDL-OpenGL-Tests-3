@@ -44,9 +44,8 @@ private:
     
     std::vector<ObjModelComponentInfo> objectInfo;
     
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
+    std::vector<CoreTriangleCluster*> *opaqueTrianglePointer;
+    std::list<std::pair<float, CoreTriangle*>> *transparentTrianglePointer;
     
     Shader *shader;
     const RenderData *data;

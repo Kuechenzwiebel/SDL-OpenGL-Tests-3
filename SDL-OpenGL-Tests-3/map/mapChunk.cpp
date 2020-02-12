@@ -51,7 +51,17 @@ shader(shader), data(data), texture(texture), trianglePointer(nullptr) {
     tris = std::make_unique<CoreTriangleCluster>(shader, data, (int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH))) * 2, mapVertices, texture, mapUVs, mapNormals, &modelMat, 32, nullptr, true);
 }
 
+MapChunk::~MapChunk() {
+    if(trianglePointer != nullptr) {
+        auto findIter = std::find(trianglePointer->begin(), trianglePointer->end(), tris.get());
+        if(findIter != trianglePointer->end()) {
+            trianglePointer->erase(findIter);
+        }
+    }
+}
+
 void MapChunk::addToTriangleList(std::vector<CoreTriangleCluster*> *triangles) {
     triangles->push_back(tris.get());
+    trianglePointer = triangles;
 }
 

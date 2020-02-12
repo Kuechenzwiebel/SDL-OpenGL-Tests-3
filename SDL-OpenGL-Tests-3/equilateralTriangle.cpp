@@ -27,7 +27,7 @@ static glm::vec3 equilateralTriangleNormals[] = {
 };
 
 EquilateralTriangle::EquilateralTriangle(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap, bool initLighting):
-CoreTriangle(shader, data, equilateralTriangleVertices, texture, equilateralTriangleUVs, equilateralTriangleNormals, &modelMat, reflection, reflectionMap, initLighting) {
+CoreTriangle(shader, data, equilateralTriangleVertices, texture, equilateralTriangleUVs, equilateralTriangleNormals, &modelMat, reflection, reflectionMap, initLighting), trianglePointer(nullptr) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
@@ -45,8 +45,15 @@ CoreTriangle(shader, data, equilateralTriangleVertices, texture, equilateralTria
 
 EquilateralTriangle::~EquilateralTriangle() {
     glDeleteVertexArrays(1, &VAO);
+    if(trianglePointer != nullptr) {
+        auto findIter = std::find_if(trianglePointer->begin(), trianglePointer->end(), [this](std::pair<float, CoreTriangle*> p){return p.second == this;});
+        if(findIter != trianglePointer->end()) {
+            trianglePointer->erase(findIter);
+        }
+    }
 }
 
 void EquilateralTriangle::addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles) {
     triangles->push_back(std::make_pair(0.0f, this));
+    trianglePointer = triangles;
 }

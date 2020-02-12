@@ -137,14 +137,20 @@ static glm::vec3 cubeNormals[] = {
 
 Cube::Cube(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap):
 shader(shader), data(data), texture(texture), reflectionMap(reflectionMap), reflection(reflection),
-tris(shader, data, 12, cubeVertices, texture, cubeTexCoords, cubeNormals, &modelMat, reflection, reflectionMap, true) {
+tris(shader, data, 12, cubeVertices, texture, cubeTexCoords, cubeNormals, &modelMat, reflection, reflectionMap, true), trianglePointer(nullptr) {
     
 }
 
 Cube::~Cube() {
-    
+    if(trianglePointer != nullptr) {
+        auto findIter = std::find(trianglePointer->begin(), trianglePointer->end(), &tris);
+        if(findIter != trianglePointer->end()) {
+            trianglePointer->erase(findIter);
+        }
+    }
 }
 
 void Cube::addToTriangleList(std::vector<CoreTriangleCluster*> *triangles) {
     triangles->push_back(&tris);
+    trianglePointer = triangles;
 }

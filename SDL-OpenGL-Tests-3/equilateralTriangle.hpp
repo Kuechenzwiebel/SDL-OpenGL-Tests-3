@@ -25,6 +25,9 @@ public:
     void addToTriangleList(std::list<std::pair<float, CoreTriangle*>> *triangles);
     
     void render() = delete;
+    
+private:
+    std::list<std::pair<float, CoreTriangle*>> *trianglePointer;
 };
 
 #endif /* equilateralTriangle_hpp */

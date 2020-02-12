@@ -33,6 +33,8 @@ private:
     
     Shader *shader;
     const RenderData *data;
+    
+    std::vector<CoreTriangleCluster*> *trianglePointer;
 };
 
 #endif /* cube_hpp */

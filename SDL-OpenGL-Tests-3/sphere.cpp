@@ -47,7 +47,7 @@ static void initSphere() {
 }
 
 Sphere::Sphere(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap):
-shader(shader), data(data), texture(texture), reflectionMap(reflectionMap), reflection(reflection) {
+shader(shader), data(data), texture(texture), reflectionMap(reflectionMap), reflection(reflection), trianglePointer(nullptr) {
     if(triangleVertices[0] == glm::vec3(0.0f)) {
         initSphere();
     }
@@ -56,9 +56,15 @@ shader(shader), data(data), texture(texture), reflectionMap(reflectionMap), refl
 }
 
 Sphere::~Sphere() {
-    
+    if(trianglePointer != nullptr) {
+        auto findIter = std::find(trianglePointer->begin(), trianglePointer->end(), tris.get());
+        if(findIter != trianglePointer->end()) {
+            trianglePointer->erase(findIter);
+        }
+    }
 }
 
 void Sphere::addToTriangleList(std::vector<CoreTriangleCluster*> *triangles) {
     triangles->push_back(tris.get());
+    trianglePointer = triangles;
 }

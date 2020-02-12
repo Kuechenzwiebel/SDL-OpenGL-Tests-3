@@ -16,7 +16,7 @@ bool operator==(const std::pair<std::string, std::unique_ptr<Texture>> &l, const
 }
 
 ObjModel::ObjModel(std::string file, Shader *shader, const RenderData *data):
-shader(shader), data(data) {
+shader(shader), data(data), opaqueTrianglePointer(nullptr), transparentTrianglePointer(nullptr) {
     hg::File inputFile(file);
     
     std::vector<std::string> fileLines = inputFile.readFileLineByLine();
@@ -26,6 +26,10 @@ shader(shader), data(data) {
     std::vector<glm::vec3> readVertices;
     std::vector<glm::vec2> readUVs;
     std::vector<glm::vec3> readNormals;
+    
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> normals;
     
     for(int i = 0; i < fileLines.size(); i++) {
         if(fileLines[i].substr(0, 2) == "o ") {
@@ -108,7 +112,23 @@ shader(shader), data(data) {
 }
 
 ObjModel::~ObjModel() {
+    if(transparentTrianglePointer != nullptr) {
+        for(int i = 0; i < transparentTriangles.size(); i++) {
+            auto findIter = std::find_if(transparentTrianglePointer->begin(), transparentTrianglePointer->end(), [this, i](std::pair<float, CoreTriangle*> p){return p.second == transparentTriangles[i].get();});
+            if(findIter != transparentTrianglePointer->end()) {
+                transparentTrianglePointer->erase(findIter);
+            }
+        }
+    }
     
+    if(opaqueTrianglePointer != nullptr) {
+        for(int i = 0; i < opaqueTriangleClusters.size(); i++) {
+            auto findIter = std::find(opaqueTrianglePointer->begin(), opaqueTrianglePointer->end(), opaqueTriangleClusters[i].get());
+            if(findIter != opaqueTrianglePointer->end()) {
+                opaqueTrianglePointer->erase(findIter);
+            }
+        }
+    }
 }
 
 void ObjModel::addToTriangleList(std::vector<CoreTriangleCluster*> *oTriangles, std::list<std::pair<float, CoreTriangle*>> *tTriangles) {
@@ -119,4 +139,7 @@ void ObjModel::addToTriangleList(std::vector<CoreTriangleCluster*> *oTriangles, 
     for(int i = 0; i < transparentTriangles.size(); i++) {
         tTriangles->push_back(std::make_pair(0.0f, transparentTriangles[i].get()));
     }
+    
+    transparentTrianglePointer = tTriangles;
+    opaqueTrianglePointer = oTriangles;
 }

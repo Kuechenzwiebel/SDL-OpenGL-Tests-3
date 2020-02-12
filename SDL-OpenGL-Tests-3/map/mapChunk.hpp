@@ -35,6 +35,8 @@ private:
     Shader *shader;
     const RenderData *data;
     Texture *texture;
+    
+    std::vector<CoreTriangleCluster*> *trianglePointer;
 };
 
 #endif /* mapChunk_hpp */
