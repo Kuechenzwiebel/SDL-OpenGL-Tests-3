@@ -20,6 +20,7 @@
 #include <thread>
 #include <mutex>
 #include <iomanip>
+#include <random>
 
 #define GLEW_STATIC
 #include <SDL2/SDL.h>
@@ -101,6 +102,9 @@ void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *tran
 
 
 int main(int argc, const char * argv[]) {
+    std::random_device randomDevice;
+    std::mt19937 randomEngine(randomDevice());
+    
     std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
     
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -275,10 +279,14 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<PointLightSource>> lights;
     std::vector<std::unique_ptr<Cube>> lightCubes;
 
+    std::uniform_real_distribution<float> lightYPositionDistribution(-8.0f, 5.0f);
+    std::uniform_real_distribution<float> lightXZPositionDistribution(-15.0f, 15.0f);
+    std::uniform_real_distribution<float> lightColorDistribution(0.2f, 0.7f);
+    
     for(int i = 0; i < 10; i++) {
         lights.push_back(std::make_unique<PointLightSource>(&basicShader));
-        lights[i]->color = vec3((rand() % 10 / 10.0f), (rand() % 10 / 10.0f), (rand() % 10 / 10.0f));
-        lights[i]->position = vec3((rand() % 30) - 15.0f, (rand() % 30) - 15.0f, (rand() % 30) - 15.0f);
+        lights[i]->color = vec3(lightColorDistribution(randomEngine), lightColorDistribution(randomEngine), lightColorDistribution(randomEngine));
+        lights[i]->position = vec3(lightXZPositionDistribution(randomEngine), lightYPositionDistribution(randomEngine), lightXZPositionDistribution(randomEngine));
         
         lights[i]->addToLightList(&lightSources);
         
