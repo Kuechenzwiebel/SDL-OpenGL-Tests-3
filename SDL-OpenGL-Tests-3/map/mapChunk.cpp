@@ -37,12 +37,14 @@ shader(shader), data(data), texture(texture), trianglePointer(nullptr) {
             mapUVs[arrayIdx + 4] = glm::vec2(x + 1.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH);
             mapUVs[arrayIdx + 5] = glm::vec2(x + 0.0f * TRIANGLE_WIDTH, y + 1.0f * TRIANGLE_WIDTH);
             
-            mapNormals[arrayIdx + 0] = glm::vec3(0.0f, 1.0f, 0.0f);
-            mapNormals[arrayIdx + 1] = glm::vec3(0.0f, 1.0f, 0.0f);
-            mapNormals[arrayIdx + 2] = glm::vec3(0.0f, 1.0f, 0.0f);
-            mapNormals[arrayIdx + 3] = glm::vec3(0.0f, 1.0f, 0.0f);
-            mapNormals[arrayIdx + 4] = glm::vec3(0.0f, 1.0f, 0.0f);
-            mapNormals[arrayIdx + 5] = glm::vec3(0.0f, 1.0f, 0.0f);
+            glm::vec3 normalBase = glm::vec3(x + TRIANGLE_WIDTH / 2.0f, noise->offset - 2.0f, y + TRIANGLE_WIDTH / 2.0f);
+            
+            mapNormals[arrayIdx + 0] = mapVertices[arrayIdx + 0] - normalBase;
+            mapNormals[arrayIdx + 1] = mapVertices[arrayIdx + 1] - normalBase;
+            mapNormals[arrayIdx + 2] = mapVertices[arrayIdx + 2] - normalBase;
+            mapNormals[arrayIdx + 3] = mapVertices[arrayIdx + 3] - normalBase;
+            mapNormals[arrayIdx + 4] = mapVertices[arrayIdx + 4] - normalBase;
+            mapNormals[arrayIdx + 5] = mapVertices[arrayIdx + 5] - normalBase;
             
             arrayIdx += 6;
         }

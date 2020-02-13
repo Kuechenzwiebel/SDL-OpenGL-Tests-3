@@ -14,8 +14,14 @@
 
 #include <HG_Noise/HG_Noise.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/normal.hpp>
+#include <glm/gtx/norm.hpp>
+
+
 #include "../coreTriangleCluster.hpp"
 #include "../object.hpp"
+
 
 #define CHUNK_WIDTH 32
 #define TRIANGLE_WIDTH 1.0f
