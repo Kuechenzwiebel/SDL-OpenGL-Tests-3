@@ -115,5 +115,4 @@ void main() {
     
     
     color = vec4(ambientLight + result, 1.0f) * texture(tex, UV);
-    color.rgb = pow(color.rgb, vec3(2.2f));
 }

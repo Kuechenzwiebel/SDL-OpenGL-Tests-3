@@ -141,7 +141,6 @@ int main(int argc, const char * argv[]) {
     glEnable(GL_BLEND);
     glEnable(GL_MULTISAMPLE);
     glDisable(GL_CULL_FACE);
-    glEnable(GL_FRAMEBUFFER_SRGB);
     
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LEQUAL);
@@ -381,7 +380,7 @@ int main(int argc, const char * argv[]) {
             
             sort = true;
             
-            glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             
