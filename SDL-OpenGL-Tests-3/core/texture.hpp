@@ -25,7 +25,7 @@ public:
     Texture(unsigned char *data, unsigned int texWidth, unsigned int texHeight, bool bitmap = true);
     ~Texture();
     
-    void activate(Shader *shader, int textureNumber);
+    void activate(Shader *shader, int textureNumber = 0);
     
     GLuint textureID;
     std::string textureName;
