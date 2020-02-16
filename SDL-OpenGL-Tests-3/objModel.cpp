@@ -27,13 +27,10 @@ shader(shader), data(data), opaqueTrianglePointer(nullptr), transparentTriangleP
     std::vector<glm::vec2> readUVs;
     std::vector<glm::vec3> readNormals;
     
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
-    
     for(int i = 0; i < fileLines.size(); i++) {
         if(fileLines[i].substr(0, 2) == "o ") {
             objectInfo.push_back(ObjModelComponentInfo{std::make_pair(vertices.size(), 0), hg::substr(file, 0, int(file.find_last_of("/"))) + "/" + hg::substr(fileLines[i], 2, int(fileLines[i].length())) + ".png"});
+            std::cout << "Opening Texture " << hg::substr(file, 0, int(file.find_last_of("/"))) + "/" + hg::substr(fileLines[i], 2, int(fileLines[i].length())) + ".png" << std::endl;
             if(vertices.size() != 0) {
                 objectInfo[objectInfo.size() - 2].objectBounds.second = (unsigned int)vertices.size();
             }
