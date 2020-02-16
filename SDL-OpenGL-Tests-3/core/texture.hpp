@@ -18,6 +18,7 @@
 #include <glm/glm.hpp>
 
 #include "shader.hpp"
+#include "../utils.hpp"
 
 class Texture {
 public:

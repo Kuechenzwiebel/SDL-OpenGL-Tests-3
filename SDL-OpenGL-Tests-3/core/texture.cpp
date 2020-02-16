@@ -10,6 +10,10 @@
 
 Texture::Texture(std::string file, bool bitmap):
 textureName("textureID"), transparent(false) {
+    if(fileExists(file) == false) {
+        throw std::runtime_error("Texture stored at '" + file + "' does not exist!");
+    }
+    
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
     
