@@ -78,3 +78,8 @@ void fadeToZero(float *x, float deltaTime, float timeToZero) {
     else
         *x = *x - steps;
 }
+
+bool fileExists(std::string fileName) {
+  struct stat buffer;
+  return (stat (fileName.c_str(), &buffer) == 0);
+}

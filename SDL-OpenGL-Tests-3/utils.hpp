@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <glm/glm.hpp>
+#include <sys/stat.h>
 
 #define PRINTF_RED "\033[0;31m"
 #define PRINTF_BLUE "\033[0;34m"
@@ -46,5 +47,7 @@ struct RenderData {
 void swapBool(bool *b);
 
 void fadeToZero(float *x, float deltaTime, float timeToZero);
+
+bool fileExists(std::string fileName);
 
 #endif /* utils_hpp */
