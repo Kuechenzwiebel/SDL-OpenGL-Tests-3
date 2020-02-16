@@ -54,6 +54,7 @@
 #include "lightSource.hpp"
 #include "spotLightSource.hpp"
 #include "map/mapChunk.hpp"
+#include "line.hpp"
 
 using namespace glm;
 
@@ -301,6 +302,7 @@ int main(int argc, const char * argv[]) {
     
     hg::PerlinNoise noise(12345);
     
+    std::vector<std::unique_ptr<Line>> lines;
     noise.octaves = 4;
     noise.frequency = 10.0f;
     noise.multiplier = 2.5f;
@@ -415,6 +417,11 @@ int main(int argc, const char * argv[]) {
             
             flashlight.position = cam.getEyePosition();
             flashlight.direction = cam.front;
+            
+            
+            colorBufferShader.use();
+            for(int i = 0; i < lines.size(); i++)
+                lines[i]->render();
             
             
             for(int i = 0; i < opaqueTriangles.size(); i++) {
