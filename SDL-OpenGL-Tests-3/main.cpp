@@ -309,6 +309,9 @@ int main(int argc, const char * argv[]) {
     MapChunk chunk(&basicShader, &renderData, &stoneTexture, &noise);
     chunk.addToTriangleList(&opaqueTriangles);
     
+    int normalView = 0;
+    UniformVar<int> normalViewUniform(&basicShader, "normalView", &normalView);
+    
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
             fps = frame;
@@ -371,6 +374,9 @@ int main(int argc, const char * argv[]) {
                 
                 if(windowEvent.key.keysym.sym == SDLK_f)
                     swapBool(&wireframe);
+                
+                if(windowEvent.key.keysym.sym == SDLK_n)
+                    swapBool((bool*)&normalView);
             }
             
             if(windowEvent.type == SDL_MOUSEWHEEL) {
@@ -414,6 +420,7 @@ int main(int argc, const char * argv[]) {
             for(int i = 0; i < opaqueTriangles.size(); i++) {
                 opaqueTriangles[i]->getShaderPointer()->use();
                 
+                normalViewUniform.setVar();
                 viewPos.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
@@ -429,6 +436,7 @@ int main(int argc, const char * argv[]) {
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
                 
+                normalViewUniform.setVar();
                 viewPos.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();

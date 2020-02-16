@@ -40,6 +40,8 @@ uniform int reflection;
 uniform int useReflectionMap;
 uniform sampler2D reflectionMap;
 
+uniform int normalView;
+
 void main() {
     vec3 result = vec3(0.0f);
     
@@ -113,6 +115,8 @@ void main() {
     }
     
     
-    
-    color = vec4(ambientLight + result, 1.0f) * texture(tex, UV);
+    if(normalView == 1)
+        color = vec4(forwardNormal, 1.0f);
+    else
+        color = vec4(ambientLight + result, 1.0f) * texture(tex, UV);
 }
