@@ -173,8 +173,10 @@ int main(int argc, const char * argv[]) {
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
     hg::File uiShaderVertex("resources/shader/ui.vs"), uiShaderFragment("resources/shader/ui.fs");
+    hg::File colorShaderVertex("resources/shader/colorBuffer.vs"), colorShaderFragment("resources/shader/colorBuffer.fs");
     Shader basicShader(basicShaderVertex, basicShaderFragment);
     Shader uiShader(uiShaderVertex, uiShaderFragment);
+    Shader colorBufferShader(colorShaderVertex, colorShaderFragment);
     
     
     
@@ -302,7 +304,6 @@ int main(int argc, const char * argv[]) {
     
     hg::PerlinNoise noise(12345);
     
-    std::vector<std::unique_ptr<Line>> lines;
     noise.octaves = 4;
     noise.frequency = 10.0f;
     noise.multiplier = 2.5f;
@@ -417,12 +418,6 @@ int main(int argc, const char * argv[]) {
             
             flashlight.position = cam.getEyePosition();
             flashlight.direction = cam.front;
-            
-            
-            colorBufferShader.use();
-            for(int i = 0; i < lines.size(); i++)
-                lines[i]->render();
-            
             
             for(int i = 0; i < opaqueTriangles.size(); i++) {
                 opaqueTriangles[i]->getShaderPointer()->use();
