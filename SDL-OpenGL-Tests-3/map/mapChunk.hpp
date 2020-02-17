@@ -30,7 +30,7 @@
 
 class MapChunk: public Object {
 public:
-    MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise, std::vector<std::unique_ptr<Line>> *lines, Shader *lineShader, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
+    MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
     ~MapChunk();
     
     void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);

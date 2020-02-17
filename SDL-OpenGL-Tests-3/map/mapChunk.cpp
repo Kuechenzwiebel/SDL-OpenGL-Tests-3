@@ -12,7 +12,7 @@ static glm::vec3 mapVertices[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CH
 static glm::vec2 mapUVs[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
 static glm::vec3 mapNormals[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
 
-MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise, std::vector<std::unique_ptr<Line>> *lines, Shader *lineShader, glm::vec2 offset):
+MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise, glm::vec2 offset):
 shader(shader), data(data), texture(texture), trianglePointer(nullptr) {
     int arrayIdx = 0;
     
