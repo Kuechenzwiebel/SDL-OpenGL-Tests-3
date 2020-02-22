@@ -22,7 +22,7 @@
 
 class Texture {
 public:
-    Texture(std::string file, bool bitmap = true);
+    Texture(const std::string &file, bool bitmap = true);
     Texture(unsigned char *data, unsigned int texWidth, unsigned int texHeight, bool bitmap = true);
     ~Texture();
     
