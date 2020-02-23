@@ -58,10 +58,9 @@
 
 using namespace glm;
 
-
 int windowWidth = 1080, windowHeight = 760;
 
-bool running = true;
+std::atomic<bool> running;
 bool render = true;
 bool wireframe = false;
 bool checkMouse = false;
@@ -101,6 +100,47 @@ void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *tran
     }
 }
 
+std::thread mapUpdateThread;
+std::atomic<bool> updateDone;
+std::atomic<bool> update;
+std::atomic<bool> updateRequired;
+
+glm::vec3 mapVertices[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
+glm::vec2 mapUVs[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
+glm::vec3 mapNormals[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
+
+
+
+void mapUpdate(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise, Camera *cam, std::vector<LightSource*> *lightSources, UniformVar<vec3> *viewPos, UniformVar<int> *normalViewUniform) {
+    std::cout << "Map Update Thread ID: " << std::this_thread::get_id() << std::endl;
+    
+    glm::vec2 thisCamPosition;
+    glm::vec2 oldCamPosition;
+    
+    while(running) {
+          if(update) {
+              updateDone = false;
+              
+              thisCamPosition = (round(cam->getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();
+              
+              if(oldCamPosition != thisCamPosition) {
+                  generateMapData(noise, mapVertices, mapUVs, mapNormals, thisCamPosition);
+                  updateRequired = true;
+              }
+              else
+                  updateRequired = false;
+              
+              
+              oldCamPosition = thisCamPosition;
+              updateDone = true;
+              update = false;
+          }
+          else {
+              std::this_thread::sleep_for(std::chrono::microseconds(10));
+          }
+      }
+}
+
 
 int main(int argc, const char * argv[]) {
     std::random_device randomDevice;
@@ -113,6 +153,8 @@ int main(int argc, const char * argv[]) {
         return EXIT_FAILURE;
     }
     
+    running = true;
+    
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -120,6 +162,7 @@ int main(int argc, const char * argv[]) {
     
     SDL_Window *window = SDL_CreateWindow("SDL-OpenGL-Tests-3", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext context = SDL_GL_CreateContext(window);
+    SDL_GL_MakeCurrent(window, context);
     SDL_Event windowEvent;
     
     SDL_GL_SetSwapInterval(1);
@@ -290,10 +333,10 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<Cube>> lightCubes;
 
     std::uniform_real_distribution<float> lightYPositionDistribution(-8.0f, 5.0f);
-    std::uniform_real_distribution<float> lightXZPositionDistribution(-15.0f, 15.0f);
+    std::uniform_real_distribution<float> lightXZPositionDistribution(-50.0f, 50.0f);
     std::uniform_real_distribution<float> lightColorDistribution(0.2f, 0.7f);
     
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 20; i++) {
         lights.push_back(std::make_unique<PointLightSource>(&basicShader));
         lights[i]->color = vec3(lightColorDistribution(randomEngine), lightColorDistribution(randomEngine), lightColorDistribution(randomEngine));
         lights[i]->position = vec3(lightXZPositionDistribution(randomEngine), lightYPositionDistribution(randomEngine), lightXZPositionDistribution(randomEngine));
@@ -309,18 +352,23 @@ int main(int argc, const char * argv[]) {
     SpotLightSource flashlight(&basicShader);
     flashlight.addToLightList(&lightSources);
     
-    hg::PerlinNoise noise(12345);
     
-    noise.octaves = 4;
-    noise.frequency = 10.0f;
-    noise.multiplier = 2.5f;
-    noise.offset = -10.0f;
     
-    MapChunk chunk(&basicShader, &renderData, &stoneTexture, &noise);
-    chunk.addToTriangleList(&opaqueTriangles);
     
     int normalView = 0;
     UniformVar<int> normalViewUniform(&basicShader, "normalView", &normalView);
+    
+    ObjModel g("resources/model/vehicle new.obj", &basicShader, &renderData);
+    g.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    
+    
+    mapUpdateThread = std::thread(mapUpdate, &basicShader, &renderData, &stoneTexture, &noise, &cam, &lightSources, &viewPos, &normalViewUniform);
+    
+    
+    
+    
+    std::unique_ptr<MapChunk> chunk;
+    std::vector<CoreTriangleCluster*> mapTriangles;
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -333,12 +381,12 @@ int main(int argc, const char * argv[]) {
                     fpsSum += fps;
                     measures++;
                 }
+                
+
+                fpsText.setText("FPS:   " + std::to_string(fps) + "\nFrametime:   " + std::to_string(1000.0f / fps) + "ms");
+                
+                printf("%d FPS \t\t %f ms average frametime last second\n", fps, 1000.0f / fps);
             }
-            
-            
-            fpsText.setText("FPS:   " + std::to_string(fps) + "\nFrametime:   " + std::to_string(1000.0f / fps) + "ms");
-            
-            printf("%d FPS \t\t %f ms average frametime last second\n", fps, 1000.0f / fps);
         }
         
         currentFrame = SDL_GetTicks() / 1000.0f;
@@ -403,6 +451,7 @@ int main(int argc, const char * argv[]) {
             cam.processInput();
             
             sort = true;
+            update = true;
             
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -440,6 +489,24 @@ int main(int argc, const char * argv[]) {
             
             while(!sortDone)
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
+            
+            while(!updateDone)
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
+            
+            if(updateRequired) {
+                chunk = std::make_unique<MapChunk>(&basicShader, &renderData, &stoneTexture, mapVertices, mapUVs, mapNormals);
+                chunk->addToTriangleList(&mapTriangles);
+            }
+            
+            basicShader.use();
+            for(int i = 0; i < mapTriangles.size(); i++) {
+                normalViewUniform.setVar();
+                viewPos.setVar();
+                for(int i = 0; i < lightSources.size(); i++)
+                    lightSources[i]->activate();
+                
+                mapTriangles[i]->render();
+            }
             
             
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
@@ -485,6 +552,7 @@ int main(int argc, const char * argv[]) {
     }
     
     sortThread.detach();
+    mapUpdateThread.detach();
     
     if(fpsSum != 0) {
         printf(PRINTF_RED);

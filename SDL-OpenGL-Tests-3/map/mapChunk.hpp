@@ -14,6 +14,7 @@
 #include <memory>
 
 #include <HG_Noise/HG_Noise.h>
+#include <HG_List/HG_List.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/normal.hpp>
@@ -28,17 +29,17 @@
 #define CHUNK_WIDTH 32
 #define TRIANGLE_WIDTH 0.25f
 
+void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
+
 class MapChunk: public Object {
 public:
-    MapChunk(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
+    MapChunk(Shader *shader, const RenderData *data, Texture *texture, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);
     ~MapChunk();
     
     void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);
     
 private:
     std::unique_ptr<CoreTriangleCluster> tris;
-    
-    hg::PerlinNoise *noise;
     
     Shader *shader;
     const RenderData *data;
