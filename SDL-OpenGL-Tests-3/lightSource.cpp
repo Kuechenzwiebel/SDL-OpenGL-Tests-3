@@ -9,7 +9,7 @@
 #include "lightSource.hpp"
 
 LightSource::LightSource(Shader *shader):
-shader(shader) {
+shader(shader), position(0.0f), color(1.0f) {
     
 }
 

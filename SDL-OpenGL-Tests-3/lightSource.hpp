@@ -29,6 +29,9 @@ public:
     
     void addToLightList(std::vector<LightSource*> *list);
     
+    glm::vec3 position;
+    glm::vec3 color;
+    
 protected:
     Shader *shader;
     int idx;

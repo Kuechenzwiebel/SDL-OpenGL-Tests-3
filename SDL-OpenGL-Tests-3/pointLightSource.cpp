@@ -15,7 +15,7 @@ void resetPointLightSourceIndex() {
 }
 
 PointLightSource::PointLightSource(Shader *shader):
-LightSource(shader), shader(shader), position(0.0f), color(1.0f),
+LightSource(shader), shader(shader),
 positionUniform(shader, "pointLights[" + std::to_string(arrayIndex) + "].position", &position), colorUniform(shader, "pointLights[" + std::to_string(arrayIndex) + "].color", &color),
 arrayIndexUniform(shader, "validPointLights", &idx) {
     idx = arrayIndex + 1;
