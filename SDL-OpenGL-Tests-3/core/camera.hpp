@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include <SDL2/SDL.h>
+#include <HG_Noise/HG_Noise.h>
 
 #include <GL/glew.h>
 #define GLM_FORCE_SWIZZLE
@@ -19,9 +20,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+
 class Camera {
 public:
-    Camera(const float *deltaTime, const SDL_Event *windowEvent, bool *checkMouse);
+    Camera(const float *deltaTime, const SDL_Event *windowEvent, bool *checkMouse, hg::PerlinNoise *noise);
 
     glm::vec3* getEyePositionPointer();
     glm::vec3 getEyePosition();
@@ -43,11 +45,13 @@ public:
     
 private:
     float yaw, pitch;
-    glm::vec3 footPosition, eyePosition;
+    glm::vec3 footPosition, eyePosition, theoreticalFootPosition;
     
     const float *deltaTime;
     const SDL_Event *windowEvent;
     bool *checkMouse;
+    
+    hg::PerlinNoise *noise;
 };
 
 #endif /* camera_hpp */

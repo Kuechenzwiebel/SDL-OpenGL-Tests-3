@@ -179,8 +179,15 @@ int main(int argc, const char * argv[]) {
     Shader colorBufferShader(colorShaderVertex, colorShaderFragment);
     
     
+    hg::PerlinNoise noise(12345);
     
-    Camera cam(&deltaTime, &windowEvent, &checkMouse);
+    noise.octaves = 4;
+    noise.frequency = 10.0f;
+    noise.multiplier = 2.5f;
+    noise.offset = -10.0f;
+    
+    
+    Camera cam(&deltaTime, &windowEvent, &checkMouse, &noise);
     UniformVar<vec3> viewPos(&basicShader, "viewPos", cam.getEyePositionPointer());
     cam.processMouseInput();
     cam.processInput();
