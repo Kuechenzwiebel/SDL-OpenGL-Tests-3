@@ -8,7 +8,7 @@
 
 #include "uiText.hpp"
 
-static std::vector<hg::HGList> asciiBandInfo = hg::getHGListsFromFileName("resources/font/asciiBandInfo.hg");
+static auto asciiBandInfo = hg::getHGListsFromFileName("resources/font/asciiBandInfo.hg");
 
 static glm::vec2 asciiBandCharUVs[2][3] = {
     {   glm::vec2(0.0f, 0.0f),
@@ -25,7 +25,7 @@ static int xOffsetLoc = hg::getLocationFromName(&asciiBandInfo, "XOffsetNorm"), 
 static void prepareAsciiBandUVs() {
     for(int i = 0; i < 2; i++) {
         for(int j = 0; j < 3; j++) {
-            asciiBandCharUVs[i][j] *= glm::vec2(asciiBandInfo[charWidthNormLoc].getDoubleValue(), asciiBandInfo[charHeightNormLoc].getDoubleValue());
+            asciiBandCharUVs[i][j] *= glm::vec2(asciiBandInfo[charWidthNormLoc]->getDoubleValue(), asciiBandInfo[charHeightNormLoc]->getDoubleValue());
         }
     }
 }
@@ -36,7 +36,7 @@ shader(shader), data(data), asciiBandTexture("resources/font/asciiBand.png") {
         prepareAsciiBandUVs();
     }
     
-    scale = glm::vec3(asciiBandInfo[charWidthLoc].getIntValue(), asciiBandInfo[charHeightLoc].getIntValue(), 0.0f);
+    scale = glm::vec3(asciiBandInfo[charWidthLoc]->getIntValue(), asciiBandInfo[charHeightLoc]->getIntValue(), 0.0f);
     
     setText(text);
 }
@@ -65,9 +65,9 @@ void UIText::setText(std::string newText) {
         
         if(newText[i] >= 0 && newText[i] <= 127) {
             chars.push_back(std::make_pair(std::make_pair(cols, rows), std::make_unique<UIRectangle>(shader, data, &asciiBandTexture, asciiBandCharUVs)));
-            chars[chars.size() - 1].second->setTextureOffset(glm::vec2(float(newText[i] - 32) * asciiBandInfo[charWidthNormLoc].getDoubleValue() + asciiBandInfo[xOffsetLoc].getDoubleValue(), asciiBandInfo[yOffsetLoc].getDoubleValue()));
-            chars[chars.size() - 1].second->setScale(glm::vec3(asciiBandInfo[charWidthLoc].getIntValue(), asciiBandInfo[charHeightLoc].getIntValue(), 0.0f));
-            chars[chars.size() - 1].second->setTranslation(glm::vec3(float(cols * asciiBandInfo[charWidthLoc].getIntValue()), -float(rows * asciiBandInfo[charHeightLoc].getIntValue()), 0.0f));
+            chars[chars.size() - 1].second->setTextureOffset(glm::vec2(float(newText[i] - 32) * asciiBandInfo[charWidthNormLoc]->getDoubleValue() + asciiBandInfo[xOffsetLoc]->getDoubleValue(), asciiBandInfo[yOffsetLoc]->getDoubleValue()));
+            chars[chars.size() - 1].second->setScale(glm::vec3(asciiBandInfo[charWidthLoc]->getIntValue(), asciiBandInfo[charHeightLoc]->getIntValue(), 0.0f));
+            chars[chars.size() - 1].second->setTranslation(glm::vec3(float(cols * asciiBandInfo[charWidthLoc]->getIntValue()), -float(rows * asciiBandInfo[charHeightLoc]->getIntValue()), 0.0f));
         }
         else {
             printf("Non ascii characters are not supported yet!\n");
@@ -84,7 +84,7 @@ void UIText::setText(std::string newText) {
 }
 
 glm::vec2 UIText::getCharDimensions() {
-    return glm::vec2(float(asciiBandInfo[charWidthLoc].getIntValue()), float(asciiBandInfo[charHeightLoc].getIntValue()));
+    return glm::vec2(float(asciiBandInfo[charWidthLoc]->getIntValue()), float(asciiBandInfo[charHeightLoc]->getIntValue()));
 }
 
 void UIText::render() {
