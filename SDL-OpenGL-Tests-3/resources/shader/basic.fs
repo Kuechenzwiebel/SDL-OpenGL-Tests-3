@@ -97,7 +97,7 @@ void main() {
     }
     
     for(int i = 0; i < validSpotLights; i++) {
-        dist = length(pointLights[i].position - Vertex);
+        dist = length(spotLights[i].position - Vertex);
         
         if(dist < 50.0f) {
             lightDir = normalize(spotLights[i].position - Vertex);
