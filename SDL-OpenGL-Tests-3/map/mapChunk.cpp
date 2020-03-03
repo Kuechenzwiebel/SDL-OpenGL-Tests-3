@@ -9,7 +9,7 @@
 #include "mapChunk.hpp"
 
 void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals, glm::vec2 offset) {
-    std::stringstream stringstream;
+    std::stringstream stringstream, filenamestream;
     
     if(offset.x == -0.0f)
         offset.x = 0.0f;
@@ -17,11 +17,13 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
     if(offset.y == -0.0f)
         offset.y = 0.0f;
     
-    if(fileExists("/Users/tobiaspfluger/Desktop/chunk  " + std::to_string(offset.x) + " " + std::to_string(offset.y) + ".txt")) {
-        hg::File file("/Users/tobiaspfluger/Desktop/chunk  " + std::to_string(offset.x) + " " + std::to_string(offset.y) + ".txt");
+    filenamestream << "/Users/tobiaspfluger/Documents/C/OpenGL/SDL-OpenGL-Tests-3/data/chunk   " << offset.x << " " << offset.y << ".txt";
+    
+    if(fileExists(filenamestream.str())) {
+        hg::File file(filenamestream.str());
         stringstream.str(file.readFile());
         
-        for(int i = 0; i < (int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6); i++)
+        for(int i = 0; i < CHUNK_ARRAY_SIZE; i++)
             stringstream >> mapVertices[i].x >> mapVertices[i].y >> mapVertices[i].z >> mapUVs[i].x >> mapUVs[i].y >> mapNormals[i].x >> mapNormals[i].y >> mapNormals[i].z;
         
         std::cout << "Reading" << std::endl;
@@ -122,18 +124,24 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
         
         std::cout << "Generating" << std::endl;
         
-        hg::File file("/Users/tobiaspfluger/Desktop/chunk  " + std::to_string(offset.x) + " " + std::to_string(offset.y) + ".txt");
+        hg::File file(filenamestream.str());
         
-        for(int i = 0; i < (int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6); i++)
-            stringstream << mapVertices[i].x << " " << mapVertices[i].y << " " << mapVertices[i].z << " " << mapUVs[i].x << " " << mapUVs[i].y << " " << mapNormals[i].x << " " << mapNormals[i].y << " " << mapNormals[i].z << "\n";
+        for(int i = 0; i < CHUNK_ARRAY_SIZE; i++)
+            stringstream << round(mapVertices[i].x, 3) << " " << round(mapVertices[i].y, 3) << " " << round(mapVertices[i].z, 3) << " " << round(mapUVs[i].x, 3) << " " << round(mapUVs[i].y, 3) << " " << round(mapNormals[i].x, 3) << " " << round(mapNormals[i].y, 3) << " " << round(mapNormals[i].z, 3) << "\n";
         
         file.writeFile(stringstream.str());
     }
 }
 
+#include <HG_Chronograph/HG_Chronograph.h>
+
 MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals):
 shader(shader), data(data), texture(texture), trianglePointer(nullptr) {
-    tris = std::make_unique<CoreTriangleCluster>(shader, data, (int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH))) * 2, mapVertices, texture, mapUVs, mapNormals, &modelMat, 4, nullptr, true);
+    hg::Chronograph<std::chrono::microseconds> c;
+    c.start();
+    tris = std::make_unique<CoreTriangleCluster>(shader, data, CHUNK_ARRAY_SIZE / 3, mapVertices, texture, mapUVs, mapNormals, &modelMat, 4, nullptr, true);
+    c.stop();
+//    c.printResult();
 }
 
 MapChunk::~MapChunk() {

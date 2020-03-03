@@ -83,3 +83,19 @@ bool fileExists(std::string fileName) {
   struct stat buffer;
   return (stat (fileName.c_str(), &buffer) == 0);
 }
+
+int ipow(int x, unsigned int y) {
+    unsigned int result = 1;
+    for(int i = 0; i < y; i++) {
+        result *= x;
+    }
+    return result;
+}
+
+float round(float value, unsigned int digits) {
+    int power = ipow(10, digits);
+    value *= power;
+    value = round(value);
+    value /= power;
+    return value;
+}

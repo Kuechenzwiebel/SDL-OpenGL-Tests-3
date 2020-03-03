@@ -103,42 +103,123 @@ void sortTriangles(Camera *cam, std::list<std::pair<float, CoreTriangle*>> *tran
 std::thread mapUpdateThread;
 std::atomic<bool> updateDone;
 std::atomic<bool> update;
-std::atomic<bool> updateRequired;
+std::atomic<glm::vec2> offsetReqired;
 
-glm::vec3 mapVertices[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
-glm::vec2 mapUVs[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
-glm::vec3 mapNormals[(int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)];
+static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapVertices;
+static std::vector<std::unique_ptr<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>> mapUVs;
+static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapNormals;
 
+static std::vector<glm::vec2> requiredRenderChunks;
 
-
-void mapUpdate(Shader *shader, const RenderData *data, Texture *texture, hg::PerlinNoise *noise, Camera *cam, std::vector<LightSource*> *lightSources, UniformVar<vec3> *viewPos, UniformVar<int> *normalViewUniform) {
+void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
     std::cout << "Map Update Thread ID: " << std::this_thread::get_id() << std::endl;
     
-    glm::vec2 thisCamPosition;
-    glm::vec2 oldCamPosition;
+    glm::vec2 thisCamPosition = vec2(0.0f), oldCamPosition = vec2(1.0f);
+    
+    std::vector<glm::vec2> requiredChunks;
+    
+    glm::vec2 offset;
+    requiredChunks.clear();
+    requiredRenderChunks.clear();
+    
+    for(int x = -VIEW_RANGE; x <= VIEW_RANGE; x += CHUNK_WIDTH) {
+        for(int y = -VIEW_RANGE; y <= VIEW_RANGE; y += CHUNK_WIDTH) {
+            offset = vec2(x, y);
+            if(glm::distance(thisCamPosition, thisCamPosition + offset) <= float(VIEW_RANGE)) {
+                requiredChunks.emplace_back(thisCamPosition + offset);
+                requiredRenderChunks.emplace_back(thisCamPosition + offset);
+                
+                mapVertices.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
+                mapUVs.emplace_back(std::make_unique<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>());
+                mapNormals.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
+                
+                int idx = int(mapVertices.size() - 1);
+                generateMapData(noise, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data(), requiredChunks[idx]);
+            }
+        }
+    }
+    
+    mapVertices.shrink_to_fit();
+    mapUVs.shrink_to_fit();
+    mapNormals.shrink_to_fit();
+    
+    
+    std::cout << "Map Size:" << mapVertices.size() << std::endl;
+    
     
     while(running) {
-          if(update) {
-              updateDone = false;
-              
-              thisCamPosition = (round(cam->getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();
-              
-              if(oldCamPosition != thisCamPosition) {
-                  generateMapData(noise, mapVertices, mapUVs, mapNormals, thisCamPosition);
-                  updateRequired = true;
-              }
-              else
-                  updateRequired = false;
-              
-              
-              oldCamPosition = thisCamPosition;
-              updateDone = true;
-              update = false;
-          }
-          else {
-              std::this_thread::sleep_for(std::chrono::microseconds(10));
-          }
-      }
+        if(update) {
+            updateDone = false;
+            
+            thisCamPosition = (round(cam->getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();
+            
+            glm::vec2 offset;
+            requiredChunks.clear();
+            requiredRenderChunks.clear();
+            
+            for(int x = -VIEW_RANGE; x <= VIEW_RANGE; x += CHUNK_WIDTH) {
+                for(int y = -VIEW_RANGE; y <= VIEW_RANGE; y += CHUNK_WIDTH) {
+                    offset = vec2(x, y);
+                    if(glm::distance(thisCamPosition, thisCamPosition + offset) <= float(VIEW_RANGE)) {
+                        requiredChunks.emplace_back(thisCamPosition + offset);
+                        requiredRenderChunks.emplace_back(thisCamPosition + offset);
+                    }
+                }
+            }
+            
+            if(thisCamPosition != oldCamPosition) {
+                for(int i = 0; i < mapVertices.size(); i++) {
+                    auto itr = std::find_if(requiredChunks.begin(), requiredChunks.end(), [i](vec2 &search){return (*mapVertices[i])[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == search;});
+                    
+                    if(itr == requiredChunks.end()) {
+                        //                    printf("Chunk ");
+                        //                    printVec2((*mapVertices[i])[0].xz() + vec2(CHUNK_WIDTH) / 2.0f, false);
+                        //                    printf(" is not required\n");
+                        
+                        mapVertices.erase(mapVertices.begin() + i);
+                        i--;
+                    }
+                    else {
+                        requiredChunks.erase(itr);
+                    }
+                }
+                
+                
+                if(requiredChunks.size() > 0) {
+                    //                printf("Chunks left to load:\n");
+                    for(int i = 0; i < requiredChunks.size(); i++) {
+                        //                    printVec2(requiredChunks[i]);
+                    }
+                }
+                
+                
+                for(int i = 0; i < requiredChunks.size(); i++) {
+                    mapVertices.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
+                    mapUVs.emplace_back(std::make_unique<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>());
+                    mapNormals.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
+                    
+                    int idx = int(mapVertices.size() - 1);
+                    generateMapData(noise, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data(), requiredChunks[i]);
+                }
+                
+                
+                
+                //            printf("Loaded chunks:\n");
+                for(int i = 0; i < mapVertices.size(); i++) {
+                    //                printVec2(mapVertices[i]->at(0).xz() + vec2(CHUNK_WIDTH / 2.0f));
+                }
+                
+                //            printf("\n");
+            }
+            
+            oldCamPosition = thisCamPosition;
+            updateDone = true;
+            update = false;
+        }
+        else {
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
+        }
+    }
 }
 
 
@@ -263,10 +344,10 @@ int main(int argc, const char * argv[]) {
         100};
     
     unsigned char data2[] = {
-           0,
-           0,
-           0,
-           0xff};
+        0,
+        0,
+        0,
+        0xff};
     
     Texture transparentTexture(data, 1, 1, false);
     Texture blackTexture(data2, 1, 1, false);
@@ -308,7 +389,7 @@ int main(int argc, const char * argv[]) {
     
     UIText text("Hello\nWorld", &uiShader, &uiData);
     text.setScale(vec3(text.getCharDimensions(), 0.0f) * 1.0f);
-//    uiTexts.push_back(&text);
+    //    uiTexts.push_back(&text);
     
     UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
     fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
@@ -331,7 +412,7 @@ int main(int argc, const char * argv[]) {
     
     std::vector<std::unique_ptr<PointLightSource>> lights;
     std::vector<std::unique_ptr<Cube>> lightCubes;
-
+    
     std::uniform_real_distribution<float> lightYPositionDistribution(-8.0f, 5.0f);
     std::uniform_real_distribution<float> lightXZPositionDistribution(-50.0f, 50.0f);
     std::uniform_real_distribution<float> lightColorDistribution(0.2f, 0.7f);
@@ -353,22 +434,20 @@ int main(int argc, const char * argv[]) {
     flashlight.addToLightList(&lightSources);
     
     
-    
-    
     int normalView = 0;
     UniformVar<int> normalViewUniform(&basicShader, "normalView", &normalView);
     
-    ObjModel g("resources/model/vehicle new.obj", &basicShader, &renderData);
-    g.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
-    mapUpdateThread = std::thread(mapUpdate, &basicShader, &renderData, &stoneTexture, &noise, &cam, &lightSources, &viewPos, &normalViewUniform);
-    
-    
-    
-    
-    std::unique_ptr<MapChunk> chunk;
+    std::vector<std::unique_ptr<MapChunk>> chunks;
     std::vector<CoreTriangleCluster*> mapTriangles;
+    
+    mapUpdateThread = std::thread(mapUpdate, &noise, &cam);
+    
+    update = true;
+    
+    while(!updateDone)
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -382,7 +461,7 @@ int main(int argc, const char * argv[]) {
                     measures++;
                 }
                 
-
+                
                 fpsText.setText("FPS:   " + std::to_string(fps) + "\nFrametime:   " + std::to_string(1000.0f / fps) + "ms");
                 
                 printf("%d FPS \t\t %f ms average frametime last second\n", fps, 1000.0f / fps);
@@ -418,7 +497,7 @@ int main(int argc, const char * argv[]) {
                 
                 projectionMat = infinitePerspective(radians(cam.zoom), float(windowWidth) / float(windowHeight), 0.005f);
                 uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
-            
+                
                 fpsText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * fpsText.getScale().x, 0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y, 0.0f));
                 
                 glViewport(0, 0, windowWidth, windowHeight);
@@ -451,7 +530,6 @@ int main(int argc, const char * argv[]) {
             cam.processInput();
             
             sort = true;
-            update = true;
             
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -461,7 +539,7 @@ int main(int argc, const char * argv[]) {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             else
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        
+            
             
             
             cube.setRotation(vec4(1.0f, 1.0f, 1.0f, tan(totalTime / 5.0f)));
@@ -475,6 +553,7 @@ int main(int argc, const char * argv[]) {
             flashlight.position = cam.getEyePosition();
             flashlight.direction = cam.front;
             
+            
             for(int i = 0; i < opaqueTriangles.size(); i++) {
                 opaqueTriangles[i]->getShaderPointer()->use();
                 
@@ -487,16 +566,55 @@ int main(int argc, const char * argv[]) {
             }
             
             
-            while(!sortDone)
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
-            
-            while(!updateDone)
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
-            
-            if(updateRequired) {
-                chunk = std::make_unique<MapChunk>(&basicShader, &renderData, &stoneTexture, mapVertices, mapUVs, mapNormals);
-                chunk->addToTriangleList(&mapTriangles);
+            if(updateDone) {
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
+                
+                printf("Render chunks needed:\n");
+                for(int i = 0; i < requiredRenderChunks.size(); i++) {
+                    printVec2(requiredRenderChunks[i]);
+                }
+                
+                for(int i = 0; i < chunks.size(); i++) {
+                    auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
+                    
+                    if(itr == requiredRenderChunks.end()) {
+                        printf("Deleting ");
+                        printVec2(chunks[i]->offset);
+                        chunks.erase(chunks.begin() + i);
+                        i--;
+                    }
+                    else {
+                        requiredRenderChunks.erase(itr);
+                    }
+                }
+                
+                if(requiredRenderChunks.size() > 0) {
+                    printf("Render chunks left to load:\n");
+                    for(int i = 0; i < requiredRenderChunks.size(); i++) {
+                        printVec2(requiredRenderChunks[i]);
+                    }
+                }
+                
+                
+                for(int i = 0; i < requiredRenderChunks.size(); i++) {
+                    auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>> &search){return (*search)[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
+                    
+                    if(itr == mapVertices.end()) {
+                        printf("Chunkdata ");
+                        printVec2(requiredRenderChunks[i], false);
+                        printf(" not found\n");
+                    }
+                    else {
+                        int idx = int(itr - mapVertices.begin());
+                        chunks.emplace_back(std::make_unique<MapChunk>(&basicShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
+                        chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
+                        chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
+                    }
+                }
+                
+                update = true;
             }
+            
             
             basicShader.use();
             for(int i = 0; i < mapTriangles.size(); i++) {
@@ -508,6 +626,10 @@ int main(int argc, const char * argv[]) {
                 mapTriangles[i]->render();
             }
             
+            
+            
+            while(!sortDone)
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
             
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
@@ -552,7 +674,7 @@ int main(int argc, const char * argv[]) {
     }
     
     sortThread.detach();
-    mapUpdateThread.detach();
+    mapUpdateThread.join();
     
     if(fpsSum != 0) {
         printf(PRINTF_RED);

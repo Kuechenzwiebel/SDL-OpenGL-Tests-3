@@ -50,4 +50,7 @@ void fadeToZero(float *x, float deltaTime, float timeToZero);
 
 bool fileExists(std::string fileName);
 
+int ipow(int x, unsigned int y);
+float round(float value, unsigned int digits);
+
 #endif /* utils_hpp */

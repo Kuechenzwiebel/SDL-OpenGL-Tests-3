@@ -3,3 +3,4 @@ SDL-OpenGL-Tests-3.xcodeproj/
 SDL-OpenGL-Tests-3/run
 resources
 !resources/
+data/
