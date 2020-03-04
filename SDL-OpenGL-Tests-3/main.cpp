@@ -125,7 +125,7 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
     for(int x = -VIEW_RANGE; x <= VIEW_RANGE; x += CHUNK_WIDTH) {
         for(int y = -VIEW_RANGE; y <= VIEW_RANGE; y += CHUNK_WIDTH) {
             offset = vec2(x, y);
-            if(glm::distance(thisCamPosition, thisCamPosition + offset) <= float(VIEW_RANGE)) {
+            if(glm::length(offset) < float(VIEW_RANGE)) {
                 requiredChunks.emplace_back(thisCamPosition + offset);
                 requiredRenderChunks.emplace_back(thisCamPosition + offset);
                 
@@ -160,7 +160,7 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
             for(int x = -VIEW_RANGE; x <= VIEW_RANGE; x += CHUNK_WIDTH) {
                 for(int y = -VIEW_RANGE; y <= VIEW_RANGE; y += CHUNK_WIDTH) {
                     offset = vec2(x, y);
-                    if(glm::distance(thisCamPosition, thisCamPosition + offset) <= float(VIEW_RANGE)) {
+                    if(glm::length(offset) < float(VIEW_RANGE)) {
                         requiredChunks.emplace_back(thisCamPosition + offset);
                         requiredRenderChunks.emplace_back(thisCamPosition + offset);
                     }

@@ -27,10 +27,10 @@
 
 
 #define CHUNK_WIDTH 32
-#define TRIANGLE_WIDTH 0.25f
+#define TRIANGLE_WIDTH 0.5f
 #define CHUNK_ARRAY_SIZE (int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)
 
-#define VIEW_RANGE CHUNK_WIDTH * 2
+#define VIEW_RANGE CHUNK_WIDTH * 4
 
 void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
 
