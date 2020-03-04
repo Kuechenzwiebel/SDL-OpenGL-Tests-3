@@ -46,7 +46,7 @@ void main() {
     vec3 result = vec3(0.0f);
     
     
-    vec3 forwardNormal = normalize(Normal);
+    vec3 forwardNormal = Normal;
     vec3 backwardNormal = -forwardNormal;
     vec3 lightDir;
     float diffForward, diffBackward;
