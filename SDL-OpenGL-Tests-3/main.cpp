@@ -172,10 +172,6 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
                     auto itr = std::find_if(requiredChunks.begin(), requiredChunks.end(), [i](vec2 &search){return (*mapVertices[i])[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == search;});
                     
                     if(itr == requiredChunks.end()) {
-                        //                    printf("Chunk ");
-                        //                    printVec2((*mapVertices[i])[0].xz() + vec2(CHUNK_WIDTH) / 2.0f, false);
-                        //                    printf(" is not required\n");
-                        
                         mapVertices.erase(mapVertices.begin() + i);
                         i--;
                     }
@@ -183,15 +179,6 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
                         requiredChunks.erase(itr);
                     }
                 }
-                
-                
-                if(requiredChunks.size() > 0) {
-                    //                printf("Chunks left to load:\n");
-                    for(int i = 0; i < requiredChunks.size(); i++) {
-                        //                    printVec2(requiredChunks[i]);
-                    }
-                }
-                
                 
                 for(int i = 0; i < requiredChunks.size(); i++) {
                     mapVertices.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
@@ -201,15 +188,6 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
                     int idx = int(mapVertices.size() - 1);
                     generateMapData(noise, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data(), requiredChunks[i]);
                 }
-                
-                
-                
-                //            printf("Loaded chunks:\n");
-                for(int i = 0; i < mapVertices.size(); i++) {
-                    //                printVec2(mapVertices[i]->at(0).xz() + vec2(CHUNK_WIDTH / 2.0f));
-                }
-                
-                //            printf("\n");
             }
             
             oldCamPosition = thisCamPosition;
@@ -298,9 +276,11 @@ int main(int argc, const char * argv[]) {
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
     hg::File uiShaderVertex("resources/shader/ui.vs"), uiShaderFragment("resources/shader/ui.fs");
     hg::File colorShaderVertex("resources/shader/colorBuffer.vs"), colorShaderFragment("resources/shader/colorBuffer.fs");
+    hg::File diffuseShaderVertex("resources/shader/diffuse.vs"), diffuseShaderFragment("resources/shader/diffuse.fs");
     Shader basicShader(basicShaderVertex, basicShaderFragment);
     Shader uiShader(uiShaderVertex, uiShaderFragment);
     Shader colorBufferShader(colorShaderVertex, colorShaderFragment);
+    Shader diffuseShader(diffuseShaderVertex, diffuseShaderFragment);
     
     
     hg::PerlinNoise noise(12345);
@@ -569,17 +549,10 @@ int main(int argc, const char * argv[]) {
             if(updateDone) {
                 std::this_thread::sleep_for(std::chrono::microseconds(50));
                 
-                printf("Render chunks needed:\n");
-                for(int i = 0; i < requiredRenderChunks.size(); i++) {
-                    printVec2(requiredRenderChunks[i]);
-                }
-                
                 for(int i = 0; i < chunks.size(); i++) {
                     auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
                     
                     if(itr == requiredRenderChunks.end()) {
-                        printf("Deleting ");
-                        printVec2(chunks[i]->offset);
                         chunks.erase(chunks.begin() + i);
                         i--;
                     }
@@ -588,25 +561,13 @@ int main(int argc, const char * argv[]) {
                     }
                 }
                 
-                if(requiredRenderChunks.size() > 0) {
-                    printf("Render chunks left to load:\n");
-                    for(int i = 0; i < requiredRenderChunks.size(); i++) {
-                        printVec2(requiredRenderChunks[i]);
-                    }
-                }
-                
                 
                 for(int i = 0; i < requiredRenderChunks.size(); i++) {
                     auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>> &search){return (*search)[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
                     
-                    if(itr == mapVertices.end()) {
-                        printf("Chunkdata ");
-                        printVec2(requiredRenderChunks[i], false);
-                        printf(" not found\n");
-                    }
-                    else {
+                    if(itr != mapVertices.end()) {
                         int idx = int(itr - mapVertices.begin());
-                        chunks.emplace_back(std::make_unique<MapChunk>(&basicShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
+                        chunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
                         chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
                         chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
                     }
@@ -616,7 +577,7 @@ int main(int argc, const char * argv[]) {
             }
             
             
-            basicShader.use();
+            diffuseShader.use();
             for(int i = 0; i < mapTriangles.size(); i++) {
                 normalViewUniform.setVar();
                 viewPos.setVar();
