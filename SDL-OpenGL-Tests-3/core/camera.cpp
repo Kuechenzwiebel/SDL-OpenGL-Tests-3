@@ -57,7 +57,7 @@ void Camera::processInput() {
             movementVector -= glm::vec3(0.0f, 1.0f, 0.0f);
         
         if(movementVector != glm::vec3(0.0f))
-            footPosition += glm::normalize(movementVector) * *deltaTime * 5.0f;
+            footPosition += glm::normalize(movementVector) * *deltaTime * 25.0f;
     }
     float mapHeight = noise->octaveNoise(footPosition.x, footPosition.z);
     if(footPosition.y < mapHeight)

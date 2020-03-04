@@ -207,7 +207,7 @@ int main(int argc, const char * argv[]) {
     
     std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
     
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if(SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("Failed to initialize SDL2");
         return EXIT_FAILURE;
     }
@@ -226,7 +226,7 @@ int main(int argc, const char * argv[]) {
     
     SDL_GL_SetSwapInterval(1);
     
-    if (window == NULL) {
+    if(window == NULL) {
         printf(PRINTF_RED);
         printf("Failed to open Window!\n");
         printf(PRINTF_DEFAULT);
@@ -235,7 +235,7 @@ int main(int argc, const char * argv[]) {
     
     glewExperimental = GL_TRUE;
     
-    if (glewInit() != GLEW_OK) {
+    if(glewInit() != GLEW_OK) {
         printf(PRINTF_RED);
         printf("Failed to initialize GLEW!\n");
         printf(PRINTF_DEFAULT);
@@ -283,12 +283,20 @@ int main(int argc, const char * argv[]) {
     Shader diffuseShader(diffuseShaderVertex, diffuseShaderFragment);
     
     
-    hg::PerlinNoise noise(12345);
+    hg::MultiPerlinNoise noise;
     
-    noise.octaves = 4;
-    noise.frequency = 10.0f;
-    noise.multiplier = 2.5f;
-    noise.offset = -10.0f;
+    noise.perlinNoises.push_back(std::make_unique<hg::PerlinNoise>((12345)));
+    noise.perlinNoises.push_back(std::make_unique<hg::PerlinNoise>((123456)));
+    
+    noise.perlinNoises[0]->octaves = 4;
+    noise.perlinNoises[0]->frequency = 10.0f;
+    noise.perlinNoises[0]->multiplier = 2.5f;
+    noise.perlinNoises[0]->offset = -10.0f;
+    
+    noise.perlinNoises[1]->octaves = 2;
+    noise.perlinNoises[1]->frequency = 100.0f;
+    noise.perlinNoises[1]->multiplier = 25.0f;
+    noise.perlinNoises[1]->offset = -10.0f;
     
     
     Camera cam(&deltaTime, &windowEvent, &checkMouse, &noise);
@@ -366,10 +374,6 @@ int main(int argc, const char * argv[]) {
     ObjModel testModel("resources/model/untitled.obj", &basicShader, &renderData);
     testModel.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     testModel.setTranslation(vec3(-4.0f));
-    
-    UIText text("Hello\nWorld", &uiShader, &uiData);
-    text.setScale(vec3(text.getCharDimensions(), 0.0f) * 1.0f);
-    //    uiTexts.push_back(&text);
     
     UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
     fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
