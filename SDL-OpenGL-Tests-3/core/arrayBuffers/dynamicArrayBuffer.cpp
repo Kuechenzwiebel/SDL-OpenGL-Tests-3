@@ -28,7 +28,6 @@ DynamicArrayBuffer<GLuint>::~DynamicArrayBuffer() {
 void DynamicArrayBuffer<GLuint>::setData(const GLuint *data, unsigned long dataSize, int shaderPos) {
     shaderPos = shaderPos;
     
-    glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -69,7 +68,6 @@ DynamicArrayBuffer<GLfloat>::~DynamicArrayBuffer() {
 void DynamicArrayBuffer<GLfloat>::setData(const GLfloat *data, unsigned long dataSize, int shaderPos) {
     shaderPos = shaderPos;
     
-    glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -110,7 +108,6 @@ DynamicArrayBuffer<glm::vec2>::~DynamicArrayBuffer() {
 void DynamicArrayBuffer<glm::vec2>::setData(const glm::vec2 *data, unsigned long dataSize, int shaderPos) {
     shaderPos = shaderPos;
     
-    glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -151,7 +148,6 @@ DynamicArrayBuffer<glm::vec3>::~DynamicArrayBuffer() {
 void DynamicArrayBuffer<glm::vec3>::setData(const glm::vec3 *data, unsigned long dataSize, int shaderPos) {
     shaderPos = shaderPos;
     
-    glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -192,7 +188,6 @@ DynamicArrayBuffer<glm::vec4>::~DynamicArrayBuffer() {
 void DynamicArrayBuffer<glm::vec4>::setData(const glm::vec4 *data, unsigned long dataSize, int shaderPos) {
     shaderPos = shaderPos;
     
-    glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

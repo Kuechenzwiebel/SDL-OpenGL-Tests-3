@@ -14,7 +14,7 @@
 #include <GL/glew.h>
 #include <string>
 
-static std::string dataSetErrorMessage = "Data for ArrayBuffer is allready set! Use a dynamic ArrayBuffer if you need to change the data!\n";
+const static std::string dataSetErrorMessage = "Data for ArrayBuffer is allready set! Use a dynamic ArrayBuffer if you need to change the data!\n";
 
 template <typename T>
 class ArrayBuffer {
