@@ -24,13 +24,14 @@
 #include "../coreTriangleCluster.hpp"
 #include "../line.hpp"
 #include "../object.hpp"
+#include "mapDynamicTriangleCluster.hpp"
 
 
 #define CHUNK_WIDTH 32
 #define TRIANGLE_WIDTH 0.5f
 #define CHUNK_ARRAY_SIZE (int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)
 
-#define VIEW_RANGE CHUNK_WIDTH * 4
+#define VIEW_RANGE CHUNK_WIDTH * 1
 
 void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
 
@@ -44,13 +45,13 @@ public:
     glm::vec2 offset;
     
 private:
-    std::unique_ptr<CoreTriangleCluster> tris;
+    MapDynamicTriangleCluster tris;
     
     Shader *shader;
     const RenderData *data;
     Texture *texture;
     
-    std::vector<CoreTriangleCluster*> *trianglePointer;
+    std::vector<MapDynamicTriangleCluster*> *trianglePointer;
 };
 
 #endif /* mapChunk_hpp */
