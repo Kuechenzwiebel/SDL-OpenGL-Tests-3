@@ -133,28 +133,39 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
     }
 }
 
-#include <HG_Chronograph/HG_Chronograph.h>
+void saveMapData(glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals) {
+    glm::vec2 offset = mapVertices[0].xz() + glm::vec2(CHUNK_WIDTH) / 2.0f;
+    std::stringstream stringstream, filenamestream;
+    filenamestream << "/Users/tobiaspfluger/Documents/C/OpenGL/SDL-OpenGL-Tests-3/data/chunk   " << offset.x << " " << offset.y << ".txt";
+    
+    hg::File file(filenamestream.str());
+    
+    for(int i = 0; i < CHUNK_ARRAY_SIZE; i++)
+        stringstream << round(mapVertices[i].x, 3) << " " << round(mapVertices[i].y, 3) << " " << round(mapVertices[i].z, 3) << " " << round(mapUVs[i].x, 3) << " " << round(mapUVs[i].y, 3) << " " << round(mapNormals[i].x, 3) << " " << round(mapNormals[i].y, 3) << " " << round(mapNormals[i].z, 3) << "\n";
+    
+    file.writeFile(stringstream.str());
+}
 
 MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals):
-shader(shader), data(data), texture(texture), trianglePointer(nullptr) {
-    hg::Chronograph<std::chrono::microseconds> c;
-    c.start();
-    tris = std::make_unique<CoreTriangleCluster>(shader, data, CHUNK_ARRAY_SIZE / 3, mapVertices, texture, mapUVs, mapNormals, &modelMat, 4, nullptr, true);
-    c.stop();
-//    c.printResult();
+shader(shader), data(data), texture(texture), trianglePointer(nullptr), tris(shader, data, CHUNK_ARRAY_SIZE / 3, mapVertices, texture, mapUVs, mapNormals, &modelMat) {
+    
 }
 
 MapChunk::~MapChunk() {
     if(trianglePointer != nullptr) {
-        auto findIter = std::find(trianglePointer->begin(), trianglePointer->end(), tris.get());
+        auto findIter = std::find(trianglePointer->begin(), trianglePointer->end(), &tris);
         if(findIter != trianglePointer->end()) {
             trianglePointer->erase(findIter);
         }
     }
 }
 
-void MapChunk::addToTriangleList(std::vector<CoreTriangleCluster*> *triangles) {
-    triangles->push_back(tris.get());
+void MapChunk::addToTriangleList(std::vector<MapDynamicTriangleCluster*> *triangles) {
+    triangles->push_back(&tris);
     trianglePointer = triangles;
+}
+
+void MapChunk::setData(glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals) {
+    tris.setData(CHUNK_ARRAY_SIZE / 3, mapVertices, mapUVs, mapNormals);
 }
 

@@ -17,6 +17,7 @@
 #include <HG_List/HG_List.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_SWIZZLE
 #include <glm/gtx/normal.hpp>
 #include <glm/gtx/norm.hpp>
 
@@ -34,13 +35,16 @@
 #define VIEW_RANGE CHUNK_WIDTH * 1
 
 void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
+void saveMapData(glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);
 
 class MapChunk: public Object {
 public:
     MapChunk(Shader *shader, const RenderData *data, Texture *texture, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);
     ~MapChunk();
     
-    void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);
+    void addToTriangleList(std::vector<MapDynamicTriangleCluster*> *triangles);
+    
+    void setData(glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);
     
     glm::vec2 offset;
     
