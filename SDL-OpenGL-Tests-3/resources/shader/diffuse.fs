@@ -47,9 +47,8 @@ void main() {
     
     
     vec3 forwardNormal = Normal;
-    vec3 backwardNormal = -forwardNormal;
     vec3 lightDir;
-    float diffForward, diffBackward;
+    float diffForward;
     vec3 diffuse;
     vec3 viewDir = normalize(viewPos - Vertex);
     
@@ -67,6 +66,12 @@ void main() {
     }
     
     
+    lightDir = normalize(vec3(0.5f, 1.5f, 0.5f));
+    diffForward = max(dot(forwardNormal, lightDir), 0.0f);
+    diffuse = diffForward * vec3(0.17f);
+    
+    result += diffuse;
+    
     
     for(int i = 0; i < validPointLights; i++) {
         dist = length(pointLights[i].position - Vertex);
@@ -74,8 +79,7 @@ void main() {
         if(dist < 50.0f) {
             lightDir = normalize(pointLights[i].position - Vertex);
             diffForward = max(dot(forwardNormal, lightDir), 0.0f);
-            diffBackward = max(dot(backwardNormal, lightDir), 0.0f);
-            diffuse = (diffForward + diffBackward) * pointLights[i].color;
+            diffuse = diffForward * pointLights[i].color;
             
             attenuation = 1.0f / (1.0f + linear * dist + quadratic * (dist * dist));
             
@@ -89,8 +93,7 @@ void main() {
         if(dist < 50.0f) {
             lightDir = normalize(spotLights[i].position - Vertex);
             diffForward = max(dot(forwardNormal, lightDir), 0.0f);
-            diffBackward = max(dot(backwardNormal, lightDir), 0.0f);
-            diffuse = (diffForward + diffBackward) * spotLights[i].color;
+            diffuse = diffForward * spotLights[i].color;
             
             attenuation = 1.0f / (1.0f + linear * dist + quadratic * (dist * dist));
             
