@@ -55,6 +55,7 @@
 #include "spotLightSource.hpp"
 #include "map/mapChunk.hpp"
 #include "line.hpp"
+#include "ray.hpp"
 
 using namespace glm;
 
@@ -104,6 +105,7 @@ std::thread mapUpdateThread;
 std::atomic<bool> updateDone;
 std::atomic<bool> update;
 std::atomic<glm::vec2> offsetReqired;
+std::mutex mapUpdateMutex;
 
 static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapVertices;
 static std::vector<std::unique_ptr<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>> mapUVs;
@@ -172,6 +174,7 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
                     auto itr = std::find_if(requiredChunks.begin(), requiredChunks.end(), [i](vec2 &search){return (*mapVertices[i])[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == search;});
                     
                     if(itr == requiredChunks.end()) {
+                        saveMapData(mapVertices[i]->data(), mapUVs[i]->data(), mapNormals[i]->data());
                         mapVertices.erase(mapVertices.begin() + i);
                         i--;
                     }
@@ -191,6 +194,9 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
             }
             
             oldCamPosition = thisCamPosition;
+            
+            std::this_thread::sleep_for(std::chrono::microseconds(500));
+            
             updateDone = true;
             update = false;
         }
@@ -372,8 +378,10 @@ int main(int argc, const char * argv[]) {
     sphere.addToTriangleList(&opaqueTriangles);
     
     ObjModel testModel("resources/model/untitled.obj", &basicShader, &renderData);
-    testModel.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+//    testModel.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     testModel.setTranslation(vec3(-4.0f));
+    testModel.setScale(vec3(1.0f));
+    testModel.setRotation(vec4(0.0f));
     
     UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
     fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
@@ -386,7 +394,6 @@ int main(int argc, const char * argv[]) {
         triangleAmount += opaqueTriangles[i]->getSize();
     }
     
-    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount, double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount);
     
     sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
     
@@ -424,14 +431,35 @@ int main(int argc, const char * argv[]) {
     
     
     std::vector<std::unique_ptr<MapChunk>> chunks;
-    std::vector<CoreTriangleCluster*> mapTriangles;
+    std::vector<MapDynamicTriangleCluster*> mapTriangles;
+    int middleIdx = 0;
     
     mapUpdateThread = std::thread(mapUpdate, &noise, &cam);
     
     update = true;
     
     while(!updateDone)
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    for(int i = 0; i < requiredRenderChunks.size(); i++) {
+        auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>> &search){return (*search)[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
+        
+        if(itr != mapVertices.end()) {
+            int idx = int(itr - mapVertices.begin());
+            chunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
+            chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
+            chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
+        }
+    }
+    
+    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
+    
+   
+    unsigned int materialCount = 0;
+    
+    Ray mouseRay;
+    bool rayMapCollision = false;
+    
     
     while(running) {
         if(SDL_GetTicks() > nextMeasure) {
@@ -461,9 +489,77 @@ int main(int argc, const char * argv[]) {
                 running = false;
             
             if(windowEvent.type == SDL_MOUSEBUTTONDOWN) {
+                rayMapCollision = false;
+                for(int i = 0; i < 25; i++) {
+                    mouseRay.move(0.1f);
+                    
+                    if(mouseRay.position.y < noise.octaveNoise(mouseRay.position.x, mouseRay.position.z)) {
+                        rayMapCollision = true;
+                        break;
+                    }
+                }
+                
+                vec2 roundedCamPosition;
+                int index = 0;
+                
+                if(rayMapCollision) {
+                    roundedCamPosition = mod(((round(mouseRay.position * (1.0f / TRIANGLE_WIDTH)) * TRIANGLE_WIDTH).xz() + vec2(CHUNK_WIDTH / 2.0f)) - vec2(TRIANGLE_WIDTH), vec2(CHUNK_WIDTH));
+                    index = 6 * (1.0f / TRIANGLE_WIDTH) * roundedCamPosition.y + 6 * (1.0f / TRIANGLE_WIDTH) * roundedCamPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
+                }
+                
                 if(windowEvent.button.button == SDL_BUTTON_LEFT) {
+                    
+                    if(rayMapCollision) {
+                        mapUpdateMutex.lock();
+                        
+                        (*mapVertices[0])[index + 3 + 0][1] -= 0.1f;
+                        float height = (*mapVertices[0])[index + 3 + 0][1];
+                        
+                        
+                        (*mapVertices[0])[index + 3 + 0][1] = height;
+                        (*mapVertices[0])[index + 1 + 6][1] = height;
+                        (*mapVertices[0])[index + 4 + 6][1] = height;
+                        (*mapVertices[0])[index + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[0])[index + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[0])[index + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
+                        
+
+                        chunks[0]->setData(mapVertices[0]->data(), mapUVs[0]->data(), mapNormals[0]->data());
+                        mapUpdateMutex.unlock();
+                        
+                        materialCount++;
+                    }
+                    
+                    
+                    
                     checkMouse = true;
                     render = true;
+                    
+                }
+                
+                if(windowEvent.button.button == SDL_BUTTON_RIGHT) {
+                    if(materialCount > 0 && rayMapCollision) {
+                        mapUpdateMutex.lock();
+                        
+                        (*mapVertices[0])[index + 3 + 0][1] += 0.1f;
+                        float height = (*mapVertices[0])[index + 3 + 0][1];
+                        
+                        
+                        
+                        (*mapVertices[0])[index + 3 + 0][1] = height;
+                        (*mapVertices[0])[index + 1 + 6][1] = height;
+                        (*mapVertices[0])[index + 4 + 6][1] = height;
+                        (*mapVertices[0])[index + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[0])[index + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[0])[index + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
+                        
+
+                        chunks[0]->setData(mapVertices[0]->data(), mapUVs[0]->data(), mapNormals[0]->data());
+                        
+                        mapUpdateMutex.unlock();
+                        
+                        materialCount--;
+                    }
                 }
             }
             
@@ -513,6 +609,11 @@ int main(int argc, const char * argv[]) {
         if(render) {
             cam.processInput();
             
+            std::cout << materialCount << std::endl;
+            
+            mouseRay.position = cam.getEyePosition();
+            mouseRay.direction = cam.front;
+            
             sort = true;
             
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -551,8 +652,6 @@ int main(int argc, const char * argv[]) {
             
             
             if(updateDone) {
-                std::this_thread::sleep_for(std::chrono::microseconds(50));
-                
                 for(int i = 0; i < chunks.size(); i++) {
                     auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
                     
@@ -577,6 +676,8 @@ int main(int argc, const char * argv[]) {
                     }
                 }
                 
+                middleIdx = int(std::find_if(chunks.begin(), chunks.end(), [](std::unique_ptr<MapChunk> &search){return search->offset == vec2(0.0f);}) - chunks.begin());
+                
                 update = true;
             }
             
@@ -592,6 +693,7 @@ int main(int argc, const char * argv[]) {
             }
             
             
+            colorBufferShader.use();
             
             while(!sortDone)
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
