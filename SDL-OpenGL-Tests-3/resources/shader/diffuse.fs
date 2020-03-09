@@ -14,7 +14,7 @@ uniform vec3 viewPos;
 const float linear = 0.07f;
 const float quadratic = 0.017f;
 
-const vec3 ambientLight = vec3(0.1f);
+const vec3 ambientLight = vec3(0.075f);
 
 
 struct PointLightSourceData {
