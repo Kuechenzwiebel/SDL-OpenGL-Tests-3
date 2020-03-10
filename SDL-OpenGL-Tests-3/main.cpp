@@ -195,7 +195,7 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
             
             oldCamPosition = thisCamPosition;
             
-            std::this_thread::sleep_for(std::chrono::microseconds(500));
+            std::this_thread::sleep_for(std::chrono::microseconds(1000));
             
             updateDone = true;
             update = false;
@@ -652,33 +652,34 @@ int main(int argc, const char * argv[]) {
             
             
             if(updateDone) {
-                for(int i = 0; i < chunks.size(); i++) {
-                    auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
+                if(requiredRenderChunks.begin() != requiredRenderChunks.end()) {
+                    for(int i = 0; i < chunks.size(); i++) {
+                        auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
+                        
+                        if(itr == requiredRenderChunks.end()) {
+                            chunks.erase(chunks.begin() + i);
+                            i--;
+                        }
+                        else {
+                            requiredRenderChunks.erase(itr);
+                        }
+                    }
                     
-                    if(itr == requiredRenderChunks.end()) {
-                        chunks.erase(chunks.begin() + i);
-                        i--;
+                    for(int i = 0; i < requiredRenderChunks.size(); i++) {
+                        auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>> &search){return (*search)[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
+                        
+                        if(itr != mapVertices.end()) {
+                            int idx = int(itr - mapVertices.begin());
+                            chunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
+                            chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
+                            chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
+                        }
                     }
-                    else {
-                        requiredRenderChunks.erase(itr);
-                    }
-                }
-                
-                
-                for(int i = 0; i < requiredRenderChunks.size(); i++) {
-                    auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>> &search){return (*search)[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
                     
-                    if(itr != mapVertices.end()) {
-                        int idx = int(itr - mapVertices.begin());
-                        chunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
-                        chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
-                        chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
-                    }
+                    middleIdx = int(std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();}) - chunks.begin());
+                    
+                    update = true;
                 }
-                
-                middleIdx = int(std::find_if(chunks.begin(), chunks.end(), [](std::unique_ptr<MapChunk> &search){return search->offset == vec2(0.0f);}) - chunks.begin());
-                
-                update = true;
             }
             
             
