@@ -378,7 +378,7 @@ int main(int argc, const char * argv[]) {
     sphere.addToTriangleList(&opaqueTriangles);
     
     ObjModel testModel("resources/model/untitled.obj", &basicShader, &renderData);
-//    testModel.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    //    testModel.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     testModel.setTranslation(vec3(-4.0f));
     testModel.setScale(vec3(1.0f));
     testModel.setRotation(vec4(0.0f));
@@ -454,7 +454,7 @@ int main(int argc, const char * argv[]) {
     
     printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
     
-   
+    
     unsigned int materialCount = 0;
     
     Ray mouseRay;
@@ -507,30 +507,22 @@ int main(int argc, const char * argv[]) {
                     index = 6 * (1.0f / TRIANGLE_WIDTH) * roundedCamPosition.y + 6 * (1.0f / TRIANGLE_WIDTH) * roundedCamPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
                 }
                 
+                float height = 0.0f;
+                
+                bool change = false;
+                
                 if(windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    
                     if(rayMapCollision) {
                         mapUpdateMutex.lock();
                         
-                        (*mapVertices[0])[index + 3 + 0][1] -= 0.1f;
-                        float height = (*mapVertices[0])[index + 3 + 0][1];
+                        (*mapVertices[middleIdx])[index + 3 + 0][1] -= 0.1f;
+                        height = (*mapVertices[middleIdx])[index + 3 + 0][1];
                         
-                        
-                        (*mapVertices[0])[index + 3 + 0][1] = height;
-                        (*mapVertices[0])[index + 1 + 6][1] = height;
-                        (*mapVertices[0])[index + 4 + 6][1] = height;
-                        (*mapVertices[0])[index + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                        (*mapVertices[0])[index + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                        (*mapVertices[0])[index + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
-                        
-
-                        chunks[0]->setData(mapVertices[0]->data(), mapUVs[0]->data(), mapNormals[0]->data());
                         mapUpdateMutex.unlock();
                         
                         materialCount++;
+                        change = true;
                     }
-                    
-                    
                     
                     checkMouse = true;
                     render = true;
@@ -541,26 +533,31 @@ int main(int argc, const char * argv[]) {
                     if(materialCount > 0 && rayMapCollision) {
                         mapUpdateMutex.lock();
                         
-                        (*mapVertices[0])[index + 3 + 0][1] += 0.1f;
-                        float height = (*mapVertices[0])[index + 3 + 0][1];
-                        
-                        
-                        
-                        (*mapVertices[0])[index + 3 + 0][1] = height;
-                        (*mapVertices[0])[index + 1 + 6][1] = height;
-                        (*mapVertices[0])[index + 4 + 6][1] = height;
-                        (*mapVertices[0])[index + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                        (*mapVertices[0])[index + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                        (*mapVertices[0])[index + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
-                        
-
-                        chunks[0]->setData(mapVertices[0]->data(), mapUVs[0]->data(), mapNormals[0]->data());
+                        (*mapVertices[middleIdx])[index + 3 + 0][1] += 0.1f;
+                        height = (*mapVertices[middleIdx])[index + 3 + 0][1];
                         
                         mapUpdateMutex.unlock();
                         
                         materialCount--;
+                        change = true;
                     }
                 }
+                
+                if(change) {
+                    mapUpdateMutex.lock();
+                    (*mapVertices[middleIdx])[index + 3 + 0][1] = height;
+                    (*mapVertices[middleIdx])[index + 1 + 6][1] = height;
+                    (*mapVertices[middleIdx])[index + 4 + 6][1] = height;
+                    (*mapVertices[middleIdx])[index + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                    (*mapVertices[middleIdx])[index + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                    (*mapVertices[middleIdx])[index + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
+                    
+                    chunks[middleIdx]->setData(mapVertices[middleIdx]->data(), mapUVs[middleIdx]->data(), mapNormals[middleIdx]->data());
+                    
+                    mapUpdateMutex.unlock();
+                }
+                
+                
             }
             
             cam.processMouseInput();
