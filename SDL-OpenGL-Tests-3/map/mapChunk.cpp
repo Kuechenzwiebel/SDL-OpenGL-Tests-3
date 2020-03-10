@@ -59,7 +59,7 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
                 
                 normal0 = -1.0f * glm::triangleNormal(mapVertices[arrayIdx + 0], mapVertices[arrayIdx + 1], mapVertices[arrayIdx + 2]);
                 normal1 =  1.0f * glm::triangleNormal(mapVertices[arrayIdx + 3], mapVertices[arrayIdx + 4], mapVertices[arrayIdx + 5]);
-                normal01 = glm::normalize((normal0 + normal1) / 2.0f);
+                normal01 = (normal0 + normal1) / 2.0f;
                 
                 mapNormals[arrayIdx + 0] = normal0;
                 mapNormals[arrayIdx + 1] = normal01;
@@ -82,33 +82,33 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
                     
                 }
                 else if(x == float(CHUNK_WIDTH) + offset.x - CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
-                    averageNormals = glm::normalize((mapNormals[arrayIdx + 3 + 0] +
+                    averageNormals = (mapNormals[arrayIdx + 3 + 0] +
                                                      mapNormals[arrayIdx + 1 + 6] +
                                                      mapNormals[arrayIdx + 4 + 6])
-                                                    / 3.0f);
+                                                    / 3.0f;
                     
                     mapNormals[arrayIdx + 3 + 0] = averageNormals;
                     mapNormals[arrayIdx + 1 + 6] = averageNormals;
                     mapNormals[arrayIdx + 4 + 6] = averageNormals;
                 }
                 else if(y == float(CHUNK_WIDTH) + offset.y - CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
-                    averageNormals = glm::normalize((mapNormals[arrayIdx + 3 + 0] +
+                    averageNormals =(mapNormals[arrayIdx + 3 + 0] +
                                                      mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
                                                      mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)])
-                                                    / 3.0f);
+                                                    / 3.0f;
                     
                     mapNormals[arrayIdx + 3 + 0] = averageNormals;
                     mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
                     mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
                 }
                 else {
-                    averageNormals = glm::normalize((mapNormals[arrayIdx + 3 + 0] +
+                    averageNormals = (mapNormals[arrayIdx + 3 + 0] +
                                                      mapNormals[arrayIdx + 1 + 6] +
                                                      mapNormals[arrayIdx + 4 + 6] +
                                                      mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
                                                      mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
                                                      mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)])
-                                                    / 6.0f);
+                                                    / 6.0f;
                     
                     mapNormals[arrayIdx + 3 + 0] = averageNormals;
                     mapNormals[arrayIdx + 1 + 6] = averageNormals;
@@ -121,6 +121,9 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
                 arrayIdx += 6;
             }
         }
+        
+        for(int i = 0; i < CHUNK_ARRAY_SIZE; i++)
+            mapNormals[i] = glm::normalize(mapNormals[i]);
         
         std::cout << "Generating" << std::endl;
         
