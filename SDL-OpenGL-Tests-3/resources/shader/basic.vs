@@ -16,5 +16,5 @@ void main() {
     gl_Position = projection * view * model * vec4(vertex, 1.0f);
     Vertex = vec3(model * vec4(vertex, 1.0f));
     UV = vec2(uv.x, 1.0f - uv.y);
-    Normal = normalize(transpose(inverse(mat3(model))) * normal);
+    Normal = normalize(mat3(transpose(inverse(model))) * normal);  
 }
