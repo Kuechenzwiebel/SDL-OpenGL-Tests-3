@@ -387,6 +387,10 @@ int main(int argc, const char * argv[]) {
     fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&fpsText);
     
+    UIText positionText("Position: X = 0.0  Y = 0.0  Z = 0.0", &uiShader, &uiData);
+    positionText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
+    uiTexts.push_back(&positionText);
+    
     
     unsigned long triangleAmount = 0;
     
@@ -577,6 +581,8 @@ int main(int argc, const char * argv[]) {
                 
                 fpsText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * fpsText.getScale().x, 0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y, 0.0f));
                 
+                positionText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * positionText.getScale().x, -0.5f * float(windowHeight) + 0.5f * positionText.getScale().y, 0.0f));
+                
                 glViewport(0, 0, windowWidth, windowHeight);
             }
             
@@ -605,13 +611,19 @@ int main(int argc, const char * argv[]) {
         
         if(render) {
             cam.processInput();
+            chunkGridCameraPosition = round(cam.getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
             
-            std::cout << materialCount << std::endl;
+            sort = true;
             
             mouseRay.position = cam.getEyePosition();
             mouseRay.direction = cam.front;
             
-            sort = true;
+            if(oldCamFootPos != cam.getFootPosition()) {
+                std::stringstream positionStream;
+                positionStream << std::fixed << std::setprecision(2) <<"Position: X = " << cam.getFootPosition().x << "  Y = " <<   cam.getFootPosition().y << "  Z = " << cam.getFootPosition().z;
+                positionText.setText(positionStream.str());
+            }
+            
             
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
