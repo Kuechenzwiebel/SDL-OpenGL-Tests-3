@@ -25,8 +25,6 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
         
         for(int i = 0; i < CHUNK_ARRAY_SIZE; i++)
             stringstream >> mapVertices[i].x >> mapVertices[i].y >> mapVertices[i].z >> mapUVs[i].x >> mapUVs[i].y >> mapNormals[i].x >> mapNormals[i].y >> mapNormals[i].z;
-        
-        std::cout << "Reading" << std::endl;
     }
     else {
         int arrayIdx = 0;
@@ -124,8 +122,6 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
         
         for(int i = 0; i < CHUNK_ARRAY_SIZE; i++)
             mapNormals[i] = glm::normalize(mapNormals[i]);
-        
-        std::cout << "Generating" << std::endl;
         
         hg::File file(filenamestream.str());
         

@@ -153,7 +153,7 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
         if(update) {
             updateDone = false;
             
-            thisCamPosition = (round(cam->getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();
+            thisCamPosition = round(cam->getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
             
             glm::vec2 offset;
             requiredChunks.clear();
@@ -204,12 +204,16 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
             std::this_thread::sleep_for(std::chrono::microseconds(10));
         }
     }
+    /*
+    for(int i = 0; i < mapVertices.size(); i++)
+        saveMapData(mapVertices[i]->data(), mapUVs[i]->data(), mapNormals[i]->data());*/
 }
 
 
 int main(int argc, const char * argv[]) {
     std::random_device randomDevice;
     std::mt19937 randomEngine(randomDevice());
+    
     
     std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
     
@@ -304,6 +308,7 @@ int main(int argc, const char * argv[]) {
     noise.perlinNoises[1]->multiplier = 25.0f;
     noise.perlinNoises[1]->offset = -10.0f;
     
+    vec2 chunkGridCameraPosition(0.0f);
     
     Camera cam(&deltaTime, &windowEvent, &checkMouse, &noise);
     UniformVar<vec3> viewPos(&basicShader, "viewPos", cam.getEyePositionPointer());
@@ -436,7 +441,6 @@ int main(int argc, const char * argv[]) {
     
     std::vector<std::unique_ptr<MapChunk>> chunks;
     std::vector<MapDynamicTriangleCluster*> mapTriangles;
-    int middleIdx = 0;
     
     mapUpdateThread = std::thread(mapUpdate, &noise, &cam);
     
@@ -445,24 +449,26 @@ int main(int argc, const char * argv[]) {
     while(!updateDone)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
-    for(int i = 0; i < requiredRenderChunks.size(); i++) {
-        auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>> &search){return (*search)[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
-        
-        if(itr != mapVertices.end()) {
-            int idx = int(itr - mapVertices.begin());
-            chunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
-            chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
-            chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
-        }
-    }
+    int middleIdx = 0;
+    auto middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();});
+    std::vector<std::unique_ptr<MapChunk>>::iterator sideIndices[4];
     
-    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
+    
     
     
     unsigned int materialCount = 0;
     
     Ray mouseRay;
     bool rayMapCollision = false;
+    
+    Sphere s(&basicShader, &renderData, &debugTexture, 32, nullptr);
+    s.addToTriangleList(&opaqueTriangles);
+    s.setScale(vec3(0.2f));
+    
+    
+    
+    
+    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
     
     
     while(running) {
@@ -493,35 +499,37 @@ int main(int argc, const char * argv[]) {
                 running = false;
             
             if(windowEvent.type == SDL_MOUSEBUTTONDOWN) {
+                
                 rayMapCollision = false;
+                mapUpdateMutex.lock();
                 for(int i = 0; i < 25; i++) {
                     mouseRay.move(0.1f);
                     
-                    if(mouseRay.position.y < noise.octaveNoise(mouseRay.position.x, mouseRay.position.z)) {
+                    if(mouseRay.position.y <= noise.octaveNoise(mouseRay.position.x, mouseRay.position.z)) {
                         rayMapCollision = true;
                         break;
                     }
                 }
+                mapUpdateMutex.unlock();
                 
-                vec2 roundedCamPosition;
+                vec2 rayMapPosition, rayMapModPosition;
                 int index = 0;
                 
                 if(rayMapCollision) {
-                    roundedCamPosition = mod(((round(mouseRay.position * (1.0f / TRIANGLE_WIDTH)) * TRIANGLE_WIDTH).xz() + vec2(CHUNK_WIDTH / 2.0f)) - vec2(TRIANGLE_WIDTH), vec2(CHUNK_WIDTH));
-                    index = 6 * (1.0f / TRIANGLE_WIDTH) * roundedCamPosition.y + 6 * (1.0f / TRIANGLE_WIDTH) * roundedCamPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
+                    rayMapPosition = round(mouseRay.position.xz() * (1.0f / TRIANGLE_WIDTH)) * TRIANGLE_WIDTH + vec2(CHUNK_WIDTH / 2.0f);
+                    s.setTranslation(mouseRay.position);
+                    rayMapModPosition = mod(rayMapPosition, vec2(CHUNK_WIDTH));
+                    index = 6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.y +
+                            6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
                 }
                 
                 float height = 0.0f;
-                
                 bool change = false;
                 
                 if(windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    if(rayMapCollision) {
+                    if(rayMapCollision && middleItr != chunks.end()) {
                         mapUpdateMutex.lock();
-                        
-                        (*mapVertices[middleIdx])[index + 3 + 0][1] -= 0.1f;
-                        height = (*mapVertices[middleIdx])[index + 3 + 0][1];
-                        
+                        height = (*mapVertices[middleIdx])[index + 0 - 0][1] - 0.1f;
                         mapUpdateMutex.unlock();
                         
                         materialCount++;
@@ -530,16 +538,12 @@ int main(int argc, const char * argv[]) {
                     
                     checkMouse = true;
                     render = true;
-                    
                 }
                 
                 if(windowEvent.button.button == SDL_BUTTON_RIGHT) {
-                    if(materialCount > 0 && rayMapCollision) {
+                    if(materialCount > 0 && rayMapCollision && middleItr != chunks.end()) {
                         mapUpdateMutex.lock();
-                        
-                        (*mapVertices[middleIdx])[index + 3 + 0][1] += 0.1f;
-                        height = (*mapVertices[middleIdx])[index + 3 + 0][1];
-                        
+                        height = (*mapVertices[middleIdx])[index + 0 - 0][1] + 0.1f;
                         mapUpdateMutex.unlock();
                         
                         materialCount--;
@@ -547,21 +551,40 @@ int main(int argc, const char * argv[]) {
                     }
                 }
                 
+                printVec2(rayMapPosition);
+                
+                if(index >= CHUNK_ARRAY_SIZE)
+                    change = false;
+
                 if(change) {
                     mapUpdateMutex.lock();
-                    (*mapVertices[middleIdx])[index + 3 + 0][1] = height;
-                    (*mapVertices[middleIdx])[index + 1 + 6][1] = height;
-                    (*mapVertices[middleIdx])[index + 4 + 6][1] = height;
-                    (*mapVertices[middleIdx])[index + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                    (*mapVertices[middleIdx])[index + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                    (*mapVertices[middleIdx])[index + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
+                    
+                    if(rayMapPosition.x == 0.0f && rayMapPosition.y == 0.0f) {
+                        (*mapVertices[middleIdx])[index + 0 - 0][1] = height;
+                    }
+                    else if(rayMapPosition.x == 0.0f) {
+                        (*mapVertices[middleIdx])[index + 0 - 0][1] = height;
+                        (*mapVertices[middleIdx])[index + 2 - 6][1] = height;
+                        (*mapVertices[middleIdx])[index + 5 - 6][1] = height;
+                    }
+                    else if(rayMapPosition.y == 0.0f) {
+                        (*mapVertices[middleIdx])[index + 0 - 0][1] = height;
+                        (*mapVertices[middleIdx])[index + 1 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[middleIdx])[index + 4 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                    }
+                    else {
+                        (*mapVertices[middleIdx])[index + 0 - 0][1] = height;
+                        (*mapVertices[middleIdx])[index + 2 - 6][1] = height;
+                        (*mapVertices[middleIdx])[index + 5 - 6][1] = height;
+                        (*mapVertices[middleIdx])[index + 1 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[middleIdx])[index + 4 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[middleIdx])[index + 3 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
+                    }
                     
                     chunks[middleIdx]->setData(mapVertices[middleIdx]->data(), mapUVs[middleIdx]->data(), mapNormals[middleIdx]->data());
                     
                     mapUpdateMutex.unlock();
                 }
-                
-                
             }
             
             cam.processMouseInput();
@@ -685,11 +708,24 @@ int main(int argc, const char * argv[]) {
                         }
                     }
                     
-                    middleIdx = int(std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();}) - chunks.begin());
-                    
                     update = true;
                 }
             }
+            
+            
+            middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
+            
+            sideIndices[0] = std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition + vec2(CHUNK_WIDTH, 0.0f);});
+            sideIndices[1] = std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition + vec2(CHUNK_WIDTH, 0.0f);});
+            sideIndices[2] = std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition + vec2(CHUNK_WIDTH, 0.0f);});
+            sideIndices[3] = std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition + vec2(CHUNK_WIDTH, 0.0f);});
+            
+            middleIdx = int(middleItr - chunks.begin());
+            
+            if(middleItr == chunks.end())
+                while(!updateDone)
+                  std::this_thread::sleep_for(std::chrono::microseconds(10));
+            
             
             
             diffuseShader.use();
