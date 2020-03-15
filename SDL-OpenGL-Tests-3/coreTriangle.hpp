@@ -49,8 +49,6 @@ protected:
     glm::mat4 *modelMatPointer;
     
     UniformVar<glm::mat4> model;
-    UniformVar<glm::mat4> view;
-    UniformVar<glm::mat4> projection;
     
     std::unique_ptr<UniformVar<int>> reflectionUniform;
     std::unique_ptr<UniformVar<int>> useReflectionMapUniform;

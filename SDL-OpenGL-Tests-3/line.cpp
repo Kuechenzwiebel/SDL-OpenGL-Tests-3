@@ -10,7 +10,7 @@
 #include "line.hpp"
 
 Line::Line(Shader *shader, const RenderData *data, const glm::vec3 vertices[], const glm::vec4 colors[]):
-vertex(vertices, sizeof(glm::vec3) * 2, 0), color(colors, sizeof(glm::vec4) * 2, 1), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection) {
+vertex(vertices, sizeof(glm::vec3) * 2, 0), color(colors, sizeof(glm::vec4) * 2, 1) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
@@ -28,9 +28,6 @@ Line::~Line() {
 void Line::render() {
     vertex.activate();
     color.activate();
-    
-    projection.setVar();
-    view.setVar();
     
     glBindVertexArray(VAO);
     glDrawArrays(GL_LINES, 0, 2);

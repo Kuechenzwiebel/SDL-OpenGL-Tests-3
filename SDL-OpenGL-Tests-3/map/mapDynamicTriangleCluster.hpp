@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 #include "../coreTriangleCluster.hpp"
-#include "../core/arrayBuffers/dynamicArrayBuffer.hpp"
+#include "../core/buffers/dynamicArrayBuffer.hpp"
 
 class MapDynamicTriangleCluster {
 public:
@@ -48,8 +48,6 @@ private:
     glm::mat4 *modelMatPointer;
     
     UniformVar<glm::mat4> model;
-    UniformVar<glm::mat4> view;
-    UniformVar<glm::mat4> projection;
 };
 
 #endif /* mapDynamicTriangleCluster_hpp */

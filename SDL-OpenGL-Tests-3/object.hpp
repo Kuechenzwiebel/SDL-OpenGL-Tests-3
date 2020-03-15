@@ -23,7 +23,7 @@
 #include "core/shader.hpp"
 #include "core/texture.hpp"
 #include "core/uniformVar.hpp"
-#include "core/arrayBuffers/arrayBuffer.hpp"
+#include "core/buffers/arrayBuffer.hpp"
 
 class CoreTriangle;
 

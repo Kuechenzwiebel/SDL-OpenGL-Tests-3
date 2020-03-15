@@ -11,7 +11,7 @@
 MapDynamicTriangleCluster::MapDynamicTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat):
 size(size), vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
 vertex(vertices, sizeof(glm::vec3) * 3 * size, 0), texCoord(uvs, sizeof(glm::vec2) * 3 * size, 1), normal(normals, sizeof(glm::vec3) * 3 * size, 2),
-model(shader, "model", modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), texture(texture) {
+model(shader, "model", modelMat), texture(texture) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
@@ -31,8 +31,6 @@ void MapDynamicTriangleCluster::render() {
     texCoord.activate();
     normal.activate();
     
-    projection.setVar();
-    view.setVar();
     model.setVar();
     
     texture->activate(shader, 0);

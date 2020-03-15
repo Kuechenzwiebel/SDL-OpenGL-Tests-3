@@ -3,9 +3,12 @@
 layout (location = 0) in vec3 vertex;
 layout (location = 1) in vec4 color;
 
+layout (std140) uniform projView {
+    mat4 projection;
+    mat4 view;
+};
+
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
 
 out vec4 col;
 

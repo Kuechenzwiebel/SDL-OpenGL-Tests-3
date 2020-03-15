@@ -27,9 +27,6 @@ private:
     
     Shader *shader;
     const RenderData *data;
-    
-    UniformVar<glm::mat4> view;
-    UniformVar<glm::mat4> projection;
 };
 
 #endif /* line_hpp */

@@ -56,6 +56,7 @@
 #include "map/mapChunk.hpp"
 #include "line.hpp"
 #include "ray.hpp"
+#include "core/buffers/uniformBuffer.hpp"
 
 using namespace glm;
 
@@ -315,9 +316,23 @@ int main(int argc, const char * argv[]) {
     cam.processMouseInput();
     cam.processInput();
     
+    UniformBuffer projViewBuffer(2 * sizeof(mat4), 0);
+    UniformBuffer uiProjViewBuffer(2 * sizeof(mat4), 1);
+    
+    projViewBuffer.addToShader(&basicShader, "projView", 0);
+    projViewBuffer.addToShader(&colorBufferShader, "projView", 0);
+    projViewBuffer.addToShader(&diffuseShader, "projView", 0);
+    
+    uiProjViewBuffer.addToShader(&uiShader, "uiProjView", 1);
+
+    
     mat4 projectionMat = infinitePerspective(radians(cam.zoom), float(windowWidth) / float(windowHeight), 0.005f);
     mat4 uiProjection = ortho(-0.5f * windowWidth, 0.5f * windowWidth, -0.5f * windowHeight, 0.5f * windowHeight, -1.0f, 1.0f);
     mat4 uiView = lookAt(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+    
+    projViewBuffer.modifyData(sizeof(mat4), 0, glm::value_ptr(projectionMat));
+    uiProjViewBuffer.modifyData(sizeof(mat4), 0, glm::value_ptr(uiProjection));
+    uiProjViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(uiView));
     
     RenderData renderData;
     renderData.projection = &projectionMat;
@@ -463,7 +478,7 @@ int main(int argc, const char * argv[]) {
     
     Sphere s(&basicShader, &renderData, &debugTexture, 32, nullptr);
     s.addToTriangleList(&opaqueTriangles);
-    s.setScale(vec3(0.2f));
+    s.setScale(vec3(0.1f));
     
     
     
@@ -604,6 +619,7 @@ int main(int argc, const char * argv[]) {
                 
                 projectionMat = infinitePerspective(radians(cam.zoom), float(windowWidth) / float(windowHeight), 0.005f);
                 uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
+                projViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(projectionMat));
                 
                 fpsText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * fpsText.getScale().x, 0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y, 0.0f));
                 
@@ -637,9 +653,11 @@ int main(int argc, const char * argv[]) {
         
         if(render) {
             cam.processInput();
-            chunkGridCameraPosition = round(cam.getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
-            
             sort = true;
+            
+            projViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(cam.viewMat));
+            
+            chunkGridCameraPosition = round(cam.getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
             
             mouseRay.position = cam.getEyePosition();
             mouseRay.direction = cam.front;
@@ -742,7 +760,6 @@ int main(int argc, const char * argv[]) {
             }
             
             
-            colorBufferShader.use();
             
             while(!sortDone)
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
@@ -762,6 +779,7 @@ int main(int argc, const char * argv[]) {
             
             glClear(GL_DEPTH_BUFFER_BIT);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            
             
             for(int i = 0; i < uiTriangles.size(); i++) {
                 uiTriangles[i]->getShaderPointer()->use();

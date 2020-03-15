@@ -11,7 +11,7 @@
 CoreTriangle::CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
 vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat), reflection(reflection), reflectionMap(reflectionMap), texture(texture), useReflectionMap(false),
 vertex(vertices, sizeof(glm::vec3) * 3, 0), texCoord(uvs, sizeof(glm::vec2) * 3, 1), normal(normals, sizeof(glm::vec3) * 3, 2),
-model(shader, "model", modelMat), view(shader, "view", data->viewMat), projection(shader, "projection", data->projection), initLighting(initLighting) {
+model(shader, "model", modelMat), initLighting(initLighting) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     
@@ -47,8 +47,6 @@ void CoreTriangle::render() {
     texCoord.activate();
     normal.activate();
     
-    projection.setVar();
-    view.setVar();
     model.setVar();
     
     if(initLighting) {
