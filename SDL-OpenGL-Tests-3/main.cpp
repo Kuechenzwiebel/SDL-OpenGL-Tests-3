@@ -514,6 +514,7 @@ int main(int argc, const char * argv[]) {
                 
                 vec2 rayMapPosition, rayMapModPosition;
                 int index = 0;
+                int chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay](std::unique_ptr<MapChunk> &search){return search->offset == round(mouseRay.position.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);}) - chunks.begin());
                 
                 if(rayMapCollision) {
                     rayMapPosition = round(mouseRay.position.xz() * (1.0f / TRIANGLE_WIDTH)) * TRIANGLE_WIDTH + vec2(CHUNK_WIDTH / 2.0f);
@@ -523,13 +524,16 @@ int main(int argc, const char * argv[]) {
                             6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
                 }
                 
+                
+                
+                
                 float height = 0.0f;
                 bool change = false;
                 
                 if(windowEvent.button.button == SDL_BUTTON_LEFT) {
                     if(rayMapCollision && middleItr != chunks.end()) {
                         mapUpdateMutex.lock();
-                        height = (*mapVertices[middleIdx])[index + 0 - 0][1] - 0.1f;
+                        height = (*mapVertices[chunkIndex])[index + 0 - 0][1] - 0.1f;
                         mapUpdateMutex.unlock();
                         
                         materialCount++;
@@ -543,7 +547,7 @@ int main(int argc, const char * argv[]) {
                 if(windowEvent.button.button == SDL_BUTTON_RIGHT) {
                     if(materialCount > 0 && rayMapCollision && middleItr != chunks.end()) {
                         mapUpdateMutex.lock();
-                        height = (*mapVertices[middleIdx])[index + 0 - 0][1] + 0.1f;
+                        height = (*mapVertices[chunkIndex])[index + 0 - 0][1] + 0.1f;
                         mapUpdateMutex.unlock();
                         
                         materialCount--;
@@ -551,7 +555,6 @@ int main(int argc, const char * argv[]) {
                     }
                 }
                 
-                printVec2(rayMapPosition);
                 
                 if(index >= CHUNK_ARRAY_SIZE)
                     change = false;
@@ -559,29 +562,29 @@ int main(int argc, const char * argv[]) {
                 if(change) {
                     mapUpdateMutex.lock();
                     
-                    if(rayMapPosition.x == 0.0f && rayMapPosition.y == 0.0f) {
-                        (*mapVertices[middleIdx])[index + 0 - 0][1] = height;
+                    if(rayMapModPosition.x == 0.0f && rayMapModPosition.y == 0.0f) {
+                        (*mapVertices[chunkIndex])[index + 0 - 0][1] = height;
                     }
-                    else if(rayMapPosition.x == 0.0f) {
-                        (*mapVertices[middleIdx])[index + 0 - 0][1] = height;
-                        (*mapVertices[middleIdx])[index + 2 - 6][1] = height;
-                        (*mapVertices[middleIdx])[index + 5 - 6][1] = height;
+                    else if(rayMapModPosition.x == 0.0f) {
+                        (*mapVertices[chunkIndex])[index + 0 - 0][1] = height;
+                        (*mapVertices[chunkIndex])[index + 2 - 6][1] = height;
+                        (*mapVertices[chunkIndex])[index + 5 - 6][1] = height;
                     }
-                    else if(rayMapPosition.y == 0.0f) {
-                        (*mapVertices[middleIdx])[index + 0 - 0][1] = height;
-                        (*mapVertices[middleIdx])[index + 1 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                        (*mapVertices[middleIdx])[index + 4 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                    else if(rayMapModPosition.y == 0.0f) {
+                        (*mapVertices[chunkIndex])[index + 0 - 0][1] = height;
+                        (*mapVertices[chunkIndex])[index + 1 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[chunkIndex])[index + 4 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
                     }
                     else {
-                        (*mapVertices[middleIdx])[index + 0 - 0][1] = height;
-                        (*mapVertices[middleIdx])[index + 2 - 6][1] = height;
-                        (*mapVertices[middleIdx])[index + 5 - 6][1] = height;
-                        (*mapVertices[middleIdx])[index + 1 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                        (*mapVertices[middleIdx])[index + 4 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
-                        (*mapVertices[middleIdx])[index + 3 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
+                        (*mapVertices[chunkIndex])[index + 0 - 0][1] = height;
+                        (*mapVertices[chunkIndex])[index + 2 - 6][1] = height;
+                        (*mapVertices[chunkIndex])[index + 5 - 6][1] = height;
+                        (*mapVertices[chunkIndex])[index + 1 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[chunkIndex])[index + 4 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
+                        (*mapVertices[chunkIndex])[index + 3 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
                     }
                     
-                    chunks[middleIdx]->setData(mapVertices[middleIdx]->data(), mapUVs[middleIdx]->data(), mapNormals[middleIdx]->data());
+                    chunks[chunkIndex]->setData(mapVertices[chunkIndex]->data(), mapUVs[chunkIndex]->data(), mapNormals[chunkIndex]->data());
                     
                     mapUpdateMutex.unlock();
                 }
