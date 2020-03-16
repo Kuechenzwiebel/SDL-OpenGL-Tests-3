@@ -33,9 +33,6 @@ public:
     void use();
     
 private:
-    hg::File vertexFile;
-    hg::File fragmentFile;
-    
     void compile(const char* vertexCode, const char* fragmentCode);
     GLuint program;
 };

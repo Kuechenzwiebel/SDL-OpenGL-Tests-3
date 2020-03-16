@@ -8,9 +8,34 @@
 
 #include "shader.hpp"
 
-Shader::Shader(hg::File vertexFile, hg::File fragmentFile):
-vertexFile(vertexFile), fragmentFile(fragmentFile) {
-    compile(vertexFile.readFile().c_str(), fragmentFile.readFile().c_str());
+Shader::Shader(hg::File vertexFile, hg::File fragmentFile)  {
+    auto vertexLines = vertexFile.readFileLineByLine();
+    auto fragmentLines = fragmentFile.readFileLineByLine();
+    
+    
+    for(int i = 0; i < vertexLines.size(); i++) {
+        if(hg::substr(*vertexLines[i], 0, 8) == "#include") {
+            std::string includeFileName = hg::substr(*vertexLines[i], 10, (unsigned int)vertexLines[i]->size() - 1);
+            
+            hg::File includeFile(includeFileName);
+            
+            vertexLines.erase(vertexLines.begin() + i);
+            vertexLines.insert(vertexLines.begin() + i, std::make_unique<std::string>(includeFile.readFile()));
+        }
+    }
+    
+    for(int i = 0; i < fragmentLines.size(); i++) {
+        if(hg::substr(*fragmentLines[i], 0, 8) == "#include") {
+            std::string includeFileName = hg::substr(*fragmentLines[i], 10, (unsigned int)fragmentLines[i]->size() - 1);
+            
+            hg::File includeFile(includeFileName);
+            
+            fragmentLines.erase(fragmentLines.begin() + i);
+            fragmentLines.insert(fragmentLines.begin() + i, std::make_unique<std::string>(includeFile.readFile()));
+        }
+    }
+    
+    compile(hg::transformLinesToString(&vertexLines).c_str(), hg::transformLinesToString(&fragmentLines).c_str());
 }
 
 Shader::~Shader() {
