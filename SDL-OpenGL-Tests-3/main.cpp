@@ -412,6 +412,7 @@ int main(int argc, const char * argv[]) {
     positionText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&positionText);
     
+    UniformVar<float> timeUniform(&basicShader, "time", &totalTime);
     
     unsigned long triangleAmount = 0;
     
@@ -780,6 +781,7 @@ int main(int argc, const char * argv[]) {
                 
                 normalViewUniform.setVar();
                 viewPos.setVar();
+                timeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
@@ -830,6 +832,7 @@ int main(int argc, const char * argv[]) {
             for(int i = 0; i < mapTriangles.size(); i++) {
                 normalViewUniform.setVar();
                 viewPos.setVar();
+                timeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
@@ -846,6 +849,7 @@ int main(int argc, const char * argv[]) {
                 
                 normalViewUniform.setVar();
                 viewPos.setVar();
+                timeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
