@@ -703,7 +703,8 @@ int main(int argc, const char * argv[]) {
                 
                 projectionMat = infinitePerspective(radians(cam.zoom), float(windowWidth) / float(windowHeight), 0.005f);
                 uiProjection = ortho(-0.5f * float(windowWidth), 0.5f * float(windowWidth), -0.5f * float(windowHeight), 0.5f * float(windowHeight), -1000.0f, 1000.0f);
-                projViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(projectionMat));
+                projViewBuffer.modifyData(sizeof(mat4), 0, glm::value_ptr(projectionMat));
+                uiProjViewBuffer.modifyData(sizeof(mat4), 0, glm::value_ptr(uiProjection));
                 
                 fpsText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * fpsText.getScale().x, 0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y, 0.0f));
                 
