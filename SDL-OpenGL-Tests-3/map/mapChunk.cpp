@@ -76,37 +76,87 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
         
         for(float x = offset.x - CHUNK_WIDTH / 2.0f; x < float(CHUNK_WIDTH) + offset.x - CHUNK_WIDTH / 2.0f; x += TRIANGLE_WIDTH) {
             for(float y = offset.y - CHUNK_WIDTH / 2.0f; y < float(CHUNK_WIDTH) + offset.y - CHUNK_WIDTH / 2.0f; y += TRIANGLE_WIDTH) {
-                if(x == float(CHUNK_WIDTH) + offset.x - CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH && y == float(CHUNK_WIDTH) + offset.y - CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
+                if(x == offset.x + CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH && y == offset.y + CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
                     
                 }
-                else if(x == float(CHUNK_WIDTH) + offset.x - CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
+                
+                else if(y == offset.y - CHUNK_WIDTH / 2.0f && x != offset.x + CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
                     averageNormals = (mapNormals[arrayIdx + 3 + 0] +
-                                                     mapNormals[arrayIdx + 1 + 6] +
-                                                     mapNormals[arrayIdx + 4 + 6])
-                                                    / 3.0f;
+                                      mapNormals[arrayIdx + 1 + 6] +
+                                      mapNormals[arrayIdx + 4 + 6] +
+                                      mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
+                                      mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
+                                      mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)]) / 6.0f;
+                    
+                    mapNormals[arrayIdx + 3 + 0] = averageNormals;
+                    mapNormals[arrayIdx + 1 + 6] = averageNormals;
+                    mapNormals[arrayIdx + 4 + 6] = averageNormals;
+                    mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
+                    mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
+                    mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)] = averageNormals;
+                    
+                    
+                    averageNormals = (mapNormals[arrayIdx + 1 + 0] +
+                                      mapNormals[arrayIdx + 4 + 0] +
+                                      mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)]) / 3.0f;
+                    
+                    mapNormals[arrayIdx + 1 + 0] = averageNormals;
+                    mapNormals[arrayIdx + 4 + 0] = averageNormals;
+                    mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
+                }
+                
+                else if(x == offset.x - CHUNK_WIDTH / 2.0f && y != offset.y + CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
+                    averageNormals = (mapNormals[arrayIdx + 3 + 0] +
+                                      mapNormals[arrayIdx + 1 + 6] +
+                                      mapNormals[arrayIdx + 4 + 6] +
+                                      mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
+                                      mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
+                                      mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)]) / 6.0f;
+                    
+                    mapNormals[arrayIdx + 3 + 0] = averageNormals;
+                    mapNormals[arrayIdx + 1 + 6] = averageNormals;
+                    mapNormals[arrayIdx + 4 + 6] = averageNormals;
+                    mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
+                    mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
+                    mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)] = averageNormals;
+                    
+                    
+                    averageNormals = (mapNormals[arrayIdx + 2 + 0] +
+                                      mapNormals[arrayIdx + 5 + 0] +
+                                      mapNormals[arrayIdx + 0 + 6]) / 3.0f;
+                    
+                    mapNormals[arrayIdx + 2 + 0] = averageNormals;
+                    mapNormals[arrayIdx + 5 + 0] = averageNormals;
+                    mapNormals[arrayIdx + 0 + 6] = averageNormals;
+                }
+                
+                else if(x == offset.x + CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
+                    averageNormals = (mapNormals[arrayIdx + 3 + 0] +
+                                      mapNormals[arrayIdx + 1 + 6] +
+                                      mapNormals[arrayIdx + 4 + 6]) / 3.0f;
                     
                     mapNormals[arrayIdx + 3 + 0] = averageNormals;
                     mapNormals[arrayIdx + 1 + 6] = averageNormals;
                     mapNormals[arrayIdx + 4 + 6] = averageNormals;
                 }
-                else if(y == float(CHUNK_WIDTH) + offset.y - CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
-                    averageNormals =(mapNormals[arrayIdx + 3 + 0] +
-                                                     mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
-                                                     mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)])
-                                                    / 3.0f;
+                
+                else if(y == offset.y + CHUNK_WIDTH / 2.0f - TRIANGLE_WIDTH) {
+                    averageNormals = (mapNormals[arrayIdx + 3 + 0] +
+                                      mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
+                                      mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)])  / 3.0f;
                     
                     mapNormals[arrayIdx + 3 + 0] = averageNormals;
                     mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
                     mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] = averageNormals;
                 }
+                
                 else {
                     averageNormals = (mapNormals[arrayIdx + 3 + 0] +
-                                                     mapNormals[arrayIdx + 1 + 6] +
-                                                     mapNormals[arrayIdx + 4 + 6] +
-                                                     mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
-                                                     mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
-                                                     mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)])
-                                                    / 6.0f;
+                                      mapNormals[arrayIdx + 1 + 6] +
+                                      mapNormals[arrayIdx + 4 + 6] +
+                                      mapNormals[arrayIdx + 2 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
+                                      mapNormals[arrayIdx + 5 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)] +
+                                      mapNormals[arrayIdx + 0 + int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)]) / 6.0f;
                     
                     mapNormals[arrayIdx + 3 + 0] = averageNormals;
                     mapNormals[arrayIdx + 1 + 6] = averageNormals;
