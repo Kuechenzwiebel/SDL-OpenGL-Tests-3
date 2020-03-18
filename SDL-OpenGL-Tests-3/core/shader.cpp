@@ -9,6 +9,8 @@
 #include "shader.hpp"
 
 Shader::Shader(hg::File vertexFile, hg::File fragmentFile)  {
+    std::cout << "Shader " << vertexFile.getFileName() << " is being compiled" << std::endl;
+    
     auto vertexLines = vertexFile.readFileLineByLine();
     auto fragmentLines = fragmentFile.readFileLineByLine();
     
@@ -79,6 +81,8 @@ void Shader::compile(const char* vertexCode, const char* fragmentCode) {
         printf(PRINTF_RED);
         printf("Vertex Shader failed compiliton!\nInfolog: \n%s\n", infoLog);
         printf(PRINTF_DEFAULT);
+        
+        printf("Source:\n%s", vertexCode);
         exit(2);
     }
     
@@ -95,6 +99,8 @@ void Shader::compile(const char* vertexCode, const char* fragmentCode) {
         printf(PRINTF_RED);
         printf("Fragment Shader failed compiliton!\nInfolog: \n%s\n", infoLog);
         printf(PRINTF_DEFAULT);
+        
+        printf("Source:\n%s", fragmentCode);
         exit(3);
     }
     
