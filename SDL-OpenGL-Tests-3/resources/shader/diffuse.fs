@@ -6,9 +6,16 @@ in vec3 Vertex;
 in vec2 UV;
 in vec3 Normal;
 
+layout (std140) uniform baseInformation {
+    float time;
+    float viewPosX;
+    float viewPosY;
+    float viewPosZ;
+};
+
+vec3 viewPos = vec3(viewPosX, viewPosY, viewPosZ);
 
 uniform sampler2D tex;
-uniform vec3 viewPos;
 
 
 const float linear = 0.07f;

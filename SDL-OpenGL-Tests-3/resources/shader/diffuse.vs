@@ -11,6 +11,15 @@ layout (std140) uniform projView {
 
 uniform mat4 model;
 
+layout (std140) uniform baseInformation {
+    float time;
+    float viewPosX;
+    float viewPosY;
+    float viewPosZ;
+};
+
+vec3 viewPos = vec3(viewPosX, viewPosY, viewPosZ);
+
 out vec3 Vertex;
 out vec2 UV;
 out vec3 Normal;

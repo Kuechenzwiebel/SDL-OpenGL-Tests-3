@@ -313,19 +313,25 @@ int main(int argc, const char * argv[]) {
     vec2 chunkGridCameraPosition(0.0f);
     
     Camera cam(&deltaTime, &windowEvent, &checkMouse, &noise);
-    UniformVar<vec3> viewPos(&basicShader, "viewPos", cam.getEyePositionPointer());
     cam.processMouseInput();
     cam.processInput();
     
     UniformBuffer projViewBuffer(2 * sizeof(mat4), 0);
     UniformBuffer uiProjViewBuffer(2 * sizeof(mat4), 1);
+    UniformBuffer baseInformationUniform(4 * sizeof(float), 2);
+    UniformBuffer shakeUniform(sizeof(float), 3);
     
     projViewBuffer.addToShader(&basicShader, "projView", 0);
     projViewBuffer.addToShader(&colorBufferShader, "projView", 0);
     projViewBuffer.addToShader(&diffuseShader, "projView", 0);
     
     uiProjViewBuffer.addToShader(&uiShader, "uiProjView", 1);
-
+    
+    baseInformationUniform.addToShader(&basicShader, "baseInformation", 2);
+    baseInformationUniform.addToShader(&diffuseShader, "baseInformation", 2);
+    
+    shakeUniform.addToShader(&basicShader, "shakeInfo", 3);
+    shakeUniform.addToShader(&diffuseShader, "shakeInfo", 3);
     
     mat4 projectionMat = infinitePerspective(radians(cam.zoom), float(windowWidth) / float(windowHeight), 0.005f);
     mat4 uiProjection = ortho(-0.5f * windowWidth, 0.5f * windowWidth, -0.5f * windowHeight, 0.5f * windowHeight, -1.0f, 1.0f);
@@ -412,7 +418,8 @@ int main(int argc, const char * argv[]) {
     positionText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&positionText);
     
-    UniformVar<float> timeUniform(&basicShader, "time", &totalTime);
+    float shakeStrenght = 0.0f;
+    
     
     unsigned long triangleAmount = 0;
     
@@ -740,6 +747,11 @@ int main(int argc, const char * argv[]) {
             cam.processInput();
             sort = true;
             
+            baseInformationUniform.modifyData(sizeof(float), 0, &totalTime);
+            baseInformationUniform.modifyData(sizeof(float), sizeof(float) * 1, &(cam.getEyePositionPointer()->x));
+            baseInformationUniform.modifyData(sizeof(float), sizeof(float) * 2, &(cam.getEyePositionPointer()->y));
+            baseInformationUniform.modifyData(sizeof(float), sizeof(float) * 3, &(cam.getEyePositionPointer()->z));
+              
             projViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(cam.viewMat));
             
             chunkGridCameraPosition = round(cam.getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
@@ -781,8 +793,6 @@ int main(int argc, const char * argv[]) {
                 opaqueTriangles[i]->getShaderPointer()->use();
                 
                 normalViewUniform.setVar();
-                viewPos.setVar();
-                timeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
@@ -832,8 +842,6 @@ int main(int argc, const char * argv[]) {
             diffuseShader.use();
             for(int i = 0; i < mapTriangles.size(); i++) {
                 normalViewUniform.setVar();
-                viewPos.setVar();
-                timeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
@@ -849,8 +857,6 @@ int main(int argc, const char * argv[]) {
                 it->second->getShaderPointer()->use();
                 
                 normalViewUniform.setVar();
-                viewPos.setVar();
-                timeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
