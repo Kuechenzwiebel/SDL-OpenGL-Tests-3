@@ -496,6 +496,9 @@ int main(int argc, const char * argv[]) {
     s.setScale(vec3(0.1f));
     
     
+    float explosionOffset = 0.0f;
+    
+    
     
     printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
     
@@ -731,6 +734,11 @@ int main(int argc, const char * argv[]) {
                 
                 if(windowEvent.key.keysym.sym == SDLK_n)
                     swapBool((bool*)&normalView);
+                
+                if(windowEvent.key.keysym.sym == SDLK_e) {
+                    shakeStrenght = 1.2f;
+                    explosionOffset = totalTime;
+                }
             }
             
             if(windowEvent.type == SDL_MOUSEWHEEL) {
@@ -746,6 +754,13 @@ int main(int argc, const char * argv[]) {
         if(render) {
             cam.processInput();
             sort = true;
+            
+            if(shakeStrenght > 0.0f)
+                shakeStrenght = -0.5f * pow((totalTime - explosionOffset), 3) + 1.5f;
+            else
+                shakeStrenght = 0.0f;
+            
+            shakeUniform.modifyData(sizeof(float), 0, &shakeStrenght);
             
             baseInformationUniform.modifyData(sizeof(float), 0, &totalTime);
             baseInformationUniform.modifyData(sizeof(float), sizeof(float) * 1, &(cam.getEyePositionPointer()->x));

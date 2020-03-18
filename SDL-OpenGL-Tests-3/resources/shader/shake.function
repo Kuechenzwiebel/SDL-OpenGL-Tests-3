@@ -1,0 +1,13 @@
+layout (std140) uniform shakeInfo {
+    float shakeStrenght;
+};
+
+vec2 shake(vec2 inVec, float time) {
+    inVec.x += sin(time * 40.0f) * 0.2f * shakeStrenght;
+    inVec.y += sin(time * 45.0f) * 0.12f * shakeStrenght;
+    
+    inVec.x += sin(time * 40.0f) * 0.1f * shakeStrenght;
+    inVec.y += cos(time * 45.0f) * 0.02f * shakeStrenght;
+    
+    return inVec;
+}
