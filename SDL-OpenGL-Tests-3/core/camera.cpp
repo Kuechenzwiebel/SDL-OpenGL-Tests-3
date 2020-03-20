@@ -8,8 +8,10 @@
 
 #include "camera.hpp"
 
+static float gravitationalAcceleration = 9.81f;
+
 Camera::Camera(const float *deltaTime, const SDL_Event *windowEvent, bool *checkMouse, hg::PerlinNoise *noise):
-deltaTime(deltaTime), windowEvent(windowEvent), checkMouse(checkMouse), viewMat(1), yaw(0.0f), pitch(0.0f), mouseSensitivity(0.25f), zoom(45.0f), front(0.0f, 0.0f, -1.0f), right(1.0f, 0.0f, 0.0f), up(0.0f, 1.0f, 0.0f), footPosition(-2.0f, -1.73f, 0.0f), theoreticalFootPosition(footPosition), eyePosition(footPosition + glm::vec3(0.0f, 1.73f, 0.0f)), noise(noise) {
+deltaTime(deltaTime), windowEvent(windowEvent), checkMouse(checkMouse), viewMat(1), yaw(0.0f), pitch(0.0f), mouseSensitivity(0.25f), zoom(45.0f), front(0.0f, 0.0f, -1.0f), right(1.0f, 0.0f, 0.0f), up(0.0f, 1.0f, 0.0f), footPosition(-2.0f, -1.73f, 0.0f), eyePosition(footPosition + glm::vec3(0.0f, 1.73f, 0.0f)), noise(noise) {
     viewMat = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
@@ -62,6 +64,7 @@ void Camera::processInput() {
     float mapHeight = noise->octaveNoise(footPosition.x, footPosition.z);
     if(footPosition.y < mapHeight)
         footPosition.y = mapHeight;
+    footPosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - timeSinceLastOnFloor) / 1000.0f, 2.0f) * *deltaTime;
     
     eyePosition = footPosition + glm::vec3(0.0f, 1.73f, 0.0f);
     viewMat = glm::lookAt(this->eyePosition, this->eyePosition + this->front, this->up);

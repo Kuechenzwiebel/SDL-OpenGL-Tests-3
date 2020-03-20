@@ -45,7 +45,9 @@ public:
     
 private:
     float yaw, pitch;
-    glm::vec3 footPosition, eyePosition, theoreticalFootPosition;
+    glm::vec3 footPosition, eyePosition;
+    
+    unsigned long timeSinceLastOnFloor;
     
     const float *deltaTime;
     const SDL_Event *windowEvent;
