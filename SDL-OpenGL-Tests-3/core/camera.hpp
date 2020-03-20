@@ -20,6 +20,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../map/mapChunk.hpp"
 
 class Camera {
 public:
@@ -33,7 +34,7 @@ public:
     void setFootPosition(glm::vec3 position);
     
     void processMouseInput();
-    void processInput();
+    void processInput(glm::vec3 *mapVertices);
     
     
     glm::mat4 viewMat;

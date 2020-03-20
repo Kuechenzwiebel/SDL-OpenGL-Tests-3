@@ -310,11 +310,11 @@ int main(int argc, const char * argv[]) {
     noise.perlinNoises[1]->multiplier = 25.0f;
     noise.perlinNoises[1]->offset = -10.0f;
     
-    vec2 chunkGridCameraPosition(0.0f);
+    vec2 chunkGridCameraPosition(0.0f), mapGridCameraPosition(0.0f);
     
     Camera cam(&deltaTime, &windowEvent, &checkMouse, &noise);
     cam.processMouseInput();
-    cam.processInput();
+//    cam.processInput();
     
     UniformBuffer projViewBuffer(2 * sizeof(mat4), 0);
     UniformBuffer uiProjViewBuffer(2 * sizeof(mat4), 1);
@@ -491,14 +491,8 @@ int main(int argc, const char * argv[]) {
     Ray mouseRay;
     bool rayMapCollision = false;
     
-    Sphere s(&basicShader, &renderData, &debugTexture, 32, nullptr);
-    s.addToTriangleList(&opaqueTriangles);
-    s.setScale(vec3(0.1f));
-    
     
     float explosionOffset = 0.0f;
-    
-    
     
     printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
     
@@ -552,7 +546,6 @@ int main(int argc, const char * argv[]) {
                 
                 if(rayMapCollision) {
                     rayMapPosition = round(mouseRay.position.xz() * (1.0f / TRIANGLE_WIDTH)) * TRIANGLE_WIDTH + vec2(CHUNK_WIDTH / 2.0f);
-                    s.setTranslation(mouseRay.position);
                     rayMapModPosition = mod(rayMapPosition, vec2(CHUNK_WIDTH));
                     arrayIndex = 6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.y +
                             6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
@@ -752,7 +745,7 @@ int main(int argc, const char * argv[]) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
         
         if(render) {
-            cam.processInput();
+            cam.processInput(mapVertices[middleIdx]->data());
             sort = true;
             
             if(shakeStrenght > 0.0f)
@@ -770,10 +763,14 @@ int main(int argc, const char * argv[]) {
             projViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(cam.viewMat));
             
             chunkGridCameraPosition = round(cam.getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
+            mapGridCameraPosition = floor(cam.getFootPosition().xz() / float(TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
+          
             
             mouseRay.position = cam.getEyePosition();
             mouseRay.direction = cam.front;
             
+            
+
             if(oldCamFootPos != cam.getFootPosition()) {
                 std::stringstream positionStream;
                 positionStream << std::fixed << std::setprecision(2) <<"Position: X = " << cam.getFootPosition().x << "  Y = " <<   cam.getFootPosition().y << "  Z = " << cam.getFootPosition().z;
