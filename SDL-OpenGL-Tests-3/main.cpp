@@ -216,6 +216,11 @@ int main(int argc, const char * argv[]) {
     std::random_device randomDevice;
     std::mt19937 randomEngine(randomDevice());
     
+    bool capFps = true;
+    int fpsCap = 60;
+    double frameTimeCap = double(1e6) / double(fpsCap);
+    std::chrono::steady_clock::time_point start, end;
+    
     
     std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
     
@@ -236,7 +241,7 @@ int main(int argc, const char * argv[]) {
     SDL_GL_MakeCurrent(window, context);
     SDL_Event windowEvent;
     
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(0);
     
     if(window == NULL) {
         printf(PRINTF_RED);
@@ -496,8 +501,8 @@ int main(int argc, const char * argv[]) {
     
     printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
     
-    
     while(running) {
+        start = std::chrono::steady_clock::now();
         if(SDL_GetTicks() > nextMeasure) {
             fps = frame;
             frame = 0;
@@ -910,6 +915,14 @@ int main(int argc, const char * argv[]) {
             totalFrames++;
             
             totalTime += deltaTime;
+            
+            end = std::chrono::steady_clock::now();
+            
+            if(capFps) {
+                int delayTime = round(frameTimeCap - std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()) - 300;
+                if(delayTime > 10)
+                    std::this_thread::sleep_for(std::chrono::microseconds(delayTime));
+            }
         }
         else
             SDL_Delay(33);
