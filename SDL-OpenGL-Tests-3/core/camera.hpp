@@ -34,6 +34,7 @@ public:
     void setFootPosition(glm::vec3 position);
     
     void processMouseInput();
+    void preProcessInput();
     void processInput(glm::vec3 *mapVertices);
     
     

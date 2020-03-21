@@ -745,8 +745,20 @@ int main(int argc, const char * argv[]) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
         
         if(render) {
+            cam.preProcessInput();
+            
+            chunkGridCameraPosition = round(cam.getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
+            mapGridCameraPosition = floor(cam.getFootPosition().xz() / float(TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
+            
+            mapUpdateMutex.lock();
+            middleItr = std::find_if(chunks.begin(), chunks.end(), [ &chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
+            middleIdx = int(middleItr - chunks.begin());
+            
             cam.processInput(mapVertices[middleIdx]->data());
+            mapUpdateMutex.unlock();
+            
             sort = true;
+            
             
             if(shakeStrenght > 0.0f)
                 shakeStrenght = -0.5f * pow((totalTime - explosionOffset), 3) + 1.5f;
@@ -761,9 +773,6 @@ int main(int argc, const char * argv[]) {
             baseInformationUniform.modifyData(sizeof(float), sizeof(float) * 3, &(cam.getEyePositionPointer()->z));
               
             projViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(cam.viewMat));
-            
-            chunkGridCameraPosition = round(cam.getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
-            mapGridCameraPosition = floor(cam.getFootPosition().xz() / float(TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
           
             
             mouseRay.position = cam.getEyePosition();
@@ -842,8 +851,7 @@ int main(int argc, const char * argv[]) {
             }
             
             
-            middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
-            middleIdx = int(middleItr - chunks.begin());
+            
             
             if(middleItr == chunks.end())
                 while(!updateDone)

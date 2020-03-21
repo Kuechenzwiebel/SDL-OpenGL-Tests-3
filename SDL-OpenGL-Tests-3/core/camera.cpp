@@ -40,7 +40,7 @@ void Camera::processMouseInput() {
     yaw = fmod(yaw + 360.0f, 360.0f);
 }
 
-void Camera::processInput(glm::vec3 *mapVertices) {
+void Camera::preProcessInput() {
     if(*checkMouse) {
         const Uint8 *keystates = SDL_GetKeyboardState(NULL);
         
@@ -62,14 +62,11 @@ void Camera::processInput(glm::vec3 *mapVertices) {
         if(movementVector != glm::vec3(0.0f))
             footPosition += glm::normalize(movementVector) * *deltaTime * momementSpeed;
     }
-    /*
-    float mapHeight = noise->octaveNoise(footPosition.x, footPosition.z);
-    if(footPosition.y < mapHeight)
-        footPosition.y = mapHeight;
-     */
     
     footPosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - timeSinceLastOnFloor) / 1000.0f, 2.0f) * *deltaTime;
-    
+}
+
+void Camera::processInput(glm::vec3 *mapVertices) {
     float mapHeight = mapSurface(mapVertices, footPosition.xz());
     if(footPosition.y < mapHeight) {
         footPosition.y = mapHeight;
