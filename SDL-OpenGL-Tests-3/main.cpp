@@ -477,7 +477,7 @@ int main(int argc, const char * argv[]) {
     auto middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();});
     
     int arrayIndex;
-    int chunkIndex;
+    int chunkIndex = 0;
     int sideIndices[4];
     
     unsigned int materialCount = 0;
@@ -525,24 +525,24 @@ int main(int argc, const char * argv[]) {
                 running = false;
             
             if(windowEvent.type == SDL_MOUSEBUTTONDOWN) {
-                
                 rayMapCollision = false;
+                
                 mapUpdateMutex.lock();
                 for(int i = 0; i < 250; i++) {
                     mouseRay.move(0.1f);
                     
-                    if(mouseRay.position.y <= noise.octaveNoise(mouseRay.position.x, mouseRay.position.z)) {
+                    rayChunkPosition = round(mouseRay.position.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
+                    chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
+                    
+                    if(mouseRay.position.y <= mapSurface(mapVertices[chunkIndex]->data(), mouseRay.position.xz())) {
                         rayMapCollision = true;
                         break;
                     }
                 }
                 mapUpdateMutex.unlock();
                 
-                rayChunkPosition = round(mouseRay.position.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
                 
                 arrayIndex = 0;
-                chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
-                
                 
                 if(rayMapCollision) {
                     rayMapPosition = round(mouseRay.position.xz() * (1.0f / TRIANGLE_WIDTH)) * TRIANGLE_WIDTH + vec2(CHUNK_WIDTH / 2.0f);
