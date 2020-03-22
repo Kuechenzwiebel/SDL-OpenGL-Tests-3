@@ -8,6 +8,11 @@
 
 #include "ray.hpp"
 
+Ray::Ray():
+position(0.0f), direction(0.0f) {
+    
+}
+
 void Ray::move(float distance) {
     position = position + direction * distance;
 }

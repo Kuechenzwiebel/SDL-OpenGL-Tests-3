@@ -15,7 +15,7 @@
 
 class Ray {
 public:
-    Ray() = default;
+    Ray();
     
     void move(float distance);
     void recalculateDirection();
