@@ -30,7 +30,6 @@ shader(shader), data(data), opaqueTrianglePointer(nullptr), transparentTriangleP
     for(int i = 0; i < fileLines.size(); i++) {
         if(fileLines[i]->substr(0, 2) == "o ") {
             objectInfo.push_back(ObjModelComponentInfo{std::make_pair(vertices.size(), 0), hg::substr(file, 0, int(file.find_last_of("/"))) + "/" + hg::substr(*fileLines[i], 2, int(fileLines[i]->length())) + ".png"});
-            std::cout << "Opening Texture: " << hg::substr(file, 0, int(file.find_last_of("/"))) + "/" + hg::substr(*fileLines[i], 2, int(fileLines[i]->length())) + ".png" << std::endl;
             if(vertices.size() != 0) {
                 objectInfo[objectInfo.size() - 2].objectBounds.second = (unsigned int)vertices.size();
             }
@@ -91,7 +90,7 @@ shader(shader), data(data), opaqueTrianglePointer(nullptr), transparentTriangleP
             auto texture = std::find(textures.begin(), textures.end(), std::make_pair(objectInfo[objectIndex].textureName, nullptr));
             if(texture == textures.end()) {
                 textures.push_back(std::make_pair(objectInfo[objectIndex].textureName, std::make_unique<Texture>(objectInfo[objectIndex].textureName)));
-                texture = std::find(textures.begin(), textures.end(), std::make_pair(objectInfo[objectIndex].textureName, nullptr));
+                texture = textures.begin() + textures.size() - 1;
             }
             
             if(texture->second->transparent) {
