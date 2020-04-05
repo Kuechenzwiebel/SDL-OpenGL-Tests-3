@@ -53,4 +53,8 @@ bool fileExists(std::string fileName);
 int ipow(int x, unsigned int y);
 float round(float value, unsigned int digits);
 
+
+static float gravitationalAcceleration = 9.81f;
+static float cameraMovementSpeed = 2.5f;
+
 #endif /* utils_hpp */

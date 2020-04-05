@@ -21,6 +21,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "../map/mapChunk.hpp"
+#include "../utils.hpp"
 
 class Camera {
 public:
@@ -44,6 +45,9 @@ public:
     float zoom;
     
     glm::vec3 front, right, up;
+    float velocity;
+    
+    bool keyBoardControl;
     
 private:
     float yaw, pitch;

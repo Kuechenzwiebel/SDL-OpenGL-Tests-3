@@ -207,8 +207,8 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
         }
     }
     /*
-    for(int i = 0; i < mapVertices.size(); i++)
-        saveMapData(mapVertices[i]->data(), mapUVs[i]->data(), mapNormals[i]->data());*/
+     for(int i = 0; i < mapVertices.size(); i++)
+     saveMapData(mapVertices[i]->data(), mapUVs[i]->data(), mapNormals[i]->data());*/
 }
 
 
@@ -319,7 +319,7 @@ int main(int argc, const char * argv[]) {
     
     Camera cam(&deltaTime, &windowEvent, &checkMouse, &noise);
     cam.processMouseInput();
-//    cam.processInput();
+    //    cam.processInput();
     
     UniformBuffer projViewBuffer(2 * sizeof(mat4), 0);
     UniformBuffer uiProjViewBuffer(2 * sizeof(mat4), 1);
@@ -409,11 +409,6 @@ int main(int argc, const char * argv[]) {
     Sphere sphere(&basicShader, &renderData, &stoneTexture, 32, nullptr);
     sphere.addToTriangleList(&opaqueTriangles);
     
-    ObjModel testModel("resources/model/untitled.obj", &basicShader, &renderData);
-    //    testModel.addToTriangleList(&opaqueTriangles, &transparentTriangles);
-    testModel.setTranslation(vec3(-4.0f));
-    testModel.setScale(vec3(1.0f));
-    testModel.setRotation(vec4(0.0f));
     
     UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
     fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
@@ -423,7 +418,7 @@ int main(int argc, const char * argv[]) {
     positionText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&positionText);
     
-    float shakeStrenght = 0.0f;
+    float shakeStrenght = 0.0f, explosionShakeStrenght = 0.0f;
     
     
     unsigned long triangleAmount = 0;
@@ -478,10 +473,36 @@ int main(int argc, const char * argv[]) {
     while(!updateDone)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
+    
+    for(int i = 0; i < chunks.size(); i++) {
+        auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
+        
+        if(itr == requiredRenderChunks.end()) {
+            chunks.erase(chunks.begin() + i);
+            i--;
+        }
+        else {
+            requiredRenderChunks.erase(itr);
+        }
+    }
+    
+    for(int i = 0; i < requiredRenderChunks.size(); i++) {
+        auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>> &search){return (*search)[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
+        
+        if(itr != mapVertices.end()) {
+            int idx = int(itr - mapVertices.begin());
+            chunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
+            chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
+            chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
+        }
+    }
+    
+    
+    
     int middleIdx = 0;
     auto middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();});
     
-    int arrayIndex;
+    int arrayIndex = 0;
     int chunkIndex = 0;
     int sideIndices[4];
     
@@ -498,6 +519,19 @@ int main(int argc, const char * argv[]) {
     
     
     float explosionOffset = 0.0f;
+    
+    
+    
+    ObjModel vehicleBase("resources/model/vehicle/vehicle.obj", &basicShader, &renderData);
+    vehicleBase.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    
+    int vehicleChunkIdx = 0;
+    unsigned long vehicleLastOnFloor = SDL_GetTicks();
+    bool camInVehicle = false;
+    
+    vec3 vehicleBasePosition(0.0f);
+    
+    
     
     printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
     
@@ -530,38 +564,41 @@ int main(int argc, const char * argv[]) {
                 running = false;
             
             if(windowEvent.type == SDL_MOUSEBUTTONDOWN) {
-                rayMapCollision = false;
-                
-                mapUpdateMutex.lock();
-                for(int i = 0; i < 250; i++) {
-                    mouseRay.move(0.1f);
+                if(cam.keyBoardControl) {
+                    rayMapCollision = false;
                     
-                    rayChunkPosition = round(mouseRay.position.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
-                    chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
-                    
-                    if(mouseRay.position.y <= mapSurface(mapVertices[chunkIndex]->data(), mouseRay.position.xz())) {
-                        rayMapCollision = true;
-                        break;
+                    mapUpdateMutex.lock();
+                    for(int i = 0; i < 250; i++) {
+                        mouseRay.move(0.1f);
+                        
+                        rayChunkPosition = round(mouseRay.position.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
+                        chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
+                        
+                        if(mouseRay.position.y <= mapSurface(mapVertices[chunkIndex]->data(), mouseRay.position.xz(), &noise)) {
+                            rayMapCollision = true;
+                            break;
+                        }
                     }
+                    mapUpdateMutex.unlock();
+                    
+                    
+                    arrayIndex = 0;
+                    
+                    if(rayMapCollision) {
+                        rayMapPosition += vec2(CHUNK_WIDTH / 2.0f);
+                        rayMapModPosition = mod(rayMapPosition, vec2(CHUNK_WIDTH));
+                        arrayIndex = 6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.y +
+                        6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
+                    }
+                    
+                    
+                    change = false;
+                    up = false;
                 }
-                mapUpdateMutex.unlock();
                 
-                
-                arrayIndex = 0;
-                
-                if(rayMapCollision) {
-                    rayMapPosition = round(mouseRay.position.xz() * (1.0f / TRIANGLE_WIDTH)) * TRIANGLE_WIDTH + vec2(CHUNK_WIDTH / 2.0f);
-                    rayMapModPosition = mod(rayMapPosition, vec2(CHUNK_WIDTH));
-                    arrayIndex = 6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.y +
-                            6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
-                }
-                
-                
-                change = false;
-                up = false;
                 
                 if(windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    if(rayMapCollision && middleItr != chunks.end()) {
+                    if(rayMapCollision && middleItr != chunks.end() && cam.keyBoardControl) {
                         mapUpdateMutex.lock();
                         height = (*mapVertices[chunkIndex])[arrayIndex + 0 - 0][1] - 0.1f;
                         mapUpdateMutex.unlock();
@@ -575,7 +612,7 @@ int main(int argc, const char * argv[]) {
                 }
                 
                 if(windowEvent.button.button == SDL_BUTTON_RIGHT) {
-                    if(materialCount > 0 && rayMapCollision && middleItr != chunks.end()) {
+                    if(materialCount > 0 && rayMapCollision && middleItr != chunks.end() && cam.keyBoardControl) {
                         mapUpdateMutex.lock();
                         height = (*mapVertices[chunkIndex])[arrayIndex + 0 - 0][1] + 0.1f;
                         mapUpdateMutex.unlock();
@@ -586,9 +623,6 @@ int main(int argc, const char * argv[]) {
                     }
                 }
                 
-                printVec2(rayMapModPosition);
-                
-                
                 if((rayMapPosition - vec2(CHUNK_WIDTH / 2.0f)).x - chunks[chunkIndex]->offset.x > 0.0f)
                     xOver = true;
                 else
@@ -598,8 +632,8 @@ int main(int argc, const char * argv[]) {
                     yOver = true;
                 else
                     yOver = false;
-                               
-
+                
+                
                 if(change) {
                     mapUpdateMutex.lock();
                     
@@ -609,7 +643,7 @@ int main(int argc, const char * argv[]) {
                     
                     else if(rayMapModPosition.x == 0.0f) {
                         int sideIndex = 6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.y +
-                                        6 * (1.0f / TRIANGLE_WIDTH) * (CHUNK_WIDTH - TRIANGLE_WIDTH) * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
+                        6 * (1.0f / TRIANGLE_WIDTH) * (CHUNK_WIDTH - TRIANGLE_WIDTH) * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
                         
                         if(!xOver) {
                             sideIndices[1] = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition + vec2(-CHUNK_WIDTH, 0.0f);}) - chunks.begin());
@@ -647,7 +681,7 @@ int main(int argc, const char * argv[]) {
                     
                     else if(rayMapModPosition.y == 0.0f) {
                         int sideIndex = 6 * (1.0f / TRIANGLE_WIDTH) * (CHUNK_WIDTH - TRIANGLE_WIDTH) +
-                                        6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);;
+                        6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);;
                         
                         if(!yOver) {
                             sideIndices[3] = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition + vec2(0.0f, -CHUNK_WIDTH);}) - chunks.begin());
@@ -733,6 +767,14 @@ int main(int argc, const char * argv[]) {
                 if(windowEvent.key.keysym.sym == SDLK_n)
                     swapBool((bool*)&normalView);
                 
+                if(windowEvent.key.keysym.sym == SDLK_v)
+                    swapBool(&camInVehicle);
+                
+                if(windowEvent.key.keysym.sym == SDLK_r) {
+                    vehicleBasePosition.y = 0.0f;
+                    vehicleLastOnFloor = SDL_GetTicks();
+                }
+                
                 if(windowEvent.key.keysym.sym == SDLK_e) {
                     shakeStrenght = 1.2f;
                     explosionOffset = totalTime;
@@ -741,6 +783,9 @@ int main(int argc, const char * argv[]) {
             
             if(windowEvent.type == SDL_MOUSEWHEEL) {
                 mouseWheel += float(windowEvent.wheel.y) * 0.15f;
+                
+                vehicleBasePosition.x += float(windowEvent.wheel.y) * 0.15f;
+                vehicleBasePosition.z += float(windowEvent.wheel.x) * 0.15f;
             }
         }
         
@@ -750,25 +795,57 @@ int main(int argc, const char * argv[]) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
         
         if(render) {
+            vehicleChunkIdx = int(std::find_if(chunks.begin(), chunks.end(), [&vehicleBasePosition](std::unique_ptr<MapChunk> &search){return search->offset == round(vehicleBasePosition.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);}) - chunks.begin());
+            
+            
+            float vehicleBaseMapHeight = mapSurface(mapVertices[vehicleChunkIdx]->data(), vehicleBasePosition.xz(), &noise);
+            if(vehicleBasePosition.y - 0.76f > vehicleBaseMapHeight) {
+                vehicleBasePosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - vehicleLastOnFloor) / 1000.0f, 2.0f) * deltaTime;
+                
+            }
+            else {
+                vehicleLastOnFloor = SDL_GetTicks();
+                vehicleBasePosition.y = vehicleBaseMapHeight + 0.76f;
+            }
+            
+            
+            vehicleBase.setModelMat(translate(mat4(1), vehicleBasePosition));
+            
+            
+            cam.keyBoardControl = !camInVehicle;
+            
+            if(camInVehicle)
+                cam.setEyePosition((translate(mat4(1), vehicleBasePosition) *
+                                    vec4(0.35f, 0.45f + 0.97f, -0.45f, 1.0f)).xyz());
+            
+            
+            
             cam.preProcessInput();
             
             chunkGridCameraPosition = round(cam.getFootPosition().xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
             mapGridCameraPosition = floor(cam.getFootPosition().xz() / float(TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
             
+            mapGridCameraPosition += glm::vec2(CHUNK_WIDTH / 2.0f);
+            mapGridCameraPosition = glm::mod(mapGridCameraPosition, glm::vec2(CHUNK_WIDTH));
+            
             mapUpdateMutex.lock();
-            middleItr = std::find_if(chunks.begin(), chunks.end(), [ &chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
+            middleItr = std::find_if(chunks.begin(), chunks.end(), [&chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
             middleIdx = int(middleItr - chunks.begin());
             
             cam.processInput(mapVertices[middleIdx]->data());
             mapUpdateMutex.unlock();
             
+            
             sort = true;
             
             
-            if(shakeStrenght > 0.0f)
-                shakeStrenght = -0.5f * pow((totalTime - explosionOffset), 3) + 1.5f;
+            
+            if(explosionShakeStrenght > 0.0f)
+                explosionShakeStrenght = -0.5f * pow((totalTime - explosionOffset), 3) + 1.5f;
             else
-                shakeStrenght = 0.0f;
+                explosionShakeStrenght = 0.0f;
+            
+            shakeStrenght = explosionShakeStrenght + cam.velocity * 0.003f;
             
             shakeUniform.modifyData(sizeof(float), 0, &shakeStrenght);
             
@@ -776,15 +853,15 @@ int main(int argc, const char * argv[]) {
             baseInformationUniform.modifyData(sizeof(float), sizeof(float) * 1, &(cam.getEyePositionPointer()->x));
             baseInformationUniform.modifyData(sizeof(float), sizeof(float) * 2, &(cam.getEyePositionPointer()->y));
             baseInformationUniform.modifyData(sizeof(float), sizeof(float) * 3, &(cam.getEyePositionPointer()->z));
-              
+            
             projViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(cam.viewMat));
-          
+            
             
             mouseRay.position = cam.getEyePosition();
             mouseRay.direction = cam.front;
             
             
-
+            
             if(oldCamFootPos != cam.getFootPosition()) {
                 std::stringstream positionStream;
                 positionStream << std::fixed << std::setprecision(2) <<"Position: X = " << cam.getFootPosition().x << "  Y = " <<   cam.getFootPosition().y << "  Z = " << cam.getFootPosition().z;
@@ -860,7 +937,7 @@ int main(int argc, const char * argv[]) {
             
             if(middleItr == chunks.end())
                 while(!updateDone)
-                  std::this_thread::sleep_for(std::chrono::microseconds(10));
+                    std::this_thread::sleep_for(std::chrono::microseconds(10));
             
             
             

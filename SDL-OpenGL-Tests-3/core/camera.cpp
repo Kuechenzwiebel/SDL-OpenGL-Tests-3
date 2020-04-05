@@ -8,11 +8,8 @@
 
 #include "camera.hpp"
 
-static float gravitationalAcceleration = 9.81f;
-static float momementSpeed = 5.5f;
-
 Camera::Camera(const float *deltaTime, const SDL_Event *windowEvent, bool *checkMouse, hg::PerlinNoise *noise):
-deltaTime(deltaTime), windowEvent(windowEvent), checkMouse(checkMouse), viewMat(1), yaw(0.0f), pitch(0.0f), mouseSensitivity(0.25f), zoom(45.0f), front(0.0f, 0.0f, -1.0f), right(1.0f, 0.0f, 0.0f), up(0.0f, 1.0f, 0.0f), footPosition(-2.0f, -1.73f, 0.0f), eyePosition(footPosition + glm::vec3(0.0f, 1.73f, 0.0f)), noise(noise) {
+deltaTime(deltaTime), windowEvent(windowEvent), checkMouse(checkMouse), viewMat(1), yaw(0.0f), pitch(0.0f), mouseSensitivity(0.25f), zoom(45.0f), front(0.0f, 0.0f, -1.0f), right(1.0f, 0.0f, 0.0f), up(0.0f, 1.0f, 0.0f), footPosition(0.0f, -1.73f, 0.0f), eyePosition(footPosition + glm::vec3(0.0f, 1.73f, 0.0f)), noise(noise), keyBoardControl(true) {
     viewMat = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
@@ -41,36 +38,53 @@ void Camera::processMouseInput() {
 }
 
 void Camera::preProcessInput() {
-    if(*checkMouse) {
-        const Uint8 *keystates = SDL_GetKeyboardState(NULL);
-        
+    if(keyBoardControl) {
         glm::vec3 movementVector(0.0f);
         
-        if(keystates[SDL_SCANCODE_W])
-            movementVector += this->front;
-        if(keystates[SDL_SCANCODE_A])
-            movementVector -= this->right;
-        if(keystates[SDL_SCANCODE_S])
-            movementVector -= this->front;
-        if(keystates[SDL_SCANCODE_D])
-            movementVector += this->right;
-        if(keystates[SDL_SCANCODE_SPACE])
-            movementVector += glm::vec3(0.0f, 1.0f, 0.0f);
-        if(keystates[SDL_SCANCODE_LSHIFT])
-            movementVector -= glm::vec3(0.0f, 1.0f, 0.0f);
+        if(*checkMouse) {
+            const Uint8 *keystates = SDL_GetKeyboardState(NULL);
+            
+            if(keystates[SDL_SCANCODE_W])
+                movementVector += this->front;
+            if(keystates[SDL_SCANCODE_A])
+                movementVector -= this->right;
+            if(keystates[SDL_SCANCODE_S])
+                movementVector -= this->front;
+            if(keystates[SDL_SCANCODE_D])
+                movementVector += this->right;
+            if(keystates[SDL_SCANCODE_SPACE])
+                movementVector += glm::vec3(0.0f, 1.0f, 0.0f);
+            if(keystates[SDL_SCANCODE_LSHIFT])
+                movementVector -= glm::vec3(0.0f, 1.0f, 0.0f);
+            
+            if(movementVector != glm::vec3(0.0f))
+                footPosition += glm::normalize(movementVector) * *deltaTime * cameraMovementSpeed;
+        }
+        
+        footPosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - timeSinceLastOnFloor) / 1000.0f, 2.0f) * *deltaTime;
         
         if(movementVector != glm::vec3(0.0f))
-            footPosition += glm::normalize(movementVector) * *deltaTime * momementSpeed;
+            velocity = cameraMovementSpeed;
+        else
+            velocity = 0.0f;
     }
-    
-    footPosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - timeSinceLastOnFloor) / 1000.0f, 2.0f) * *deltaTime;
+    else {
+        velocity = 0.0f;
+        timeSinceLastOnFloor = SDL_GetTicks();
+    }
 }
 
 void Camera::processInput(glm::vec3 *mapVertices) {
-    float mapHeight = mapSurface(mapVertices, footPosition.xz());
-    if(footPosition.y < mapHeight) {
-        footPosition.y = mapHeight;
-        timeSinceLastOnFloor = SDL_GetTicks();
+    if(keyBoardControl) {
+        printVec2(footPosition.xz());
+        float mapHeight = mapSurface(mapVertices, footPosition.xz(), noise);
+        if(footPosition.y < mapHeight) {
+            footPosition.y = mapHeight;
+            timeSinceLastOnFloor = SDL_GetTicks();
+        }
+        else {
+            velocity += gravitationalAcceleration * (SDL_GetTicks() - timeSinceLastOnFloor) / 1000.0f;
+        }
     }
     
     eyePosition = footPosition + glm::vec3(0.0f, 1.73f, 0.0f);

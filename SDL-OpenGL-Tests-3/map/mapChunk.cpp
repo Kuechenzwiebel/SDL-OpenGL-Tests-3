@@ -182,26 +182,40 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
     }
 }
 
-float mapSurface(glm::vec3 *mapVertices, glm::vec2 position) {
+float mapSurface(glm::vec3 *mapVertices, glm::vec2 position, hg::PerlinNoise *noise) {
     glm::vec2 mapGridPosition = floor(position / float(TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
     glm::vec2 trianglePositon = position - mapGridPosition;
+    
     mapGridPosition += glm::vec2(CHUNK_WIDTH / 2.0f);
     mapGridPosition = glm::mod(mapGridPosition, glm::vec2(CHUNK_WIDTH));
     
     int idx = 6 * (1.0f / TRIANGLE_WIDTH) * (mapGridPosition.y) +
-              6 * (1.0f / TRIANGLE_WIDTH) * (mapGridPosition.x) * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
+    6 * (1.0f / TRIANGLE_WIDTH) * (mapGridPosition.x) * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
     
     float z = 0.0f;
     
     if(trianglePositon.x + trianglePositon.y > TRIANGLE_WIDTH) {
-        z = -(mapVertices[idx + 4].y - mapVertices[idx + 3].y) / TRIANGLE_WIDTH * (position.y - mapVertices[idx + 3].z) +
-            -(mapVertices[idx + 5].y - mapVertices[idx + 3].y) / TRIANGLE_WIDTH * (position.x - mapVertices[idx + 3].x) +
-            mapVertices[idx + 3].y;
+        if((position.y - mapVertices[idx + 3].z) < -TRIANGLE_WIDTH || (position.y - mapVertices[idx + 3].z) > TRIANGLE_WIDTH)
+            z = noise->octaveNoise(position.x, position.y);
+        
+        else if((position.x - mapVertices[idx + 3].x) < -TRIANGLE_WIDTH || (position.x - mapVertices[idx + 3].x) > TRIANGLE_WIDTH)
+            z = noise->octaveNoise(position.x, position.y);
+        
+        else z = -(mapVertices[idx + 4].y - mapVertices[idx + 3].y) / TRIANGLE_WIDTH * (position.y - mapVertices[idx + 3].z) +
+                 -(mapVertices[idx + 5].y - mapVertices[idx + 3].y) / TRIANGLE_WIDTH * (position.x - mapVertices[idx + 3].x) +
+                 mapVertices[idx + 3].y;
     }
     else {
-        z = (mapVertices[idx + 1].y - mapVertices[idx + 0].y) / TRIANGLE_WIDTH * (position.x - mapVertices[idx + 0].x) +
-            (mapVertices[idx + 2].y - mapVertices[idx + 0].y) / TRIANGLE_WIDTH * (position.y - mapVertices[idx + 0].z) +
-            mapVertices[idx + 0].y;
+        if((position.y - mapVertices[idx + 0].z) < -TRIANGLE_WIDTH || (position.y - mapVertices[idx + 0].z) > TRIANGLE_WIDTH)
+            z = noise->octaveNoise(position.x, position.y);
+        
+        else if((position.x - mapVertices[idx + 0].x) < -TRIANGLE_WIDTH || (position.x - mapVertices[idx + 0].x) > TRIANGLE_WIDTH)
+            z = noise->octaveNoise(position.x, position.y);
+        
+        else
+            z = (mapVertices[idx + 1].y - mapVertices[idx + 0].y) / TRIANGLE_WIDTH * (position.x - mapVertices[idx + 0].x) +
+                (mapVertices[idx + 2].y - mapVertices[idx + 0].y) / TRIANGLE_WIDTH * (position.y - mapVertices[idx + 0].z) +
+                mapVertices[idx + 0].y;
     }
     
     return z;
