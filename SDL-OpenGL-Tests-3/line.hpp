@@ -12,18 +12,21 @@
 #include <stdio.h>
 
 #include "object.hpp"
+#include "core/buffers/dynamicArrayBuffer.hpp"
 
 class Line {
 public:
     Line(Shader *shader, const RenderData *data, const glm::vec3 vertices[], const glm::vec4 colors[]);
     ~Line();
     
+    void setData(const glm::vec3 vertices[], const glm::vec4 colors[]);
+    
     void render();
     
 private:
     GLuint VAO;
-    ArrayBuffer<glm::vec3> vertex;
-    ArrayBuffer<glm::vec4> color;
+    DynamicArrayBuffer<glm::vec3> vertex;
+    DynamicArrayBuffer<glm::vec4> color;
     
     Shader *shader;
     const RenderData *data;

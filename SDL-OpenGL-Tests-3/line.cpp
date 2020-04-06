@@ -25,6 +25,14 @@ Line::~Line() {
     glDeleteVertexArrays(1, &VAO);
 }
 
+void Line::setData(const glm::vec3 vertices[], const glm::vec4 colors[]) {
+    vertex.setData(vertices, sizeof(glm::vec3) * 2, 0);
+    color.setData(colors, sizeof(glm::vec4) * 2, 1);
+    
+    vertex.activate();
+    color.activate();
+}
+
 void Line::render() {
     vertex.activate();
     color.activate();
