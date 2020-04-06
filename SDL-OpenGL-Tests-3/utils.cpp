@@ -99,3 +99,16 @@ float round(float value, unsigned int digits) {
     value /= power;
     return value;
 }
+
+
+glm::mat4 translate(glm::vec3 a) {
+    return glm::translate(glm::mat4(1), a);
+}
+
+glm::mat4 scale(glm::vec3 a) {
+    return glm::scale(glm::mat4(1), a);
+}
+
+glm::mat4 rotate(float a, glm::vec3 b) {
+    return glm::rotate(glm::mat4(1), a, b);
+}

@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <sys/stat.h>
 
 #define PRINTF_RED "\033[0;31m"
@@ -56,5 +57,10 @@ float round(float value, unsigned int digits);
 
 static float gravitationalAcceleration = 9.81f;
 static float cameraMovementSpeed = 2.5f;
+
+
+glm::mat4 translate(glm::vec3 a);
+glm::mat4 scale(glm::vec3 a);
+glm::mat4 rotate(float a, glm::vec3 b);
 
 #endif /* utils_hpp */
