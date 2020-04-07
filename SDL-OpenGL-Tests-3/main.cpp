@@ -850,17 +850,17 @@ int main(int argc, const char * argv[]) {
             vehicleBasePosition.x += cos(radians(vehicleAngle)) * vehicleVelocity * deltaTime;
             vehicleBasePosition.z -= sin(radians(vehicleAngle)) * vehicleVelocity * deltaTime;
             
-            if(frontWheelAngle < -45.0f)
-                frontWheelAngle = -45.0f;
+            if(frontWheelAngle < -30.0f)
+                frontWheelAngle = -30.0f;
             
-            if(frontWheelAngle > 45.0f)
-                frontWheelAngle = 45.0f;
+            if(frontWheelAngle > 30.0f)
+                frontWheelAngle = 30.0f;
             
             
             if(frontWheelAngle < -0.1f)
-                frontWheelAngle += 5.0f * deltaTime;
+                frontWheelAngle += 0.5f * deltaTime * vehicleVelocity;
             else if(frontWheelAngle > 0.1f)
-                frontWheelAngle -= 5.0f * deltaTime;
+                frontWheelAngle -= 0.5f * deltaTime * vehicleVelocity;
             else
                 frontWheelAngle = 0.0f;
             
@@ -870,7 +870,6 @@ int main(int argc, const char * argv[]) {
             float vehicleBaseMapHeight = mapSurface(mapVertices[vehicleChunkIdx]->data(), vehicleBasePosition.xz(), &noise);
             if(vehicleBasePosition.y - 0.76f > vehicleBaseMapHeight) {
                 vehicleBasePosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - vehicleLastOnFloor) / 1000.0f, 2.0f) * deltaTime;
-                
             }
             else {
                 vehicleLastOnFloor = SDL_GetTicks();
