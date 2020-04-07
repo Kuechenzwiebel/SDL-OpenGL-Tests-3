@@ -286,6 +286,7 @@ int main(int argc, const char * argv[]) {
     std::list<std::pair<float, CoreTriangle*>> transparentTriangles;
     std::vector<CoreTriangleCluster*> opaqueTriangles;
     std::vector<LightSource*> lightSources;
+    std::vector<Line*> lines;
     
     std::vector<CoreTriangle*> uiTriangles;
     std::vector<UIText*> uiTexts;
@@ -418,6 +419,9 @@ int main(int argc, const char * argv[]) {
     positionText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&positionText);
     
+    UIText vehicleSpeedText("Velocity: 0.0 m/s", &uiShader, &uiData);
+    vehicleSpeedText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
+    
     float shakeStrenght = 0.0f, explosionShakeStrenght = 0.0f;
     
     
@@ -525,11 +529,32 @@ int main(int argc, const char * argv[]) {
     ObjModel vehicleBase("resources/model/vehicle/vehicle.obj", &basicShader, &renderData);
     vehicleBase.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
+    
+    ObjModel axisBack("resources/model/vehicle/axisBack.obj", &basicShader, &renderData);
+    axisBack.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    
+    
+    ObjModel axisFront("resources/model/vehicle/axisFront.obj", &basicShader, &renderData);
+    axisFront.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    
+    ObjModel wheel_L("resources/model/vehicle/wheel_L.obj", &basicShader, &renderData);
+    wheel_L.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    
+    ObjModel wheel_R("resources/model/vehicle/wheel_R.obj", &basicShader, &renderData);
+    wheel_R.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    
+    
     int vehicleChunkIdx = 0;
     unsigned long vehicleLastOnFloor = SDL_GetTicks();
     bool camInVehicle = false;
     
+    float frontWheelAngle = 0.0f;
+    float vehicleAngle = 0.0f;
+    float vehicleVelocity = 0.0f;
+    
     vec3 vehicleBasePosition(0.0f);
+    
+    std::stringstream vehicleSpeedStringStream;
     
     
     
@@ -572,7 +597,7 @@ int main(int argc, const char * argv[]) {
                         mouseRay.move(0.1f);
                         
                         rayChunkPosition = round(mouseRay.position.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
-                        chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
+                        chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
                         
                         if(mouseRay.position.y <= mapSurface(mapVertices[chunkIndex]->data(), mouseRay.position.xz(), &noise)) {
                             rayMapCollision = true;
@@ -748,9 +773,8 @@ int main(int argc, const char * argv[]) {
                 projViewBuffer.modifyData(sizeof(mat4), 0, glm::value_ptr(projectionMat));
                 uiProjViewBuffer.modifyData(sizeof(mat4), 0, glm::value_ptr(uiProjection));
                 
-                fpsText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * fpsText.getScale().x, 0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y, 0.0f));
-                
-                positionText.setTranslation(glm::vec3(-0.5f * float(windowWidth) + 0.5f * positionText.getScale().x, -0.5f * float(windowHeight) + 0.5f * positionText.getScale().y, 0.0f));
+                fpsText.setTranslation(glm::vec3(-(0.5f * float(windowWidth) - 0.5f * fpsText.getScale().x), (0.5f * float(windowHeight) - 0.5f * fpsText.getScale().y), 0.0f));
+                positionText.setTranslation(glm::vec3(-(0.5f * float(windowWidth) - 0.5f * positionText.getScale().x), -(0.5f * float(windowHeight) - 0.5f * positionText.getScale().y), 0.0f));
                 
                 glViewport(0, 0, windowWidth, windowHeight);
             }
@@ -784,8 +808,8 @@ int main(int argc, const char * argv[]) {
             if(windowEvent.type == SDL_MOUSEWHEEL) {
                 mouseWheel += float(windowEvent.wheel.y) * 0.15f;
                 
-                vehicleBasePosition.x += float(windowEvent.wheel.y) * 0.15f;
-                vehicleBasePosition.z += float(windowEvent.wheel.x) * 0.15f;
+                frontWheelAngle += float(windowEvent.wheel.y) * 0.5f;
+                vehicleVelocity += float(windowEvent.wheel.x) * 0.5f;
             }
         }
         
@@ -795,7 +819,55 @@ int main(int argc, const char * argv[]) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
         
         if(render) {
+            if(camInVehicle) {
+                const Uint8 *keystates = SDL_GetKeyboardState(NULL);
+                
+                if(keystates[SDL_SCANCODE_W])
+                    vehicleVelocity += 6.125f * deltaTime;
+                
+                if(keystates[SDL_SCANCODE_A])
+                    frontWheelAngle += 10.0f * deltaTime;
+                
+                if(keystates[SDL_SCANCODE_S])
+                    vehicleVelocity -= 6.125f * deltaTime;
+                
+                if(keystates[SDL_SCANCODE_D])
+                    frontWheelAngle -= 10.0f * deltaTime;
+                
+                if(keystates[SDL_SCANCODE_SPACE]) {
+                    if(vehicleVelocity < -1.0f)
+                        vehicleVelocity += 20.0f * deltaTime;
+                    else if(vehicleVelocity > 1.0f)
+                        vehicleVelocity -= 20.0f * deltaTime;
+                    else
+                        vehicleVelocity = 0.0f;
+                }
+            }
+            
+            
+            
             vehicleChunkIdx = int(std::find_if(chunks.begin(), chunks.end(), [&vehicleBasePosition](std::unique_ptr<MapChunk> &search){return search->offset == round(vehicleBasePosition.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);}) - chunks.begin());
+            
+            vehicleAngle += frontWheelAngle * vehicleVelocity * deltaTime;
+            
+            vehicleBasePosition.x += cos(radians(vehicleAngle)) * vehicleVelocity * deltaTime;
+            vehicleBasePosition.z -= sin(radians(vehicleAngle)) * vehicleVelocity * deltaTime;
+            
+            if(frontWheelAngle < -45.0f)
+                frontWheelAngle = -45.0f;
+            
+            if(frontWheelAngle > 45.0f)
+                frontWheelAngle = 45.0f;
+            
+            
+            if(frontWheelAngle < -0.1f)
+                frontWheelAngle += 5.0f * deltaTime;
+            else if(frontWheelAngle > 0.1f)
+                frontWheelAngle -= 5.0f * deltaTime;
+            else
+                frontWheelAngle = 0.0f;
+            
+            
             
             
             float vehicleBaseMapHeight = mapSurface(mapVertices[vehicleChunkIdx]->data(), vehicleBasePosition.xz(), &noise);
@@ -809,13 +881,21 @@ int main(int argc, const char * argv[]) {
             }
             
             
-            vehicleBase.setModelMat(translate(mat4(1), vehicleBasePosition));
+            vehicleBase.setModelMat(translate(vehicleBasePosition) * rotate(radians(vehicleAngle), vec3(0.0f, 1.0f, 0.0f)));
+            
+            axisBack.setModelMat (translate(vehicleBasePosition) * rotate(radians(vehicleAngle), vec3(0.0f, 1.0f, 0.0f)) * translate(vec3(-1.5215f, 0.0f, 0.0f)));
+            
+            axisFront.setModelMat(translate(vehicleBasePosition) * rotate(radians(vehicleAngle), vec3(0.0f, 1.0f, 0.0f)) * translate(vec3(1.5215f, 0.0f, 0.0f)));
+            wheel_R.setModelMat  (translate(vehicleBasePosition) * rotate(radians(vehicleAngle), vec3(0.0f, 1.0f, 0.0f)) * translate(vec3(1.5215f, 0.0f, -0.7161f)) * rotate(radians(frontWheelAngle), vec3(0.0f, 1.0f, 0.0f)));
+            wheel_L.setModelMat  (translate(vehicleBasePosition) * rotate(radians(vehicleAngle), vec3(0.0f, 1.0f, 0.0f)) * translate(vec3(1.5215f, 0.0f, 0.7161f))  * rotate(radians(frontWheelAngle), vec3(0.0f, 1.0f, 0.0f)));
+            
             
             
             cam.keyBoardControl = !camInVehicle;
             
             if(camInVehicle)
                 cam.setEyePosition((translate(mat4(1), vehicleBasePosition) *
+                                    rotate(radians(vehicleAngle), vec3(0.0f, 1.0f, 0.0f)) *
                                     vec4(0.35f, 0.45f + 0.97f, -0.45f, 1.0f)).xyz());
             
             
@@ -903,6 +983,12 @@ int main(int argc, const char * argv[]) {
             }
             
             
+            colorBufferShader.use();
+            for(int i = 0; i < lines.size(); i++) {
+                lines[i]->render();
+            }
+            
+            
             if(updateDone) {
                 if(requiredRenderChunks.begin() != requiredRenderChunks.end()) {
                     for(int i = 0; i < chunks.size(); i++) {
@@ -980,6 +1066,32 @@ int main(int argc, const char * argv[]) {
             for(int i = 0; i < uiTexts.size(); i++) {
                 uiTexts[i]->render();
             }
+            
+            
+            if(camInVehicle) {
+                vehicleSpeedStringStream.str("");
+                vehicleSpeedStringStream << "Velocity: " << std::fixed << std::setprecision(2) << vehicleVelocity << "m/s";
+                
+                vehicleSpeedText.setTranslation(glm::vec3((0.5f * float(windowWidth) - 0.5f * vehicleSpeedText.getScale().x) - (int(vehicleSpeedStringStream.tellp()) - 1) * vehicleSpeedText.getScale().x, (0.5f * float(windowHeight) - 0.5f * vehicleSpeedText.getScale().y), 0.0f));
+                
+                vehicleSpeedStringStream << "\n       ";
+                
+                if(vehicleVelocity * 3.6f <= -10.0f)
+                    vehicleSpeedStringStream << " ";
+                if(vehicleVelocity * 3.6f < 0.0f && vehicleVelocity * 3.6f > -10.0f)
+                    vehicleSpeedStringStream << "  ";
+                else if(vehicleVelocity * 3.6f < 10.0f && vehicleVelocity * 3.6f >= 0.0f)
+                    vehicleSpeedStringStream << "  ";
+                else if(vehicleVelocity * 3.6f >= 10.0f)
+                    vehicleSpeedStringStream << " ";
+                vehicleSpeedStringStream << vehicleVelocity * 3.6f << "km/h";
+                
+                
+                vehicleSpeedText.setText(vehicleSpeedStringStream.str());
+                
+                vehicleSpeedText.render();
+            }
+            
             
             
             oldCamFootPos = cam.getFootPosition();
