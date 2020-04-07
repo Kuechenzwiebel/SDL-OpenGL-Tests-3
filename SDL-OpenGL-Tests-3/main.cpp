@@ -547,10 +547,12 @@ int main(int argc, const char * argv[]) {
     int vehicleChunkIdx = 0;
     unsigned long vehicleLastOnFloor = SDL_GetTicks();
     bool camInVehicle = false;
+    bool vehicleOnFloor = false;
     
-    float frontWheelAngle = 0.0f;
+    float frontWheelAngle = 0.0f, lastFrontWheelAngle = 0.0f;
     float vehicleAngle = 0.0f;
     float vehicleVelocity = 0.0f;
+    
     
     vec3 vehicleBasePosition(0.0f);
     
@@ -612,7 +614,7 @@ int main(int argc, const char * argv[]) {
                     rayMapPosition = round(mouseRay.position.xz() * (1.0f / TRIANGLE_WIDTH)) * TRIANGLE_WIDTH + vec2(CHUNK_WIDTH / 2.0f);
                     rayMapModPosition = mod(rayMapPosition, vec2(CHUNK_WIDTH));
                     arrayIndex = 6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.y +
-                            6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
+                    6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
                 }
                 
                 
@@ -657,8 +659,8 @@ int main(int argc, const char * argv[]) {
                     yOver = true;
                 else
                     yOver = false;
-                               
-
+                
+                
                 if(change) {
                     mapUpdateMutex.lock();
                     
@@ -668,7 +670,7 @@ int main(int argc, const char * argv[]) {
                     
                     else if(rayMapModPosition.x == 0.0f) {
                         int sideIndex = 6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.y +
-                                        6 * (1.0f / TRIANGLE_WIDTH) * (CHUNK_WIDTH - TRIANGLE_WIDTH) * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
+                        6 * (1.0f / TRIANGLE_WIDTH) * (CHUNK_WIDTH - TRIANGLE_WIDTH) * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
                         
                         if(!xOver) {
                             sideIndices[1] = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition + vec2(-CHUNK_WIDTH, 0.0f);}) - chunks.begin());
@@ -706,7 +708,7 @@ int main(int argc, const char * argv[]) {
                     
                     else if(rayMapModPosition.y == 0.0f) {
                         int sideIndex = 6 * (1.0f / TRIANGLE_WIDTH) * (CHUNK_WIDTH - TRIANGLE_WIDTH) +
-                                        6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);;
+                        6 * (1.0f / TRIANGLE_WIDTH) * rayMapModPosition.x * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);;
                         
                         if(!yOver) {
                             sideIndices[3] = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &chunkGridCameraPosition, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition + vec2(0.0f, -CHUNK_WIDTH);}) - chunks.begin());
@@ -845,7 +847,10 @@ int main(int argc, const char * argv[]) {
             
             vehicleChunkIdx = int(std::find_if(chunks.begin(), chunks.end(), [&vehicleBasePosition](std::unique_ptr<MapChunk> &search){return search->offset == round(vehicleBasePosition.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);}) - chunks.begin());
             
-            vehicleAngle += frontWheelAngle * vehicleVelocity * deltaTime;
+            if(vehicleOnFloor)
+                vehicleAngle += frontWheelAngle * vehicleVelocity * deltaTime;
+            else
+                vehicleAngle += lastFrontWheelAngle * vehicleVelocity * deltaTime;
             
             vehicleBasePosition.x += cos(radians(vehicleAngle)) * vehicleVelocity * deltaTime;
             vehicleBasePosition.z -= sin(radians(vehicleAngle)) * vehicleVelocity * deltaTime;
@@ -857,24 +862,29 @@ int main(int argc, const char * argv[]) {
                 frontWheelAngle = 30.0f;
             
             
-            if(frontWheelAngle < -0.1f)
-                frontWheelAngle += 0.5f * deltaTime * vehicleVelocity;
-            else if(frontWheelAngle > 0.1f)
-                frontWheelAngle -= 0.5f * deltaTime * vehicleVelocity;
-            else
-                frontWheelAngle = 0.0f;
+            if(vehicleOnFloor) {
+                if(frontWheelAngle < -0.1f)
+                    frontWheelAngle += 0.5f * deltaTime * vehicleVelocity;
+                else if(frontWheelAngle > 0.1f)
+                    frontWheelAngle -= 0.5f * deltaTime * vehicleVelocity;
+                else
+                    frontWheelAngle = 0.0f;
+            }
             
             
             
-            
+            mapUpdateMutex.lock();
             float vehicleBaseMapHeight = mapSurface(mapVertices[vehicleChunkIdx]->data(), vehicleBasePosition.xz(), &noise);
             if(vehicleBasePosition.y - 0.76f > vehicleBaseMapHeight) {
                 vehicleBasePosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - vehicleLastOnFloor) / 1000.0f, 2.0f) * deltaTime;
+                vehicleOnFloor = false;
             }
             else {
                 vehicleLastOnFloor = SDL_GetTicks();
                 vehicleBasePosition.y = vehicleBaseMapHeight + 0.76f;
+                vehicleOnFloor = true;
             }
+            mapUpdateMutex.unlock();
             
             
             vehicleBase.setModelMat(translate(vehicleBasePosition) * rotate(radians(vehicleAngle), vec3(0.0f, 1.0f, 0.0f)));
@@ -888,6 +898,9 @@ int main(int argc, const char * argv[]) {
             
             
             cam.keyBoardControl = !camInVehicle;
+            
+            if(vehicleOnFloor)
+                lastFrontWheelAngle = frontWheelAngle;
             
             if(camInVehicle)
                 cam.setEyePosition((translate(mat4(1), vehicleBasePosition) *
