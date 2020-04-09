@@ -38,6 +38,8 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
 void saveMapData(glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);
 float mapSurface(glm::vec3 *mapVertices, glm::vec2 position, hg::PerlinNoise *noise);
 
+glm::vec2 chunkGrid(glm::vec2 a);
+
 class MapChunk: public Object {
 public:
     MapChunk(Shader *shader, const RenderData *data, Texture *texture, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);

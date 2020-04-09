@@ -63,4 +63,6 @@ glm::mat4 translate(glm::vec3 a);
 glm::mat4 scale(glm::vec3 a);
 glm::mat4 rotate(float a, glm::vec3 b);
 
+glm::vec3 vectorMatrixMultiplication(glm::vec3 v, glm::mat4 m);
+
 #endif /* utils_hpp */

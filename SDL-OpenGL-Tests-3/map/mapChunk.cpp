@@ -234,6 +234,10 @@ void saveMapData(glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormal
     file.writeFile(stringstream.str());
 }
 
+glm::vec2 chunkGrid(glm::vec2 a) {
+    return glm::round(a / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
+}
+
 MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals):
 shader(shader), data(data), texture(texture), trianglePointer(nullptr), tris(shader, data, CHUNK_ARRAY_SIZE / 3, mapVertices, texture, mapUVs, mapNormals, &modelMat) {
     
