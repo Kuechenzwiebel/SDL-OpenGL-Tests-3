@@ -852,8 +852,6 @@ int main(int argc, const char * argv[]) {
             }
             
             
-            vehicleBaseChunkGrid = round(vehicleBasePosition.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
-            vehicleChunkIdx = int(std::find_if(chunks.begin(), chunks.end(), [&vehicleBaseChunkGrid](std::unique_ptr<MapChunk> &search){return search->offset == vehicleBaseChunkGrid;}) - chunks.begin());
             
             if(vehicleOnFloor)
                 vehicleYAngle += frontWheelAngle * vehicleVelocity * deltaTime;
@@ -882,6 +880,10 @@ int main(int argc, const char * argv[]) {
             
             
             mapUpdateMutex.lock();
+            vehicleBaseChunkGrid = round(vehicleBasePosition.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
+            vehicleChunkIdx = int(std::find_if(chunks.begin(), chunks.end(), [&vehicleBaseChunkGrid](std::unique_ptr<MapChunk> &search){return search->offset == vehicleBaseChunkGrid;}) - chunks.begin());
+    
+            
             float vehicleBaseMapHeight = mapSurface(mapVertices[vehicleChunkIdx]->data(), vehicleBasePosition.xz(), &noise);
             if(vehicleBasePosition.y - 0.76f > vehicleBaseMapHeight) {
                 vehicleBasePosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - vehicleLastOnFloor) / 1000.0f, 2.0f) * deltaTime;
