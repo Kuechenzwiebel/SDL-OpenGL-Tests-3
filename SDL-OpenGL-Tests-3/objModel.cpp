@@ -88,9 +88,15 @@ shader(shader), data(data), opaqueTrianglePointer(nullptr), transparentTriangleP
     for(int i = 0; i < fileLines.size(); i++) {
         if(fileLines[i]->substr(0, 2) == "o ") {
             auto texture = std::find(textures.begin(), textures.end(), std::make_pair(objectInfo[objectIndex].textureName, nullptr));
-            if(texture == textures.end()) {
-                textures.push_back(std::make_pair(objectInfo[objectIndex].textureName, std::make_unique<Texture>(objectInfo[objectIndex].textureName)));
-                texture = textures.begin() + textures.size() - 1;
+            try {
+                if(texture == textures.end()) {
+                    textures.push_back(std::make_pair(objectInfo[objectIndex].textureName, std::make_unique<Texture>(objectInfo[objectIndex].textureName)));
+                    texture = textures.begin() + textures.size() - 1;
+                }
+            }
+            catch(const std::runtime_error &e) {
+                std::cout << "A texture error occured while opening the model " << file << "\nTexture error: " << e.what() << std::endl;
+                exit(5);
             }
             
             if(texture->second->transparent) {
@@ -101,7 +107,7 @@ shader(shader), data(data), opaqueTrianglePointer(nullptr), transparentTriangleP
             else {
                 opaqueTriangleClusters.push_back(std::make_unique<CoreTriangleCluster>(shader, data, (objectInfo[objectIndex].objectBounds.second - objectInfo[objectIndex].objectBounds.first) / 3, &vertices[objectInfo[objectIndex].objectBounds.first], texture->second.get(), &uvs[objectInfo[objectIndex].objectBounds.first], &normals[objectInfo[objectIndex].objectBounds.first], &modelMat, 32, nullptr, true));
             }
-    
+            
             objectIndex++;
         }
     }
