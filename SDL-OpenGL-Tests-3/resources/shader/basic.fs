@@ -130,7 +130,7 @@ void main() {
     
     
     if(normalView == 1)
-        color = vec4(forwardNormal, 1.0f);
+        color = vec4(abs(forwardNormal), 1.0f);
     else
         color = vec4(ambientLight + result, 1.0f) * texture(tex, UV);
 }
