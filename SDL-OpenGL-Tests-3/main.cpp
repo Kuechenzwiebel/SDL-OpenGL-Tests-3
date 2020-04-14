@@ -462,8 +462,8 @@ int main(int argc, const char * argv[]) {
     flashlight.addToLightList(&lightSources);
     
     
-    int normalView = 0;
-    UniformVar<int> normalViewUniform(&basicShader, "normalView", &normalView);
+    int viewMode = 0;
+    UniformVar<int> viewModeUniform(&basicShader, "viewMode", &viewMode);
     
     
     
@@ -795,8 +795,11 @@ int main(int argc, const char * argv[]) {
                 if(windowEvent.key.keysym.sym == SDLK_f)
                     swapBool(&wireframe);
                 
-                if(windowEvent.key.keysym.sym == SDLK_n)
-                    swapBool((bool*)&normalView);
+                if(windowEvent.key.keysym.sym == SDLK_n) {
+                    viewMode++;
+                    viewMode = viewMode % 3;
+                    printf("%d\n", viewMode);
+                }
                 
                 if(windowEvent.key.keysym.sym == SDLK_v)
                     swapBool(&camInVehicle);
@@ -1069,7 +1072,7 @@ int main(int argc, const char * argv[]) {
             for(int i = 0; i < opaqueTriangles.size(); i++) {
                 opaqueTriangles[i]->getShaderPointer()->use();
                 
-                normalViewUniform.setVar();
+                viewModeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
@@ -1123,7 +1126,7 @@ int main(int argc, const char * argv[]) {
             
             diffuseShader.use();
             for(int i = 0; i < mapTriangles.size(); i++) {
-                normalViewUniform.setVar();
+                viewModeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
@@ -1138,7 +1141,7 @@ int main(int argc, const char * argv[]) {
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
                 
-                normalViewUniform.setVar();
+                viewModeUniform.setVar();
                 for(int i = 0; i < lightSources.size(); i++)
                     lightSources[i]->activate();
                 
