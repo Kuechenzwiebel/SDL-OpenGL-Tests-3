@@ -798,7 +798,6 @@ int main(int argc, const char * argv[]) {
                 if(windowEvent.key.keysym.sym == SDLK_n) {
                     viewMode++;
                     viewMode = viewMode % 3;
-                    printf("%d\n", viewMode);
                 }
                 
                 if(windowEvent.key.keysym.sym == SDLK_v)
