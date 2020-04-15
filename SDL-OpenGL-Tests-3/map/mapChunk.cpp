@@ -34,6 +34,7 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
         
         for(float x = offset.x - CHUNK_WIDTH / 2.0f; x < float(CHUNK_WIDTH) + offset.x - CHUNK_WIDTH / 2.0f; x += TRIANGLE_WIDTH) {
             for(float y = offset.y - CHUNK_WIDTH / 2.0f; y < float(CHUNK_WIDTH) + offset.y - CHUNK_WIDTH / 2.0f; y += TRIANGLE_WIDTH) {
+                glm::vec2 xy(x, y);
                 height0 = noise->octaveNoise(x + 0.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH);
                 height1 = noise->octaveNoise(x + 1.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH);
                 height2 = noise->octaveNoise(x + 0.0f * TRIANGLE_WIDTH, y + 1.0f * TRIANGLE_WIDTH);
@@ -46,13 +47,12 @@ void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *
                 mapVertices[arrayIdx + 4] = glm::vec3(x + 1.0f * TRIANGLE_WIDTH, height1, y + 0.0f * TRIANGLE_WIDTH);
                 mapVertices[arrayIdx + 5] = glm::vec3(x + 0.0f * TRIANGLE_WIDTH, height2, y + 1.0f * TRIANGLE_WIDTH);
                 
-                mapUVs[arrayIdx + 0] = glm::vec2(x + 0.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH);
-                mapUVs[arrayIdx + 1] = glm::vec2(x + 1.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH);
-                mapUVs[arrayIdx + 2] = glm::vec2(x + 0.0f * TRIANGLE_WIDTH, y + 1.0f * TRIANGLE_WIDTH);
-                mapUVs[arrayIdx + 3] = glm::vec2(x + 1.0f * TRIANGLE_WIDTH, y + 1.0f * TRIANGLE_WIDTH);
-                mapUVs[arrayIdx + 4] = glm::vec2(x + 1.0f * TRIANGLE_WIDTH, y + 0.0f * TRIANGLE_WIDTH);
-                mapUVs[arrayIdx + 5] = glm::vec2(x + 0.0f * TRIANGLE_WIDTH, y + 1.0f * TRIANGLE_WIDTH);
-                
+                mapUVs[arrayIdx + 0] = (glm::vec2(0.0f, 0.0f) * CHUNK_TEXTURE_WIDTH + glm::mod(xy, INVERSE_TRIANGLE_WIDTH) * TRIANGLE_WIDTH).yx();
+                mapUVs[arrayIdx + 1] = (glm::vec2(1.0f, 0.0f) * CHUNK_TEXTURE_WIDTH + glm::mod(xy, INVERSE_TRIANGLE_WIDTH) * TRIANGLE_WIDTH).yx();
+                mapUVs[arrayIdx + 2] = (glm::vec2(0.0f, 1.0f) * CHUNK_TEXTURE_WIDTH + glm::mod(xy, INVERSE_TRIANGLE_WIDTH) * TRIANGLE_WIDTH).yx();
+                mapUVs[arrayIdx + 3] = (glm::vec2(1.0f, 1.0f) * CHUNK_TEXTURE_WIDTH + glm::mod(xy, INVERSE_TRIANGLE_WIDTH) * TRIANGLE_WIDTH).yx();
+                mapUVs[arrayIdx + 4] = (glm::vec2(1.0f, 0.0f) * CHUNK_TEXTURE_WIDTH + glm::mod(xy, INVERSE_TRIANGLE_WIDTH) * TRIANGLE_WIDTH).yx();
+                mapUVs[arrayIdx + 5] = (glm::vec2(0.0f, 1.0f) * CHUNK_TEXTURE_WIDTH + glm::mod(xy, INVERSE_TRIANGLE_WIDTH) * TRIANGLE_WIDTH).yx();
                 
                 
                 normal0 = -1.0f * glm::triangleNormal(mapVertices[arrayIdx + 0], mapVertices[arrayIdx + 1], mapVertices[arrayIdx + 2]);
