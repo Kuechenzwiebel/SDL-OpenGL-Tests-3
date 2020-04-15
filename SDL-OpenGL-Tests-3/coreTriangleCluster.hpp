@@ -14,7 +14,7 @@
 #include "object.hpp"
 #include "coreTriangle.hpp"
 
-class CoreTriangleCluster: public Object {
+class CoreTriangleCluster {
 public:
     CoreTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
     ~CoreTriangleCluster();
@@ -24,9 +24,9 @@ public:
     
     unsigned int getSize();
     
-    void render();
+    virtual void render();
     
-private:
+protected:
     GLuint VAO;
     ArrayBuffer<glm::vec3> vertex;
     ArrayBuffer<glm::vec2> texCoord;

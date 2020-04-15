@@ -15,6 +15,7 @@
 #include "object.hpp"
 #include "coreTriangle.hpp"
 #include "coreTriangleCluster.hpp"
+#include "coreTriangleElementCluster.hpp"
 
 class Cube: public Object {
 public:
@@ -24,7 +25,7 @@ public:
     void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);
     
 private:    
-    CoreTriangleCluster tris;
+    CoreTriangleElementCluster<unsigned char> tris;
     
     Texture *texture;
     Texture *reflectionMap;
