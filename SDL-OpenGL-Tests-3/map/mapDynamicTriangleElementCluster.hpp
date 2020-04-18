@@ -11,20 +11,17 @@
 
 #include <stdio.h>
 
-#include "../coreTriangleCluster.hpp"
+#include "../coreTriangleElementCluster.hpp"
 #include "../core/buffers/dynamicArrayBuffer.hpp"
 
-class MapDynamicTriangleCluster {
+#include "mapDefines.hpp"
+
+class MapDynamicTriangleElementCluster {
 public:
-    MapDynamicTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
-    ~MapDynamicTriangleCluster();
+    MapDynamicTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const MAP_INDICES_ARRAY_TYPE *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
+    ~MapDynamicTriangleElementCluster();
     
-    Shader* getShaderPointer();
-    Texture* getTexturePointer();
-    
-    unsigned int getSize();
-    
-    void setData(unsigned int size, const glm::vec3 vertices[], const glm::vec2 uvs[], const glm::vec3 normals[]);
+    void setData(const MAP_INDICES_ARRAY_TYPE *indices, const glm::vec3 vertices[], const glm::vec2 uvs[], const glm::vec3 normals[]);
     
     void render();
     
@@ -34,11 +31,15 @@ private:
     DynamicArrayBuffer<glm::vec2> texCoord;
     DynamicArrayBuffer<glm::vec3> normal;
     
-    unsigned int size;
+    
+    ElementArrayBuffer<MAP_INDICES_ARRAY_TYPE> elementArray;
+    
+    unsigned int indicesSize, verticesSize;
     
     const glm::vec3 *vertices;
     const glm::vec2 *uvs;
     const glm::vec3 *normals;
+    const MAP_INDICES_ARRAY_TYPE *indices;
     
     Texture *texture;
     

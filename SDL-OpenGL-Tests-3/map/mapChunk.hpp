@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <array>
 #include <memory>
 
 #include <HG_Noise/HG_Noise.h>
@@ -25,42 +26,42 @@
 #include "../coreTriangleCluster.hpp"
 #include "../line.hpp"
 #include "../object.hpp"
-#include "mapDynamicTriangleCluster.hpp"
+#include "mapDynamicTriangleElementCluster.hpp"
 
 
-#define CHUNK_WIDTH 32
-#define TRIANGLE_WIDTH 0.5f
-#define CHUNK_TEXTURE_WIDTH 0.25f
-#define INVERSE_TRIANGLE_WIDTH 2.0f
-#define CHUNK_ARRAY_SIZE (int)((CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * (CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)
+#include "mapDefines.hpp"
 
-#define VIEW_RANGE CHUNK_WIDTH * 3
+typedef std::array<std::array<glm::vec3, CHUNK_SIDE_LENGHT>, CHUNK_SIDE_LENGHT> MapDataRawVec3Type;
+typedef std::array<std::array<glm::vec2, CHUNK_SIDE_LENGHT>, CHUNK_SIDE_LENGHT> MapDataRawVec2Type;
 
-void generateMapData(hg::PerlinNoise *noise, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
-void saveMapData(glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);
+typedef std::unique_ptr<std::array<std::array<glm::vec3, CHUNK_SIDE_LENGHT>, CHUNK_SIDE_LENGHT>> MapDataVec3Type;
+typedef std::unique_ptr<std::array<std::array<glm::vec2, CHUNK_SIDE_LENGHT>, CHUNK_SIDE_LENGHT>> MapDataVec2Type;
+
+void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
+void saveMapData(MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals);
 float mapSurface(glm::vec3 *mapVertices, glm::vec2 position, hg::PerlinNoise *noise);
 
 glm::vec2 chunkGrid(glm::vec2 a);
 
 class MapChunk: public Object {
 public:
-    MapChunk(Shader *shader, const RenderData *data, Texture *texture, glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);
+    MapChunk(Shader *shader, const RenderData *data, Texture *texture, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals);
     ~MapChunk();
     
-    void addToTriangleList(std::vector<MapDynamicTriangleCluster*> *triangles);
+    void addToTriangleList(std::vector<MapDynamicTriangleElementCluster*> *triangles);
     
-    void setData(glm::vec3 *mapVertices, glm::vec2 *mapUVs, glm::vec3 *mapNormals);
+    void setData(MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals);
     
     glm::vec2 offset;
     
 private:
-    MapDynamicTriangleCluster tris;
+    MapDynamicTriangleElementCluster tris;
     
     Shader *shader;
     const RenderData *data;
     Texture *texture;
     
-    std::vector<MapDynamicTriangleCluster*> *trianglePointer;
+    std::vector<MapDynamicTriangleElementCluster*> *trianglePointer;
 };
 
 #endif /* mapChunk_hpp */

@@ -109,15 +109,15 @@ std::atomic<bool> update;
 std::atomic<glm::vec2> offsetReqired;
 std::mutex mapUpdateMutex;
 
-static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapVertices;
-static std::vector<std::unique_ptr<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>> mapUVs;
-static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapNormals;
+//static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapVertices;
+//static std::vector<std::unique_ptr<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>> mapUVs;
+//static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapNormals;
 
 static std::vector<glm::vec2> requiredRenderChunks;
 
 void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
     std::cout << "Map Update Thread ID: " << std::this_thread::get_id() << std::endl;
-    
+    /*
     glm::vec2 thisCamPosition = vec2(0.0f), oldCamPosition = vec2(1.0f);
     
     std::vector<glm::vec2> requiredChunks;
@@ -209,12 +209,13 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
     /*
      for(int i = 0; i < mapVertices.size(); i++)
      saveMapData(mapVertices[i]->data(), mapUVs[i]->data(), mapNormals[i]->data());*/
+    
 }
 
 
 int main(int argc, const char * argv[]) {
     std::random_device randomDevice;
-    std::mt19937 randomEngine(randomDevice());
+    std::mt19937 randomEngine(3928);
     
     bool capFps = true;
     int fpsCap = 60;
@@ -468,16 +469,16 @@ int main(int argc, const char * argv[]) {
     
     
     std::vector<std::unique_ptr<MapChunk>> chunks;
-    std::vector<MapDynamicTriangleCluster*> mapTriangles;
+    std::vector<MapDynamicTriangleElementCluster*> mapTriangles;
     
     mapUpdateThread = std::thread(mapUpdate, &noise, &cam);
     
     update = true;
     
-    while(!updateDone)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//    while(!updateDone)
+//        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
-    
+    /*
     for(int i = 0; i < chunks.size(); i++) {
         auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
         
@@ -499,12 +500,21 @@ int main(int argc, const char * argv[]) {
             chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
             chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
         }
-    }
+    }*/
     
+    
+//    chunks.push_back(std::make_unique<MapChunk>(&basicShader, &renderData, &stoneTexture, nullptr, nullptr, nullptr, nullptr));
+    
+    MapDataVec3Type vert = std::make_unique<MapDataRawVec3Type>(), norm = std::make_unique<MapDataRawVec3Type>();
+    MapDataVec2Type uv = std::make_unique<MapDataRawVec2Type>();
+    generateMapData(&noise, &vert, &uv, &norm);
+    MapChunk chunk(&diffuseShader, &renderData, &stoneTexture, &vert, &uv, &norm);
+    chunk.addToTriangleList(&mapTriangles);
     
     
     int middleIdx = 0;
-    auto middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();});
+//    auto middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();});
+    int middleItr = 0;
     
     int arrayIndex = 0;
     int chunkIndex = 0;
@@ -527,21 +537,21 @@ int main(int argc, const char * argv[]) {
     
     
     ObjModel vehicleBase("resources/model/vehicle/vehicle.obj", &basicShader, &renderData);
-    vehicleBase.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+//    vehicleBase.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
     ObjModel axisRear("resources/model/vehicle/axisRear.obj", &basicShader, &renderData);
-    axisRear.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+//    axisRear.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
     ObjModel axisFront("resources/model/vehicle/axisFront.obj", &basicShader, &renderData);
-    axisFront.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+//    axisFront.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     ObjModel wheel_L("resources/model/vehicle/wheel_L.obj", &basicShader, &renderData);
-    wheel_L.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+//    wheel_L.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     ObjModel wheel_R("resources/model/vehicle/wheel_R.obj", &basicShader, &renderData);
-    wheel_R.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+//    wheel_R.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
     int vehicleChunkIdx = 0;
@@ -564,7 +574,7 @@ int main(int argc, const char * argv[]) {
     std::stringstream vehicleSpeedStringStream;
     
     
-    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 * chunks.size());
+    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount /*+ CHUNK_ARRAY_SIZE / 3 * chunks.size()*/, double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 /* chunks.size()*/);
     
     while(running) {
         start = std::chrono::steady_clock::now();
@@ -603,12 +613,12 @@ int main(int argc, const char * argv[]) {
                         mouseRay.move(0.1f);
                         
                         rayChunkPosition = round(mouseRay.position.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
-                        chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
+//                        chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
                         
-                        if(mouseRay.position.y <= mapSurface(mapVertices[chunkIndex]->data(), mouseRay.position.xz(), &noise)) {
+//                        if(mouseRay.position.y <= mapSurface(mapVertices[0]->data(), mouseRay.position.xz(), &noise)) {
                             rayMapCollision = true;
-                            break;
-                        }
+//                            break;
+//                        }
                     }
                     mapUpdateMutex.unlock();
                     
@@ -628,6 +638,7 @@ int main(int argc, const char * argv[]) {
                 }
                 
                 if(windowEvent.button.button == SDL_BUTTON_LEFT) {
+                    /*
                     if(rayMapCollision && middleItr != chunks.end() && checkMouse) {
                         mapUpdateMutex.lock();
                         height = (*mapVertices[chunkIndex])[arrayIndex + 0 - 0][1] - 0.1f;
@@ -635,13 +646,14 @@ int main(int argc, const char * argv[]) {
                         
                         materialCount++;
                         change = true;
-                    }
+                    }*/
                     
                     checkMouse = true;
                     render = true;
                 }
                 
                 if(windowEvent.button.button == SDL_BUTTON_RIGHT) {
+                    /*
                     if(materialCount > 0 && rayMapCollision && middleItr != chunks.end() && checkMouse) {
                         mapUpdateMutex.lock();
                         height = (*mapVertices[chunkIndex])[arrayIndex + 0 - 0][1] + 0.1f;
@@ -650,10 +662,11 @@ int main(int argc, const char * argv[]) {
                         materialCount--;
                         change = true;
                         up = true;
-                    }
+                    }*/
                 }
                 
                 if(checkMouse) {
+                    /*
                     if((rayMapPosition - vec2(CHUNK_WIDTH / 2.0f)).x - chunks[chunkIndex]->offset.x > 0.0f)
                         xOver = true;
                     else
@@ -687,7 +700,7 @@ int main(int argc, const char * argv[]) {
                                 (*mapVertices[sideIndices[1]])[sideIndex + 4 - 0][1] = height;
                                 (*mapVertices[sideIndices[1]])[sideIndex + 3 - 6][1] = height;
                                 
-                                chunks[sideIndices[1]]->setData(mapVertices[sideIndices[1]]->data(), mapUVs[sideIndices[1]]->data(), mapNormals[sideIndices[1]]->data());
+//                                chunks[sideIndices[1]]->setData(mapVertices[sideIndices[1]]->data(), mapUVs[sideIndices[1]]->data(), mapNormals[sideIndices[1]]->data());
                             }
                             else {
                                 if(up)
@@ -706,7 +719,7 @@ int main(int argc, const char * argv[]) {
                                 (*mapVertices[sideIndices[0]])[arrayIndex + 2 - 6][1] = height;
                                 (*mapVertices[sideIndices[0]])[arrayIndex + 5 - 6][1] = height;
                                 
-                                chunks[sideIndices[0]]->setData(mapVertices[sideIndices[0]]->data(), mapUVs[sideIndices[0]]->data(), mapNormals[sideIndices[0]]->data());
+//                                chunks[sideIndices[0]]->setData(mapVertices[sideIndices[0]]->data(), mapUVs[sideIndices[0]]->data(), mapNormals[sideIndices[0]]->data());
                             }
                         }
                         
@@ -725,7 +738,7 @@ int main(int argc, const char * argv[]) {
                                 (*mapVertices[sideIndices[3]])[sideIndex + 5][1] = height;
                                 (*mapVertices[sideIndices[3]])[sideIndex + 3 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
                                 
-                                chunks[sideIndices[3]]->setData(mapVertices[sideIndices[3]]->data(), mapUVs[sideIndices[3]]->data(), mapNormals[sideIndices[3]]->data());
+//                                chunks[sideIndices[3]]->setData(mapVertices[sideIndices[3]]->data(), mapUVs[sideIndices[3]]->data(), mapNormals[sideIndices[3]]->data());
                             }
                             else {
                                 if(up)
@@ -743,7 +756,7 @@ int main(int argc, const char * argv[]) {
                                 (*mapVertices[sideIndices[2]])[arrayIndex + 1 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
                                 (*mapVertices[sideIndices[2]])[arrayIndex + 4 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6)][1] = height;
                                 
-                                chunks[sideIndices[2]]->setData(mapVertices[sideIndices[2]]->data(), mapUVs[sideIndices[2]]->data(), mapNormals[sideIndices[2]]->data());
+//                                chunks[sideIndices[2]]->setData(mapVertices[sideIndices[2]]->data(), mapUVs[sideIndices[2]]->data(), mapNormals[sideIndices[2]]->data());
                             }
                         }
                         
@@ -756,10 +769,11 @@ int main(int argc, const char * argv[]) {
                             (*mapVertices[chunkIndex])[arrayIndex + 3 - int(round(CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH)) * 6 + 6)][1] = height;
                         }
                         
-                        chunks[chunkIndex]->setData(mapVertices[chunkIndex]->data(), mapUVs[chunkIndex]->data(), mapNormals[chunkIndex]->data());
+//                        chunks[chunkIndex]->setData(mapVertices[chunkIndex]->data(), mapUVs[chunkIndex]->data(), mapNormals[chunkIndex]->data());
                         
                         mapUpdateMutex.unlock();
                     }
+                     */
                 }
             }
             
@@ -883,10 +897,10 @@ int main(int argc, const char * argv[]) {
             
             mapUpdateMutex.lock();
             vehicleBaseChunkGrid = round(vehicleBasePosition.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
-            vehicleChunkIdx = int(std::find_if(chunks.begin(), chunks.end(), [&vehicleBaseChunkGrid](std::unique_ptr<MapChunk> &search){return search->offset == vehicleBaseChunkGrid;}) - chunks.begin());
+            vehicleChunkIdx = 0;/*int(std::find_if(chunks.begin(), chunks.end(), [&vehicleBaseChunkGrid](std::unique_ptr<MapChunk> &search){return search->offset == vehicleBaseChunkGrid;}) - chunks.begin());*/
     
             
-            float vehicleBaseMapHeight = mapSurface(mapVertices[vehicleChunkIdx]->data(), vehicleBasePosition.xz(), &noise);
+            float vehicleBaseMapHeight = 0.0f /*mapSurface(mapVertices[vehicleChunkIdx]->data(), vehicleBasePosition.xz(), &noise)*/;
             if(vehicleBasePosition.y - 0.76f > vehicleBaseMapHeight) {
                 vehicleBasePosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - vehicleLastOnFloor) / 1000.0f, 2.0f) * deltaTime;
                 vehicleOnFloor = false;
@@ -907,6 +921,7 @@ int main(int argc, const char * argv[]) {
             axisR = vehicleBasePosition +   vectorMatrixMultiplication(vec3(-1.5215f, 0.0f, 0.0f)    , rotate(radians(vehicleYAngle), vec3(0.0f, 1.0f, 0.0f)));
             
             mapUpdateMutex.lock();
+            /*
             if(chunkGrid(wheelFL) == vehicleBaseChunkGrid)
                 wheelFL.y = mapSurface(mapVertices[vehicleChunkIdx]->data(), wheelFL.xz(), &noise);
             else {
@@ -949,7 +964,7 @@ int main(int argc, const char * argv[]) {
                 int idx = int(std::find_if(chunks.begin(), chunks.end(), [&axisR](std::unique_ptr<MapChunk> &search){return search->offset == chunkGrid(axisR);}) - chunks.begin());
                 axisR.y = mapSurface(mapVertices[idx]->data(), axisR.xz(), &noise);
             }
-            
+            */
             mapUpdateMutex.unlock();
             
             
@@ -1004,10 +1019,10 @@ int main(int argc, const char * argv[]) {
             mapGridCameraPosition = glm::mod(mapGridCameraPosition, glm::vec2(CHUNK_WIDTH));
             
             mapUpdateMutex.lock();
-            middleItr = std::find_if(chunks.begin(), chunks.end(), [&chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
-            middleIdx = int(middleItr - chunks.begin());
+//            middleItr = std::find_if(chunks.begin(), chunks.end(), [&chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
+//            middleIdx = int(middleItr - chunks.begin());
             
-            cam.processInput(mapVertices[middleIdx]->data());
+            cam.processInput(nullptr);
             mapUpdateMutex.unlock();
             
             mouseRay.position = cam.getEyePosition();
@@ -1086,6 +1101,7 @@ int main(int argc, const char * argv[]) {
             
             
             if(updateDone) {
+                /*
                 if(requiredRenderChunks.begin() != requiredRenderChunks.end()) {
                     for(int i = 0; i < chunks.size(); i++) {
                         auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
@@ -1111,15 +1127,15 @@ int main(int argc, const char * argv[]) {
                     }
                     
                     update = true;
-                }
+                }*/
             }
             
             
             
             
-            if(middleItr == chunks.end())
-                while(!updateDone)
-                    std::this_thread::sleep_for(std::chrono::microseconds(10));
+//            if(middleItr == chunks.end())
+//                while(!updateDone)
+//                    std::this_thread::sleep_for(std::chrono::microseconds(10));
             
             
             
@@ -1213,6 +1229,8 @@ int main(int argc, const char * argv[]) {
             SDL_Delay(33);
     }
     
+    
+    
     sortThread.detach();
     mapUpdateThread.join();
     
@@ -1227,5 +1245,6 @@ int main(int argc, const char * argv[]) {
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    
     return 0;
 }

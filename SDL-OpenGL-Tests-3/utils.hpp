@@ -56,7 +56,7 @@ float round(float value, unsigned int digits);
 
 
 static float gravitationalAcceleration = 9.81f;
-static float cameraMovementSpeed = 3.0f;
+static float cameraMovementSpeed = 5.0f;
 
 
 glm::mat4 translate(glm::vec3 a);
