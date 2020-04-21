@@ -62,23 +62,6 @@ void swapBool(bool *b) {
     *b = !(*b);
 }
 
-void fadeToZero(float *x, float deltaTime, float timeToZero) {
-    if(*x == 0.0f)
-        return;
-    
-    float steps = deltaTime / timeToZero;
-    if(*x < 0.0f)
-        steps *= -1.0f;
-    
-    if((*x >= 0.0f && *x - steps < 0.0f) ||
-       (*x < 0.0f && *x - steps >= 0.0f)) {
-        *x = 0.0f;
-        return;
-    }
-    else
-        *x = *x - steps;
-}
-
 bool fileExists(std::string fileName) {
   struct stat buffer;
   return (stat (fileName.c_str(), &buffer) == 0);

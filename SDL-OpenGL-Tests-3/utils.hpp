@@ -47,8 +47,6 @@ struct RenderData {
 
 void swapBool(bool *b);
 
-void fadeToZero(float *x, float deltaTime, float timeToZero);
-
 bool fileExists(std::string fileName);
 
 int ipow(int x, unsigned int y);
