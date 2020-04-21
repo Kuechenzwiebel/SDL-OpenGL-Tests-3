@@ -11,9 +11,43 @@
 
 MAP_INDICES_ARRAY_TYPE mapIndices[MAP_INDICES_ARRAY_SIZE] = {0};
 
-bool mapIndicesReady = false;
-void generateMapIndices() {
-    if(!mapIndicesReady) {
+static void newlyGenerateMapIndices(std::stringstream &stringstream) {
+    stringstream.str("");
+    stringstream << CHUNK_SIDE_LENGHT << "\n";
+    
+    unsigned long arrayIdx = 0;
+    unsigned long nextLine = CHUNK_SIDE_LENGHT;
+    for(int i = 0; i < CHUNK_ARRAY_SIZE - 1 - CHUNK_SIDE_LENGHT - 1; i++) {
+        if(i == nextLine) {
+            i++;
+            nextLine += CHUNK_SIDE_LENGHT + 1;
+            
+            stringstream << "\n\n";
+        }
+        
+        mapIndices[arrayIdx + 0] = i;
+        mapIndices[arrayIdx + 1] = i + 1;
+        mapIndices[arrayIdx + 2] = i + CHUNK_SIDE_LENGHT + 1;
+        
+        mapIndices[arrayIdx + 3] = mapIndices[arrayIdx + 1];
+        mapIndices[arrayIdx + 4] = mapIndices[arrayIdx + 2];
+        mapIndices[arrayIdx + 5] = mapIndices[arrayIdx + 2] + 1;
+        
+        for(int j = 0; j < 6; j++)
+            stringstream << mapIndices[arrayIdx + j] << " ";
+        
+        stringstream << "    ";
+        
+        arrayIdx += 6;
+    }
+}
+
+
+static bool mapIndicesReady = false;
+
+static void generateMapIndices() {
+    if(mapIndicesReady == false) {
+        mapIndicesReady = true;
         std::string indicesLocation = "/Users/tobiaspfluger/Documents/C/OpenGL/SDL-OpenGL-Tests-3/data/chunkIndices.txt";
         std::stringstream stringstream;
         hg::File file(indicesLocation);
@@ -22,42 +56,19 @@ void generateMapIndices() {
             stringstream << file.readFile();
             stringstream >> loadedSideLenght;
             
-            if(loadedSideLenght != CHUNK_SIDE_LENGHT)
-                goto newlyGenerateMapIndices;
+            if(loadedSideLenght != CHUNK_SIDE_LENGHT) {
+                newlyGenerateMapIndices(stringstream);
+                file.writeFile(stringstream.str());
+            }
             else
                 for(long i = 0; i < MAP_INDICES_ARRAY_SIZE; i++)
                     stringstream >> mapIndices[i];
         }
         else {
-        newlyGenerateMapIndices:
-            unsigned long arrayIdx = 0;
-            for(int i = 0; i < CHUNK_ARRAY_SIZE - 1 - CHUNK_SIDE_LENGHT; i++) {
-                if((i % CHUNK_SIDE_LENGHT) == CHUNK_SIDE_LENGHT - 1)
-                    i++;
-                
-                mapIndices[arrayIdx + 0] = i;
-                mapIndices[arrayIdx + 1] = i + 1;
-                mapIndices[arrayIdx + 2] = i + CHUNK_SIDE_LENGHT;
-                
-                mapIndices[arrayIdx + 3] = mapIndices[arrayIdx + 1];
-                mapIndices[arrayIdx + 4] = mapIndices[arrayIdx + 2];
-                mapIndices[arrayIdx + 5] = mapIndices[arrayIdx + 2] + 1;
-                
-                arrayIdx += 6;
-            }
-            
-            stringstream.str("");
-            stringstream << CHUNK_SIDE_LENGHT << "\n";
-            
-            for(long i = 0; i < MAP_INDICES_ARRAY_SIZE; i++)
-                stringstream << mapIndices[i] << " ";
-            stringstream << "\n";
-            
+            newlyGenerateMapIndices(stringstream);
             file.writeFile(stringstream.str());
         }
     }
-    
-    mapIndicesReady = true;
 }
 
 void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals, glm::vec2 offset) {
@@ -77,16 +88,17 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
         
         generateMapIndices();
         
-        for(int i = 0;  i < CHUNK_SIDE_LENGHT; i++)
-            for(int j = 0; j < CHUNK_SIDE_LENGHT; j++)
+        for(int i = 0;  i < CHUNK_SIDE_LENGHT + 1; i++)
+            for(int j = 0; j < CHUNK_SIDE_LENGHT + 1; j++)
                 stringstream >> (**mapVertices)[i][j].x >> (**mapVertices)[i][j].y >> (**mapVertices)[i][j].z >> (**mapUVs)[i][j].x >> (**mapUVs)[i][j].y >> (**mapNormals)[i][j].x >> (**mapNormals)[i][j].y >> (**mapNormals)[i][j].z;
     }
+    
     else {
         generateMapIndices();
         
         unsigned int arrayX = 0, arrayY = 0;
-        for(float x = offset.x - CHUNK_WIDTH / 2.0f; x < float(CHUNK_WIDTH) + offset.x - CHUNK_WIDTH / 2.0f; x += TRIANGLE_WIDTH) {
-            for(float y = offset.y - CHUNK_WIDTH / 2.0f; y < float(CHUNK_WIDTH) + offset.y - CHUNK_WIDTH / 2.0f; y += TRIANGLE_WIDTH) {
+        for(float x = offset.x - CHUNK_WIDTH / 2.0f; x <= offset.x + CHUNK_WIDTH / 2.0f; x += TRIANGLE_WIDTH) {
+            for(float y = offset.y - CHUNK_WIDTH / 2.0f; y <= offset.y + CHUNK_WIDTH / 2.0f; y += TRIANGLE_WIDTH) {
                 (**mapVertices)[arrayX][arrayY] = glm::vec3(x, noise->octaveNoise(x, y) + 10.0f, y);
                 (**mapUVs)[arrayX][arrayY] = glm::vec2(float(arrayY), float(arrayX)) * INVERSE_CHUNK_TEXTURE_WIDTH * TRIANGLE_WIDTH;
                 (**mapNormals)[arrayX][arrayY] = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -97,10 +109,11 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
             arrayX ++;
         }
         
+        
         glm::vec3 normals[7];
         
-        for(int i = 1;  i < CHUNK_SIDE_LENGHT - 1; i++) {
-            for(int j = 1; j < CHUNK_SIDE_LENGHT - 1; j++) {
+        for(int i = 1;  i < CHUNK_SIDE_LENGHT; i++) {
+            for(int j = 1; j < CHUNK_SIDE_LENGHT; j++) {
                 normals[0] =-glm::triangleNormal((**mapVertices)[i][j], (**mapVertices)[i - 1][j], (**mapVertices)[i][j - 1]);
                 normals[1] = glm::triangleNormal((**mapVertices)[i][j], (**mapVertices)[i - 1][j], (**mapVertices)[i - 1][j + 1]);
                 normals[2] =-glm::triangleNormal((**mapVertices)[i][j], (**mapVertices)[i][j + 1], (**mapVertices)[i - 1][j + 1]);
@@ -120,7 +133,7 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
         }
         
         
-        for(int i = 1; i < CHUNK_SIDE_LENGHT - 1; i++) {
+        for(int i = 1; i < CHUNK_SIDE_LENGHT; i++) {
             normals[0] = glm::triangleNormal((**mapVertices)[i][0], (**mapVertices)[i - 1][0], (**mapVertices)[i - 1][0 + 1]);
             normals[1] =-glm::triangleNormal((**mapVertices)[i][0], (**mapVertices)[i][0 + 1], (**mapVertices)[i - 1][0 + 1]);
             normals[2] =-glm::triangleNormal((**mapVertices)[i][0], (**mapVertices)[i + 1][0], (**mapVertices)[i][0 + 1]);
@@ -135,10 +148,10 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
             (**mapNormals)[i][0] = normals[6];
         }
         
-        for(int i = 1; i < CHUNK_SIDE_LENGHT - 1; i++) {
-            normals[0] =-glm::triangleNormal((**mapVertices)[i][CHUNK_SIDE_LENGHT - 1], (**mapVertices)[i - 1][CHUNK_SIDE_LENGHT - 1], (**mapVertices)[i][CHUNK_SIDE_LENGHT - 1 - 1]);
-            normals[1] = glm::triangleNormal((**mapVertices)[i][CHUNK_SIDE_LENGHT - 1], (**mapVertices)[i + 1][CHUNK_SIDE_LENGHT - 1], (**mapVertices)[i + 1][CHUNK_SIDE_LENGHT - 1 - 1]);
-            normals[2] =-glm::triangleNormal((**mapVertices)[i][CHUNK_SIDE_LENGHT - 1], (**mapVertices)[i][CHUNK_SIDE_LENGHT - 1 - 1], (**mapVertices)[i + 1][CHUNK_SIDE_LENGHT - 1 - 1]);
+        for(int i = 1; i < CHUNK_SIDE_LENGHT; i++) {
+            normals[0] =-glm::triangleNormal((**mapVertices)[i][CHUNK_SIDE_LENGHT], (**mapVertices)[i - 1][CHUNK_SIDE_LENGHT], (**mapVertices)[i][CHUNK_SIDE_LENGHT - 1]);
+            normals[1] = glm::triangleNormal((**mapVertices)[i][CHUNK_SIDE_LENGHT], (**mapVertices)[i + 1][CHUNK_SIDE_LENGHT], (**mapVertices)[i + 1][CHUNK_SIDE_LENGHT - 1]);
+            normals[2] =-glm::triangleNormal((**mapVertices)[i][CHUNK_SIDE_LENGHT], (**mapVertices)[i][CHUNK_SIDE_LENGHT - 1], (**mapVertices)[i + 1][CHUNK_SIDE_LENGHT - 1]);
             
             normals[6] = glm::vec3(0.0f);
             
@@ -147,12 +160,12 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
             
             normals[6] = glm::normalize(normals[6] / 3.0f);
             
-            (**mapNormals)[i][CHUNK_SIDE_LENGHT - 1] = normals[6];
+            (**mapNormals)[i][CHUNK_SIDE_LENGHT] = normals[6];
         }
         
         
         
-        for(int j = 1; j < CHUNK_SIDE_LENGHT - 1; j++) {
+        for(int j = 1; j < CHUNK_SIDE_LENGHT; j++) {
             normals[0] =-glm::triangleNormal((**mapVertices)[0][j], (**mapVertices)[0 + 1][j], (**mapVertices)[0][j + 1]);
             normals[1] = glm::triangleNormal((**mapVertices)[0][j], (**mapVertices)[0 + 1][j], (**mapVertices)[0 + 1][j - 1]);
             normals[2] =-glm::triangleNormal((**mapVertices)[0][j], (**mapVertices)[0][j - 1], (**mapVertices)[0 + 1][j - 1]);
@@ -167,10 +180,10 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
             (**mapNormals)[0][j] = normals[6];
         }
         
-        for(int j = 1; j < CHUNK_SIDE_LENGHT - 1; j++) {
-            normals[0] =-glm::triangleNormal((**mapVertices)[CHUNK_SIDE_LENGHT - 1][j], (**mapVertices)[CHUNK_SIDE_LENGHT - 1 - 1][j], (**mapVertices)[CHUNK_SIDE_LENGHT - 1][j - 1]);
-            normals[1] = glm::triangleNormal((**mapVertices)[CHUNK_SIDE_LENGHT - 1][j], (**mapVertices)[CHUNK_SIDE_LENGHT - 1 - 1][j], (**mapVertices)[CHUNK_SIDE_LENGHT - 1 - 1][j + 1]);
-            normals[2] =-glm::triangleNormal((**mapVertices)[CHUNK_SIDE_LENGHT - 1][j], (**mapVertices)[CHUNK_SIDE_LENGHT - 1][j + 1], (**mapVertices)[CHUNK_SIDE_LENGHT - 1 - 1][j + 1]);
+        for(int j = 1; j < CHUNK_SIDE_LENGHT; j++) {
+            normals[0] =-glm::triangleNormal((**mapVertices)[CHUNK_SIDE_LENGHT][j], (**mapVertices)[CHUNK_SIDE_LENGHT - 1][j], (**mapVertices)[CHUNK_SIDE_LENGHT][j - 1]);
+            normals[1] = glm::triangleNormal((**mapVertices)[CHUNK_SIDE_LENGHT][j], (**mapVertices)[CHUNK_SIDE_LENGHT - 1][j], (**mapVertices)[CHUNK_SIDE_LENGHT - 1][j + 1]);
+            normals[2] =-glm::triangleNormal((**mapVertices)[CHUNK_SIDE_LENGHT][j], (**mapVertices)[CHUNK_SIDE_LENGHT][j + 1], (**mapVertices)[CHUNK_SIDE_LENGHT - 1][j + 1]);
             
             normals[6] = glm::vec3(0.0f);
             
@@ -179,9 +192,9 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
             
             normals[6] = glm::normalize(normals[6] / 3.0f);
             
-            (**mapNormals)[CHUNK_SIDE_LENGHT - 1][j] = normals[6];
+            (**mapNormals)[CHUNK_SIDE_LENGHT][j] = normals[6];
         }
-       
+        
         saveMapData(mapVertices, mapUVs, mapNormals);
     }
 }
@@ -227,17 +240,17 @@ float mapSurface(glm::vec3 *mapVertices, glm::vec2 position, hg::PerlinNoise *no
 }
 
 void saveMapData(MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals) {
-     glm::vec2 offset = (**mapVertices)[0][0].xz() + glm::vec2(CHUNK_WIDTH) / 2.0f;
-     std::stringstream stringstream, filenamestream;
-     filenamestream << "/Users/tobiaspfluger/Documents/C/OpenGL/SDL-OpenGL-Tests-3/data/chunk   " << offset.x << " " << offset.y << ".txt";
-     
-     hg::File file(filenamestream.str());
-     
-     for(int i = 0;  i < CHUNK_SIDE_LENGHT; i++)
-         for(int j = 0; j < CHUNK_SIDE_LENGHT; j++)
-             stringstream << round((**mapVertices)[i][j].x, 3) << " " << round((**mapVertices)[i][j].y, 3) << " " << round((**mapVertices)[i][j].z, 3) << " " << round((**mapUVs)[i][j].x, 3) << " " << round((**mapUVs)[i][j].y, 3) << " " << round((**mapNormals)[i][j].x, 3) << " " << round((**mapNormals)[i][j].y, 3) << " " << round((**mapNormals)[i][j].z, 3) << "\n";
-     
-     file.writeFile(stringstream.str());
+    glm::vec2 offset = (**mapVertices)[0][0].xz() + glm::vec2(CHUNK_WIDTH) / 2.0f;
+    std::stringstream stringstream, filenamestream;
+    filenamestream << "/Users/tobiaspfluger/Documents/C/OpenGL/SDL-OpenGL-Tests-3/data/terrain/chunk   " << offset.x << " " << offset.y << ".txt";
+    
+    hg::File file(filenamestream.str());
+    
+    for(int i = 0; i < CHUNK_SIDE_LENGHT + 1; i++)
+        for(int j = 0; j < CHUNK_SIDE_LENGHT + 1; j++)
+            stringstream << round((**mapVertices)[i][j].x, 3) << " " << round((**mapVertices)[i][j].y, 3) << " " << round((**mapVertices)[i][j].z, 3) << " " << round((**mapUVs)[i][j].x, 3) << " " << round((**mapUVs)[i][j].y, 3) << " " << round((**mapNormals)[i][j].x, 3) << " " << round((**mapNormals)[i][j].y, 3) << " " << round((**mapNormals)[i][j].z, 3) << "\n";
+    
+    file.writeFile(stringstream.str());
 }
 
 glm::vec2 chunkGrid(glm::vec2 a) {

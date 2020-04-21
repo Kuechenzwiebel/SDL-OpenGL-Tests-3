@@ -31,11 +31,11 @@
 
 #include "mapDefines.hpp"
 
-typedef std::array<std::array<glm::vec3, CHUNK_SIDE_LENGHT>, CHUNK_SIDE_LENGHT> MapDataRawVec3Type;
-typedef std::array<std::array<glm::vec2, CHUNK_SIDE_LENGHT>, CHUNK_SIDE_LENGHT> MapDataRawVec2Type;
+typedef std::array<std::array<glm::vec3, CHUNK_SIDE_LENGHT + 1>, CHUNK_SIDE_LENGHT + 1> MapDataRawVec3Type;
+typedef std::array<std::array<glm::vec2, CHUNK_SIDE_LENGHT + 1>, CHUNK_SIDE_LENGHT + 1> MapDataRawVec2Type;
 
-typedef std::unique_ptr<std::array<std::array<glm::vec3, CHUNK_SIDE_LENGHT>, CHUNK_SIDE_LENGHT>> MapDataVec3Type;
-typedef std::unique_ptr<std::array<std::array<glm::vec2, CHUNK_SIDE_LENGHT>, CHUNK_SIDE_LENGHT>> MapDataVec2Type;
+typedef std::unique_ptr<std::array<std::array<glm::vec3, CHUNK_SIDE_LENGHT + 1>, CHUNK_SIDE_LENGHT + 1>> MapDataVec3Type;
+typedef std::unique_ptr<std::array<std::array<glm::vec2, CHUNK_SIDE_LENGHT + 1>, CHUNK_SIDE_LENGHT + 1>> MapDataVec2Type;
 
 void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
 void saveMapData(MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals);
