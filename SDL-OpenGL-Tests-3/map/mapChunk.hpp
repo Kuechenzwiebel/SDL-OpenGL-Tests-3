@@ -39,7 +39,7 @@ typedef std::unique_ptr<std::array<std::array<glm::vec2, CHUNK_SIDE_LENGHT + 1>,
 
 void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
 void saveMapData(MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals);
-float mapSurface(glm::vec3 *mapVertices, glm::vec2 position, hg::PerlinNoise *noise);
+float mapSurface(MapDataVec3Type *mapVertices, glm::vec2 position, hg::PerlinNoise *noise);
 
 glm::vec2 chunkGrid(glm::vec2 a);
 

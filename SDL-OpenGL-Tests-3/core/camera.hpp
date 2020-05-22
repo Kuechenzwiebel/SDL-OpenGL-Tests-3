@@ -36,7 +36,7 @@ public:
     
     void processMouseInput();
     void preProcessInput();
-    void processInput(glm::vec3 *mapVertices);
+    void processInput(MapDataVec3Type *mapVertices);
     
     
     glm::mat4 viewMat;

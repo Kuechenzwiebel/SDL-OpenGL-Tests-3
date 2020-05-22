@@ -74,7 +74,7 @@ void Camera::preProcessInput() {
     }
 }
 
-void Camera::processInput(glm::vec3 *mapVertices) {
+void Camera::processInput(MapDataVec3Type *mapVertices) {
     if(keyBoardControl) {
         float mapHeight = mapSurface(mapVertices, footPosition.xz(), noise);
         if(footPosition.y < mapHeight) {

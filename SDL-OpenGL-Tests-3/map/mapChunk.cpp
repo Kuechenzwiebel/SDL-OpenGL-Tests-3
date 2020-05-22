@@ -29,9 +29,9 @@ static void newlyGenerateMapIndices(std::stringstream &stringstream) {
         mapIndices[arrayIdx + 1] = i + 1;
         mapIndices[arrayIdx + 2] = i + CHUNK_SIDE_LENGHT + 1;
         
-        mapIndices[arrayIdx + 3] = mapIndices[arrayIdx + 1];
+        mapIndices[arrayIdx + 5] = mapIndices[arrayIdx + 1];
         mapIndices[arrayIdx + 4] = mapIndices[arrayIdx + 2];
-        mapIndices[arrayIdx + 5] = mapIndices[arrayIdx + 2] + 1;
+        mapIndices[arrayIdx + 3] = mapIndices[arrayIdx + 2] + 1;
         
         for(int j = 0; j < 6; j++)
             stringstream << mapIndices[arrayIdx + j] << " ";
@@ -199,41 +199,44 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
     }
 }
 
-float mapSurface(glm::vec3 *mapVertices, glm::vec2 position, hg::PerlinNoise *noise) {
-    return 0.0f;
+float mapSurface(MapDataVec3Type *mapVertices, glm::vec2 position, hg::PerlinNoise *noise) {
     glm::vec2 mapGridPosition = floor(position / float(TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
     glm::vec2 trianglePositon = position - mapGridPosition;
     
     mapGridPosition += glm::vec2(CHUNK_WIDTH / 2.0f);
     mapGridPosition = glm::mod(mapGridPosition, glm::vec2(CHUNK_WIDTH));
     
-    int idx = 6 * (1.0f / TRIANGLE_WIDTH) * (mapGridPosition.y) +
-    6 * (1.0f / TRIANGLE_WIDTH) * (mapGridPosition.x) * CHUNK_WIDTH * (1.0f / TRIANGLE_WIDTH);
+    unsigned int arrayX = mapGridPosition.x * INVERSE_TRIANGLE_WIDTH, arrayY = mapGridPosition.y * INVERSE_TRIANGLE_WIDTH;
     
     float z = 0.0f;
     
+    printf("%d %d\n", arrayX, arrayY);
+    
+    
     if(trianglePositon.x + trianglePositon.y > TRIANGLE_WIDTH) {
-        if((position.y - mapVertices[idx + 3].z) < -TRIANGLE_WIDTH || (position.y - mapVertices[idx + 3].z) > TRIANGLE_WIDTH)
-            z = noise->octaveNoise(position.x, position.y);
+        z = noise->octaveNoise(position.x, position.y);
         
-        else if((position.x - mapVertices[idx + 3].x) < -TRIANGLE_WIDTH || (position.x - mapVertices[idx + 3].x) > TRIANGLE_WIDTH)
-            z = noise->octaveNoise(position.x, position.y);
+        if(arrayY - 1 < 0 || arrayX - 1 < 0) {
+        z = noise->octaveNoise(position.x, position.y);
+            printf("Underflow\n");
+        }
         
-        else z = -(mapVertices[idx + 4].y - mapVertices[idx + 3].y) / TRIANGLE_WIDTH * (position.y - mapVertices[idx + 3].z) +
-            -(mapVertices[idx + 5].y - mapVertices[idx + 3].y) / TRIANGLE_WIDTH * (position.x - mapVertices[idx + 3].x) +
-            mapVertices[idx + 3].y;
+//        z = -((**mapVertices)[arrayX - 1][arrayY].y - (**mapVertices)[arrayX][arrayY].y) * INVERSE_TRIANGLE_WIDTH * (position.x - (**mapVertices)[arrayX][arrayY].z) +
+//            -((**mapVertices)[arrayX][arrayY - 1].y - (**mapVertices)[arrayX][arrayY].y) * INVERSE_TRIANGLE_WIDTH * (position.y - (**mapVertices)[arrayX][arrayY].x) +
+//            (**mapVertices)[arrayX][arrayY].y;
     }
     else {
-        if((position.y - mapVertices[idx + 0].z) < -TRIANGLE_WIDTH || (position.y - mapVertices[idx + 0].z) > TRIANGLE_WIDTH)
-            z = noise->octaveNoise(position.x, position.y);
+        printf("Calculation\n");
         
-        else if((position.x - mapVertices[idx + 0].x) < -TRIANGLE_WIDTH || (position.x - mapVertices[idx + 0].x) > TRIANGLE_WIDTH)
+        if(arrayY + 1 > CHUNK_SIDE_LENGHT + 1 || arrayX + 1 > CHUNK_SIDE_LENGHT + 1) {
             z = noise->octaveNoise(position.x, position.y);
-        
+            printf("Overflow\n");
+        }
         else
-            z = (mapVertices[idx + 1].y - mapVertices[idx + 0].y) / TRIANGLE_WIDTH * (position.x - mapVertices[idx + 0].x) +
-            (mapVertices[idx + 2].y - mapVertices[idx + 0].y) / TRIANGLE_WIDTH * (position.y - mapVertices[idx + 0].z) +
-            mapVertices[idx + 0].y;
+            
+        z = ((**mapVertices)[arrayX + 1][arrayY].y - (**mapVertices)[arrayX][arrayY].y) * INVERSE_TRIANGLE_WIDTH * (position.x - (**mapVertices)[arrayX][arrayY].x) +
+            ((**mapVertices)[arrayX][arrayY + 1].y - (**mapVertices)[arrayX][arrayY].y) * INVERSE_TRIANGLE_WIDTH * (position.y - (**mapVertices)[arrayX][arrayY].z) +
+            (**mapVertices)[arrayX][arrayY].y;
     }
     
     return z;

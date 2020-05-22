@@ -109,15 +109,15 @@ std::atomic<bool> update;
 std::atomic<glm::vec2> offsetReqired;
 std::mutex mapUpdateMutex;
 
-//static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapVertices;
-//static std::vector<std::unique_ptr<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>> mapUVs;
-//static std::vector<std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>> mapNormals;
+static std::vector<MapDataVec3Type> mapVertices;
+static std::vector<MapDataVec2Type> mapUVs;
+static std::vector<MapDataVec3Type> mapNormals;
 
 static std::vector<glm::vec2> requiredRenderChunks;
 
 void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
     std::cout << "Map Update Thread ID: " << std::this_thread::get_id() << std::endl;
-    /*
+    
     glm::vec2 thisCamPosition = vec2(0.0f), oldCamPosition = vec2(1.0f);
     
     std::vector<glm::vec2> requiredChunks;
@@ -133,12 +133,12 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
                 requiredChunks.emplace_back(thisCamPosition + offset);
                 requiredRenderChunks.emplace_back(thisCamPosition + offset);
                 
-                mapVertices.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
-                mapUVs.emplace_back(std::make_unique<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>());
-                mapNormals.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
+                mapVertices.emplace_back(std::make_unique<MapDataRawVec3Type>());
+                mapUVs.emplace_back(std::make_unique<MapDataRawVec2Type>());
+                mapNormals.emplace_back(std::make_unique<MapDataRawVec3Type>());
                 
                 int idx = int(mapVertices.size() - 1);
-                generateMapData(noise, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data(), requiredChunks[idx]);
+                generateMapData(noise, &mapVertices[idx], &mapUVs[idx], &mapNormals[idx], requiredChunks[idx]);
             }
         }
     }
@@ -173,10 +173,10 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
             
             if(thisCamPosition != oldCamPosition) {
                 for(int i = 0; i < mapVertices.size(); i++) {
-                    auto itr = std::find_if(requiredChunks.begin(), requiredChunks.end(), [i](vec2 &search){return (*mapVertices[i])[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == search;});
+                    auto itr = std::find_if(requiredChunks.begin(), requiredChunks.end(), [i](vec2 &search){return (*mapVertices[i])[0][0].xz() + vec2(CHUNK_WIDTH) / 2.0f == search;});
                     
                     if(itr == requiredChunks.end()) {
-                        saveMapData(mapVertices[i]->data(), mapUVs[i]->data(), mapNormals[i]->data());
+//                        saveMapData(&mapVertices[i], &mapUVs[i], &mapNormals[i]);
                         mapVertices.erase(mapVertices.begin() + i);
                         i--;
                     }
@@ -186,12 +186,12 @@ void mapUpdate(hg::PerlinNoise *noise, Camera *cam) {
                 }
                 
                 for(int i = 0; i < requiredChunks.size(); i++) {
-                    mapVertices.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
-                    mapUVs.emplace_back(std::make_unique<std::array<glm::vec2, CHUNK_ARRAY_SIZE>>());
-                    mapNormals.emplace_back(std::make_unique<std::array<glm::vec3, CHUNK_ARRAY_SIZE>>());
+                    mapVertices.emplace_back(std::make_unique<MapDataRawVec3Type>());
+                    mapUVs.emplace_back(std::make_unique<MapDataRawVec2Type>());
+                    mapNormals.emplace_back(std::make_unique<MapDataRawVec3Type>());
                     
                     int idx = int(mapVertices.size() - 1);
-                    generateMapData(noise, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data(), requiredChunks[i]);
+                    generateMapData(noise, &mapVertices[idx], &mapUVs[idx], &mapNormals[idx], requiredChunks[i]);
                 }
             }
             
@@ -266,6 +266,9 @@ int main(int argc, const char * argv[]) {
     glEnable(GL_BLEND);
     glEnable(GL_MULTISAMPLE);
     glDisable(GL_CULL_FACE);
+    
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
     
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LEQUAL);
@@ -509,12 +512,42 @@ int main(int argc, const char * argv[]) {
     MapDataVec2Type uv = std::make_unique<MapDataRawVec2Type>();
     generateMapData(&noise, &vert, &uv, &norm);
     MapChunk chunk(&diffuseShader, &renderData, &stoneTexture, &vert, &uv, &norm);
-    chunk.addToTriangleList(&mapTriangles);
+//    chunk.addToTriangleList(&mapTriangles);
+    
+    MapDataVec3Type vert2 = std::make_unique<MapDataRawVec3Type>(), norm2 = std::make_unique<MapDataRawVec3Type>();
+    MapDataVec2Type uv2 = std::make_unique<MapDataRawVec2Type>();
+    generateMapData(&noise, &vert2, &uv2, &norm2, vec2(32.0f, 0.0f));
+    MapChunk chunk2(&diffuseShader, &renderData, &stoneTexture, &vert2, &uv2, &norm2);
+//    chunk2.addToTriangleList(&mapTriangles);
+    
+    
+    
+    Sphere sphere0(&basicShader, &renderData, &debug2Texture, 32, nullptr);
+    Sphere sphere1(&basicShader, &renderData, &debug2Texture, 32, nullptr);
+    Sphere sphere2(&basicShader, &renderData, &debug2Texture, 32, nullptr);
+    Sphere sphere3(&basicShader, &renderData, &debug2Texture, 32, nullptr);
+    Sphere sphere4(&basicShader, &renderData, &debug2Texture, 32, nullptr);
+    
+    sphere0.setScale(vec3(0.2f));
+    sphere1.setScale(vec3(0.2f));
+    sphere2.setScale(vec3(0.2f));
+    sphere3.setScale(vec3(0.2f));
+    sphere4.setScale(vec3(0.2f));
+    
+    sphere0.addToTriangleList(&opaqueTriangles);
+    sphere1.addToTriangleList(&opaqueTriangles);
+    sphere2.addToTriangleList(&opaqueTriangles);
+    sphere3.addToTriangleList(&opaqueTriangles);
+    sphere4.addToTriangleList(&opaqueTriangles);
+    
+    
+    
+    
+    
     
     
     int middleIdx = 0;
-//    auto middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();});
-    int middleItr = 0;
+    auto middleItr = std::find_if(chunks.begin(), chunks.end(), [&cam](std::unique_ptr<MapChunk> &search){return search->offset == (round(cam.getFootPosition() / vec3(CHUNK_WIDTH)) * vec3(CHUNK_WIDTH)).xz();});
     
     int arrayIndex = 0;
     int chunkIndex = 0;
@@ -537,21 +570,21 @@ int main(int argc, const char * argv[]) {
     
     
     ObjModel vehicleBase("resources/model/vehicle/vehicle.obj", &basicShader, &renderData);
-//    vehicleBase.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    vehicleBase.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
     ObjModel axisRear("resources/model/vehicle/axisRear.obj", &basicShader, &renderData);
-//    axisRear.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    axisRear.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
     ObjModel axisFront("resources/model/vehicle/axisFront.obj", &basicShader, &renderData);
-//    axisFront.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    axisFront.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     ObjModel wheel_L("resources/model/vehicle/wheel_L.obj", &basicShader, &renderData);
-//    wheel_L.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    wheel_L.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     ObjModel wheel_R("resources/model/vehicle/wheel_R.obj", &basicShader, &renderData);
-//    wheel_R.addToTriangleList(&opaqueTriangles, &transparentTriangles);
+    wheel_R.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
     int vehicleChunkIdx = 0;
@@ -601,7 +634,7 @@ int main(int argc, const char * argv[]) {
         lastFrame = currentFrame;
         
         while(SDL_PollEvent(&windowEvent) != 0) {
-            if(windowEvent.type == SDL_QUIT)
+            if (windowEvent.type == SDL_QUIT)
                 running = false;
             
             if(windowEvent.type == SDL_MOUSEBUTTONDOWN) {
@@ -613,10 +646,10 @@ int main(int argc, const char * argv[]) {
                         mouseRay.move(0.1f);
                         
                         rayChunkPosition = round(mouseRay.position.xz() / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
-//                        chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
+                        chunkIndex = int(std::find_if(chunks.begin(), chunks.end(), [&cam, &mouseRay, &rayChunkPosition](std::unique_ptr<MapChunk> &search){return search->offset == rayChunkPosition;}) - chunks.begin());
                         
 //                        if(mouseRay.position.y <= mapSurface(mapVertices[0]->data(), mouseRay.position.xz(), &noise)) {
-                            rayMapCollision = true;
+//                            rayMapCollision = true;
 //                            break;
 //                        }
                     }
@@ -1019,10 +1052,15 @@ int main(int argc, const char * argv[]) {
             mapGridCameraPosition = glm::mod(mapGridCameraPosition, glm::vec2(CHUNK_WIDTH));
             
             mapUpdateMutex.lock();
-//            middleItr = std::find_if(chunks.begin(), chunks.end(), [&chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
-//            middleIdx = int(middleItr - chunks.begin());
+            middleItr = std::find_if(chunks.begin(), chunks.end(), [&chunkGridCameraPosition](std::unique_ptr<MapChunk> &search){return search->offset == chunkGridCameraPosition;});
+            middleIdx = int(middleItr - chunks.begin());
             
-            cam.processInput(nullptr);
+            if(middleItr == chunks.end())
+                printf("Not found");
+            
+            
+            
+            cam.processInput(&mapVertices[middleIdx]);
             mapUpdateMutex.unlock();
             
             mouseRay.position = cam.getEyePosition();
@@ -1101,7 +1139,6 @@ int main(int argc, const char * argv[]) {
             
             
             if(updateDone) {
-                /*
                 if(requiredRenderChunks.begin() != requiredRenderChunks.end()) {
                     for(int i = 0; i < chunks.size(); i++) {
                         auto itr = std::find_if(requiredRenderChunks.begin(), requiredRenderChunks.end(), [i, &chunks](vec2 &search){return search == chunks[i]->offset;});
@@ -1116,28 +1153,31 @@ int main(int argc, const char * argv[]) {
                     }
                     
                     for(int i = 0; i < requiredRenderChunks.size(); i++) {
-                        auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](std::unique_ptr<std::array<glm::vec3, CHUNK_ARRAY_SIZE>> &search){return (*search)[0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
+                        auto itr = std::find_if(mapVertices.begin(), mapVertices.end(), [i](MapDataVec3Type &search){return (*search)[0][0].xz() + vec2(CHUNK_WIDTH) / 2.0f == requiredRenderChunks[i];});
                         
                         if(itr != mapVertices.end()) {
                             int idx = int(itr - mapVertices.begin());
-                            chunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, mapVertices[idx]->data(), mapUVs[idx]->data(), mapNormals[idx]->data()));
+                            chunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, &mapVertices[idx], &mapUVs[idx], &mapNormals[idx]));
                             chunks[chunks.size() - 1]->offset = requiredRenderChunks[i];
                             chunks[chunks.size() - 1]->addToTriangleList(&mapTriangles);
                         }
                     }
                     
                     update = true;
-                }*/
+                }
             }
             
             
             
             
-//            if(middleItr == chunks.end())
-//                while(!updateDone)
-//                    std::this_thread::sleep_for(std::chrono::microseconds(10));
+            if(middleItr == chunks.end())
+                while(!updateDone)
+                    std::this_thread::sleep_for(std::chrono::microseconds(10));
             
-            
+
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            glFrontFace(GL_CW);
             
             diffuseShader.use();
             for(int i = 0; i < mapTriangles.size(); i++) {
@@ -1147,6 +1187,9 @@ int main(int argc, const char * argv[]) {
                 
                 mapTriangles[i]->render();
             }
+            
+
+            glDisable(GL_CULL_FACE);
             
             
             
