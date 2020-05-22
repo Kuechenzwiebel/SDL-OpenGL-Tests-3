@@ -1125,8 +1125,8 @@ int main(int argc, const char * argv[]) {
                 opaqueTriangles[i]->getShaderPointer()->use();
                 
                 viewModeUniform.setVar();
-                for(int i = 0; i < lightSources.size(); i++)
-                    lightSources[i]->activate();
+                for(int j = 0; j < lightSources.size(); j++)
+                    lightSources[j]->activate();
                 
                 opaqueTriangles[i]->render();
             }
@@ -1180,12 +1180,12 @@ int main(int argc, const char * argv[]) {
             glFrontFace(GL_CW);
             
             diffuseShader.use();
-            for(int i = 0; i < mapTriangles.size(); i++) {
+            for(int i = 0; i < mapTriangleClusters.size(); i++) {
                 viewModeUniform.setVar();
-                for(int i = 0; i < lightSources.size(); i++)
-                    lightSources[i]->activate();
+                for(int j = 0; j < lightSources.size(); j++)
+                    lightSources[j]->activate();
                 
-                mapTriangles[i]->render();
+                mapTriangleClusters[i]->render();
             }
             
 
@@ -1200,8 +1200,8 @@ int main(int argc, const char * argv[]) {
                 it->second->getShaderPointer()->use();
                 
                 viewModeUniform.setVar();
-                for(int i = 0; i < lightSources.size(); i++)
-                    lightSources[i]->activate();
+                for(int j = 0; j < lightSources.size(); j++)
+                    lightSources[j]->activate();
                 
                 it->second->render();
             }
