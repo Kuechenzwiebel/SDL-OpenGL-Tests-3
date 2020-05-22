@@ -83,6 +83,9 @@ void Shader::compile(const char* vertexCode, const char* fragmentCode) {
         printf(PRINTF_DEFAULT);
         
         printf("Source:\n%s", vertexCode);
+        
+        delete[] infoLog;
+        
         exit(2);
     }
     
@@ -101,6 +104,9 @@ void Shader::compile(const char* vertexCode, const char* fragmentCode) {
         printf(PRINTF_DEFAULT);
         
         printf("Source:\n%s", fragmentCode);
+        
+        delete[] infoLog;
+        
         exit(3);
     }
     
@@ -119,6 +125,10 @@ void Shader::compile(const char* vertexCode, const char* fragmentCode) {
         printf(PRINTF_RED);
         printf("Shader linking failed!\nInfolog: \n%s\n", infoLog);
         printf(PRINTF_DEFAULT);
+        
+        delete[] infoLog;
+        
+        exit(4);
     }
     
     glDeleteShader(vertex);
