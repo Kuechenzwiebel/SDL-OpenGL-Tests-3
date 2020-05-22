@@ -21,7 +21,7 @@ uniform sampler2D tex;
 const float linear = 0.07f;
 const float quadratic = 0.017f;
 
-const vec3 ambientLight = vec3(0.075f);
+const vec3 ambientLight = vec3(0.2f);
 
 
 struct PointLightSourceData {
