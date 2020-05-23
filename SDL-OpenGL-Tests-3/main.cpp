@@ -225,6 +225,11 @@ int main(int argc, const char * argv[]) {
     
     std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
     
+    
+    /*
+     OpenGL and SDL setup
+     */
+    
     if(SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("Failed to initialize SDL2");
         return EXIT_FAILURE;
@@ -274,6 +279,11 @@ int main(int argc, const char * argv[]) {
     glDepthFunc(GL_LEQUAL);
     
     
+    /*
+     Performance measure setup
+     */
+    
+    
     int frame = 0;
     long nextMeasure = SDL_GetTicks() + 1e3;
     unsigned int fps = 0;
@@ -287,6 +297,11 @@ int main(int argc, const char * argv[]) {
     float deltaTime = 0.0f;
     float totalTime = 0.0f;
     
+    
+    /*
+     Vector and list setup
+     */
+    
     std::list<std::pair<float, CoreTriangle*>> transparentTriangles;
     std::vector<CoreTriangleCluster*> opaqueTriangles;
     std::vector<LightSource*> lightSources;
@@ -294,6 +309,12 @@ int main(int argc, const char * argv[]) {
     
     std::vector<CoreTriangle*> uiTriangles;
     std::vector<UIText*> uiTexts;
+    
+    
+    
+    /*
+     Shader setup
+     */
     
     hg::File basicShaderVertex("resources/shader/basic.vs"), basicShaderFragment("resources/shader/basic.fs");
     hg::File uiShaderVertex("resources/shader/ui.vs"), uiShaderFragment("resources/shader/ui.fs");
@@ -304,6 +325,11 @@ int main(int argc, const char * argv[]) {
     Shader colorBufferShader(colorShaderVertex, colorShaderFragment);
     Shader diffuseShader(diffuseShaderVertex, diffuseShaderFragment);
     
+    
+    
+    /*
+     Perlin noise setup
+     */
     
     hg::MultiPerlinNoise noise;
     
@@ -320,11 +346,21 @@ int main(int argc, const char * argv[]) {
     noise.perlinNoises[1]->multiplier = 25.0f;
     noise.perlinNoises[1]->offset = -10.0f;
     
+    
+    /*
+     Camera setup
+     */
+    
     vec2 chunkGridCameraPosition(0.0f), mapGridCameraPosition(0.0f);
     
     Camera cam(&deltaTime, &windowEvent, &checkMouse, &noise);
     cam.processMouseInput();
-    //    cam.processInput();
+    
+    
+    
+    /*
+     Uniform variable setup
+     */
     
     UniformBuffer projViewBuffer(2 * sizeof(mat4), 0);
     UniformBuffer uiProjViewBuffer(2 * sizeof(mat4), 1);
@@ -343,6 +379,11 @@ int main(int argc, const char * argv[]) {
     shakeUniform.addToShader(&basicShader, "shakeInfo", 3);
     shakeUniform.addToShader(&diffuseShader, "shakeInfo", 3);
     
+    
+    /*
+     Matrices and RenderData setup
+     */
+    
     mat4 projectionMat = infinitePerspective(radians(cam.zoom), float(windowWidth) / float(windowHeight), 0.005f);
     mat4 uiProjection = ortho(-0.5f * windowWidth, 0.5f * windowWidth, -0.5f * windowHeight, 0.5f * windowHeight, -1.0f, 1.0f);
     mat4 uiView = lookAt(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
@@ -359,6 +400,10 @@ int main(int argc, const char * argv[]) {
     uiData.projection = &uiProjection;
     uiData.viewMat = &uiView;
     
+    
+    /*
+     Texture loading
+     */
     
     Texture debugTexture("resources/texture/debug.png");
     Texture debug2Texture("resources/texture/debug2.png");
@@ -383,6 +428,11 @@ int main(int argc, const char * argv[]) {
     Texture transparentTexture(data, 1, 1, false);
     Texture blackTexture(data2, 1, 1, false);
     blackTexture.textureName = "reflectionMap";
+    
+    
+    /*
+     Basic object generation
+     */
     
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
@@ -415,6 +465,10 @@ int main(int argc, const char * argv[]) {
     sphere.addToTriangleList(&opaqueTriangles);
     
     
+    /*
+     UI elements
+     */
+    
     UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
     fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&fpsText);
@@ -426,17 +480,20 @@ int main(int argc, const char * argv[]) {
     UIText vehicleSpeedText("Velocity: 0.0 m/s", &uiShader, &uiData);
     vehicleSpeedText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
     
+    
     float shakeStrenght = 0.0f, explosionShakeStrenght = 0.0f;
     
     
-    unsigned long triangleAmount = 0;
-    
-    for(int i = 0; i < opaqueTriangles.size(); i++) {
-        triangleAmount += opaqueTriangles[i]->getSize();
-    }
-    
+    /*
+     Transparent object sorting thread
+     */
     
     sortThread = std::thread(sortTriangles, &cam, &transparentTriangles);
+    
+    
+    /*
+     Light source generation
+     */
     
     PointLightSource lightSource(&basicShader);
     lightSource.position = vec3(4.0f);
@@ -471,6 +528,10 @@ int main(int argc, const char * argv[]) {
     
     
     
+    /*
+     Mapupdate variables
+     */
+    
     
     std::vector<std::unique_ptr<MapChunk>> mapChunks;
     std::vector<MapDynamicTriangleElementCluster*> mapTriangleClusters;
@@ -489,6 +550,9 @@ int main(int argc, const char * argv[]) {
     
     
     
+    /*
+     Map editing variables
+     */
     
     int arrayIndex = 0;
     int chunkIndex = 0;
@@ -509,6 +573,9 @@ int main(int argc, const char * argv[]) {
     float explosionOffset = 0.0f;
     
     
+    /*
+     Vehicle variables
+     */
     
     ObjModel vehicleBase("resources/model/vehicle/vehicle.obj", &basicShader, &renderData);
     vehicleBase.addToTriangleList(&opaqueTriangles, &transparentTriangles);
@@ -548,7 +615,9 @@ int main(int argc, const char * argv[]) {
     std::stringstream vehicleSpeedStringStream;
     
     
-    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount /*+ CHUNK_ARRAY_SIZE / 3 * chunks.size()*/, double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE / 3 /* chunks.size()*/);
+    
+    
+    printf("%lu of %E possible triangles registerd\n%lu transparent triangles registerd\n%lu opaque triangles registerd\n", transparentTriangles.size() + triangleAmount + CHUNK_ARRAY_SIZE * 2 * mapChunks.size(), double(transparentTriangles.max_size()), transparentTriangles.size(), triangleAmount + CHUNK_ARRAY_SIZE * 2 * mapChunks.size());
     
     while(running) {
         start = std::chrono::steady_clock::now();
@@ -816,6 +885,11 @@ int main(int argc, const char * argv[]) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
         
         if(render) {
+            /*
+             Vehicle handling
+             */
+            
+            
             if(camInVehicle) {
                 const Uint8 *keystates = SDL_GetKeyboardState(NULL);
                 
@@ -840,13 +914,6 @@ int main(int argc, const char * argv[]) {
                         vehicleVelocity = 0.0f;
                 }
             }
-            
-            
-            
-            
-            
-            
-            
             
             
             if(vehicleOnFloor)
@@ -977,14 +1044,18 @@ int main(int argc, const char * argv[]) {
             
             if(vehicleOnFloor)
                 lastFrontWheelAngle = frontWheelAngle;
-            /*
+            
             if(camInVehicle)
                 cam.setEyePosition(vectorMatrixMultiplication(vec3(0.35f, 0.45f + 0.97f, -0.45f), translate(mat4(1), vehicleBasePosition) *
                                                               rotate(radians(vehicleYAngle), vec3(0.0f, 1.0f, 0.0f)) *
                                                               rotate(vehicleZAngle, vec3(0.0f, 0.0f, 1.0f)) *
                                                               rotate(vehicleXAngle, vec3(1.0f, 0.0f, 0.0f))));
-            */
             
+            
+            
+            /*
+             Camera - Chunk handling
+             */
             
             cam.preProcessInput();
 
@@ -1001,11 +1072,17 @@ int main(int argc, const char * argv[]) {
             
             
             
-            
+            /*
+             Start transparent triangle sorting
+             */
             
             sort = true;
             
             
+            
+            /*
+             Sending global uniforms
+             */
             
             if(explosionShakeStrenght > 0.0f)
                 explosionShakeStrenght = -0.5f * pow((totalTime - explosionOffset), 3) + 1.5f;
@@ -1025,14 +1102,19 @@ int main(int argc, const char * argv[]) {
             
             
             
-            
+            /*
+             Positions updating
+             */
             
             if(oldCamFootPos != cam.getFootPosition()) {
                 std::stringstream positionStream;
-                positionStream << std::fixed << std::setprecision(2) <<"Position: X = " << cam.getFootPosition().x << "  Y = " <<   cam.getFootPosition().y << "  Z = " << cam.getFootPosition().z;
+                positionStream << std::fixed << std::setprecision(2) << "Position: X = " << cam.getFootPosition().x << "  Y = " <<   cam.getFootPosition().y << "  Z = " << cam.getFootPosition().z;
                 positionText.setText(positionStream.str());
             }
             
+            /*
+             OpenGL settings
+             */
             
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1044,6 +1126,10 @@ int main(int argc, const char * argv[]) {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             
             
+            
+            /*
+             Individual object settings
+             */
             
             cube.setRotation(vec4(1.0f, 1.0f, 1.0f, tan(totalTime / 5.0f)));
             
@@ -1057,6 +1143,10 @@ int main(int argc, const char * argv[]) {
             flashlight.direction = cam.front;
             
             
+            /*
+             Rendering of opaque triangles
+             */
+            
             for(int i = 0; i < opaqueTriangles.size(); i++) {
                 opaqueTriangles[i]->getShaderPointer()->use();
                 
@@ -1068,11 +1158,20 @@ int main(int argc, const char * argv[]) {
             }
             
             
+            /*
+             Rendering colorbuffer objects
+             */
+            
             colorBufferShader.use();
             for(int i = 0; i < lines.size(); i++) {
                 lines[i]->render();
             }
             
+            
+            
+            /*
+             Map and Chunk handling
+             */
             
             middleItr = std::find_if(mapVertices0.begin(), mapVertices0.end(), [chunkGridCameraPosition](MapDataVec3Type &search){ return chunkGridCameraPosition == (*search)[0][0].xz() + vec2(CHUNK_WIDTH / 2.0f); });
             middleIdx = int(middleItr - mapVertices0.begin());
@@ -1118,6 +1217,10 @@ int main(int argc, const char * argv[]) {
             }
             
             
+            /*
+             Map rendering
+             */
+            
             diffuseShader.use();
             for(int i = 0; i < mapTriangleClusters.size(); i++) {
                 viewModeUniform.setVar();
@@ -1129,9 +1232,13 @@ int main(int argc, const char * argv[]) {
             
             
             
+            /*
+             Transparent object rendering
+             */
             
             while(!sortDone)
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
+            
             
             for(auto it = transparentTriangles.rbegin(); it != transparentTriangles.rend(); it++) {
                 it->second->getShaderPointer()->use();
@@ -1144,6 +1251,9 @@ int main(int argc, const char * argv[]) {
             }
             
             
+            /*
+             UI drawing
+             */
             
             glClear(GL_DEPTH_BUFFER_BIT);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -1159,6 +1269,10 @@ int main(int argc, const char * argv[]) {
                 uiTexts[i]->render();
             }
             
+            
+            /*
+             Verhicle UI handling
+             */
             
             if(camInVehicle) {
                 vehicleSpeedStringStream.str("");
@@ -1185,6 +1299,10 @@ int main(int argc, const char * argv[]) {
             }
             
             
+                
+            /*
+             Performance recording
+             */
             
             oldCamFootPos = cam.getFootPosition();
             oldCamEyePos = cam.getEyePosition();
