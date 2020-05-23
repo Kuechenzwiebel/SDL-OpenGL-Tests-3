@@ -260,6 +260,12 @@ glm::vec2 chunkGrid(glm::vec2 a) {
     return glm::round(a / float(CHUNK_WIDTH)) * float(CHUNK_WIDTH);
 }
 
+glm::vec2 triangleGrid(glm::vec2 a) {
+    return glm::floor(a * float(INVERSE_TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
+}
+
+
+
 MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals):
 shader(shader), data(data), texture(texture), trianglePointer(nullptr), tris(shader, data, MAP_INDICES_ARRAY_SIZE, mapIndices, (*mapVertices)->data()->data(), CHUNK_ARRAY_SIZE, texture, (*mapUVs)->data()->data(), (*mapNormals)->data()->data(), &modelMat) {
     

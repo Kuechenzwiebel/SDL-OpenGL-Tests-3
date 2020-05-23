@@ -42,6 +42,7 @@ void saveMapData(MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataV
 float mapSurface(MapDataVec3Type *mapVertices, glm::vec2 position, hg::PerlinNoise *noise);
 
 glm::vec2 chunkGrid(glm::vec2 a);
+glm::vec2 triangleGrid(glm::vec2 a);
 
 class MapChunk: public Object {
 public:
