@@ -36,6 +36,9 @@ public:
     
     void addToTriangleList(std::vector<CoreTriangleCluster*> *oTriangles, std::list<std::pair<float, CoreTriangle*>> *tTriangles);
     
+    std::vector<std::unique_ptr<CoreTriangleCluster>>* getOpaqueTriangleClusters();
+    std::vector<std::unique_ptr<CoreTriangle>>* getTransparentTriangles();
+    
 private:
     std::vector<std::pair<std::string, std::unique_ptr<Texture>>> textures;
     

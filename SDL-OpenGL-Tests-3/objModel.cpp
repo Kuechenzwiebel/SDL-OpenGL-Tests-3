@@ -145,3 +145,11 @@ void ObjModel::addToTriangleList(std::vector<CoreTriangleCluster*> *oTriangles, 
     transparentTrianglePointer = tTriangles;
     opaqueTrianglePointer = oTriangles;
 }
+
+std::vector<std::unique_ptr<CoreTriangleCluster>>* ObjModel::getOpaqueTriangleClusters() {
+    return &opaqueTriangleClusters;
+}
+
+std::vector<std::unique_ptr<CoreTriangle>>* ObjModel::getTransparentTriangles() {
+    return &transparentTriangles;
+}
