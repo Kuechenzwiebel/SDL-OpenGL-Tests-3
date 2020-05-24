@@ -272,8 +272,8 @@ int main(int argc, const char * argv[]) {
     glEnable(GL_MULTISAMPLE);
     glDisable(GL_CULL_FACE);
     
-    glCullFace(GL_FRONT);
-    glFrontFace(GL_CW);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
     
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LEQUAL);
@@ -1221,6 +1221,8 @@ int main(int argc, const char * argv[]) {
              Map rendering
              */
             
+            glEnable(GL_CULL_FACE);
+            
             diffuseShader.use();
             for(int i = 0; i < mapTriangleClusters.size(); i++) {
                 viewModeUniform.setVar();
@@ -1229,6 +1231,9 @@ int main(int argc, const char * argv[]) {
                 
                 mapTriangleClusters[i]->render();
             }
+            
+            
+            glDisable(GL_CULL_FACE);
             
             
             
