@@ -99,7 +99,7 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
         unsigned int arrayX = 0, arrayY = 0;
         for(float x = offset.x - CHUNK_WIDTH / 2.0f; x <= offset.x + CHUNK_WIDTH / 2.0f; x += TRIANGLE_WIDTH) {
             for(float y = offset.y - CHUNK_WIDTH / 2.0f; y <= offset.y + CHUNK_WIDTH / 2.0f; y += TRIANGLE_WIDTH) {
-                (**mapVertices)[arrayX][arrayY] = glm::vec3(x, noise->octaveNoise(x, y) + 10.0f, y);
+                (**mapVertices)[arrayX][arrayY] = glm::vec3(x, noise->octaveNoise(x, y) * 0.0f, y);
                 (**mapUVs)[arrayX][arrayY] = glm::vec2(float(arrayY), float(arrayX)) * INVERSE_CHUNK_TEXTURE_WIDTH * TRIANGLE_WIDTH;
                 (**mapNormals)[arrayX][arrayY] = glm::vec3(0.0f, 1.0f, 0.0f);
                 
@@ -200,6 +200,10 @@ void generateMapData(hg::PerlinNoise *noise, MapDataVec3Type *mapVertices, MapDa
 }
 
 float mapSurface(MapDataVec3Type *mapVertices, glm::vec2 position, hg::PerlinNoise *noise) {
+    return noise->octaveNoise(position.x, position.y);
+    
+    
+    /*
     glm::vec2 mapGridPosition = floor(position / float(TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
     glm::vec2 trianglePositon = position - mapGridPosition;
     
@@ -240,6 +244,7 @@ float mapSurface(MapDataVec3Type *mapVertices, glm::vec2 position, hg::PerlinNoi
     }
     
     return z;
+     */
 }
 
 void saveMapData(MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals) {
@@ -261,7 +266,15 @@ glm::vec2 chunkGrid(glm::vec2 a) {
 }
 
 glm::vec2 triangleGrid(glm::vec2 a) {
-    return glm::floor(a * float(INVERSE_TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
+    return glm::round(a * float(INVERSE_TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
+}
+
+int mapMod(int a, int b) {
+    int r = a % b;
+    if(r < 0) {
+        r = b + r;
+    }
+    return r;
 }
 
 

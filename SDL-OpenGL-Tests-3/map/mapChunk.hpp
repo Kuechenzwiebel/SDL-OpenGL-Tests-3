@@ -43,6 +43,7 @@ float mapSurface(MapDataVec3Type *mapVertices, glm::vec2 position, hg::PerlinNoi
 
 glm::vec2 chunkGrid(glm::vec2 a);
 glm::vec2 triangleGrid(glm::vec2 a);
+int mapMod(int a, int b);
 
 class MapChunk: public Object {
 public:
