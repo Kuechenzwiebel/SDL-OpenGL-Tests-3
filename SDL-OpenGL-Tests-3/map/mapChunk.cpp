@@ -269,8 +269,8 @@ glm::vec2 triangleGrid(glm::vec2 a) {
     return glm::round(a * float(INVERSE_TRIANGLE_WIDTH)) * float(TRIANGLE_WIDTH);
 }
 
-int mapMod(int a, int b) {
-    int r = a % b;
+float mapMod(float a, float b) {
+    float r = fmod(a, b);
     if(r < 0) {
         r = b + r;
     }

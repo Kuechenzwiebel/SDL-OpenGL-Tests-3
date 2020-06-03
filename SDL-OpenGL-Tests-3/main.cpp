@@ -560,6 +560,10 @@ int main(int argc, const char * argv[]) {
     
     float explosionOffset = 0.0f;
     
+    Sphere s1(&basicShader, &renderData, &stoneTexture, 32, nullptr);
+    s1.addToTriangleList(&opaqueTriangles);
+    s1.setScale(vec3(0.2f));
+    
     
     /*
      Vehicle variables
@@ -662,6 +666,8 @@ int main(int argc, const char * argv[]) {
                             std::cout << mouseRayArrayIndexX << " " << mouseRayArrayIndexY << std::endl;
                             
                             mouseRayRelativePosition = mouseRayMapPosition - mouseRayChunkPosition;
+                            
+                            s1.setTranslation(vec3(mouseRayMapPosition, 0.0f).xzy());
                             
                             break;
                         }
