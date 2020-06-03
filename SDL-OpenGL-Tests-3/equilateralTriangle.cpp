@@ -26,8 +26,8 @@ static glm::vec3 equilateralTriangleNormals[] = {
     glm::triangleNormal(equilateralTriangleVertices[0], equilateralTriangleVertices[1], equilateralTriangleVertices[2])
 };
 
-EquilateralTriangle::EquilateralTriangle(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap, bool initLighting):
-CoreTriangle(shader, data, equilateralTriangleVertices, texture, equilateralTriangleUVs, equilateralTriangleNormals, &modelMat, reflection, reflectionMap, initLighting), trianglePointer(nullptr) {
+EquilateralTriangle::EquilateralTriangle(Shader *shader, Texture *texture, int reflection, Texture *reflectionMap, bool initLighting):
+CoreTriangle(shader, equilateralTriangleVertices, texture, equilateralTriangleUVs, equilateralTriangleNormals, &modelMat, reflection, reflectionMap, initLighting), trianglePointer(nullptr) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     

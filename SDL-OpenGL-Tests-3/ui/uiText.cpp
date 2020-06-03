@@ -30,8 +30,8 @@ static void prepareAsciiBandUVs() {
     }
 }
 
-UIText::UIText(std::string text, Shader *shader, const RenderData *data):
-shader(shader), data(data), asciiBandTexture("resources/font/asciiBand.png") {
+UIText::UIText(std::string text, Shader *shader):
+shader(shader), asciiBandTexture("resources/font/asciiBand.png") {
     if(asciiBandCharUVs[0][1][0] == 1.0f) {
         prepareAsciiBandUVs();
     }
@@ -64,7 +64,7 @@ void UIText::setText(std::string newText) {
         }
         
         if(newText[i] >= 0 && newText[i] <= 127) {
-            chars.push_back(std::make_pair(std::make_pair(cols, rows), std::make_unique<UIRectangle>(shader, data, &asciiBandTexture, asciiBandCharUVs)));
+            chars.push_back(std::make_pair(std::make_pair(cols, rows), std::make_unique<UIRectangle>(shader, &asciiBandTexture, asciiBandCharUVs)));
             chars[chars.size() - 1].second->setTextureOffset(glm::vec2(float(newText[i] - 32) * asciiBandInfo[charWidthNormLoc]->getDoubleValue() + asciiBandInfo[xOffsetLoc]->getDoubleValue(), asciiBandInfo[yOffsetLoc]->getDoubleValue()));
             chars[chars.size() - 1].second->setScale(glm::vec3(asciiBandInfo[charWidthLoc]->getIntValue(), asciiBandInfo[charHeightLoc]->getIntValue(), 0.0f));
             chars[chars.size() - 1].second->setTranslation(glm::vec3(float(cols * asciiBandInfo[charWidthLoc]->getIntValue()), -float(rows * asciiBandInfo[charHeightLoc]->getIntValue()), 0.0f));

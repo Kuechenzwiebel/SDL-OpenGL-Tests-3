@@ -279,8 +279,8 @@ float mapMod(float a, float b) {
 
 
 
-MapChunk::MapChunk(Shader *shader, const RenderData *data, Texture *texture, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals):
-shader(shader), data(data), texture(texture), trianglePointer(nullptr), tris(shader, data, MAP_INDICES_ARRAY_SIZE, mapIndices, (*mapVertices)->data()->data(), CHUNK_ARRAY_SIZE, texture, (*mapUVs)->data()->data(), (*mapNormals)->data()->data(), &modelMat) {
+MapChunk::MapChunk(Shader *shader, Texture *texture, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals):
+shader(shader), texture(texture), trianglePointer(nullptr), tris(shader, MAP_INDICES_ARRAY_SIZE, mapIndices, (*mapVertices)->data()->data(), CHUNK_ARRAY_SIZE, texture, (*mapUVs)->data()->data(), (*mapNormals)->data()->data(), &modelMat) {
     
 }
 

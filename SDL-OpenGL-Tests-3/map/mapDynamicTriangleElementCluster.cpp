@@ -8,8 +8,8 @@
 
 #include "mapDynamicTriangleElementCluster.hpp"
 
-MapDynamicTriangleElementCluster::MapDynamicTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const MAP_INDICES_ARRAY_TYPE *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat):
-verticesSize(verticesSize), indicesSize(indicesSize), vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
+MapDynamicTriangleElementCluster::MapDynamicTriangleElementCluster(Shader *shader, unsigned int indicesSize, const MAP_INDICES_ARRAY_TYPE *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat):
+verticesSize(verticesSize), indicesSize(indicesSize), vertices(vertices), uvs(uvs), normals(normals), shader(shader), modelMatPointer(modelMat),
 vertex(vertices, sizeof(glm::vec3) * verticesSize, 0), texCoord(uvs, sizeof(glm::vec2) * verticesSize, 1), normal(normals, sizeof(glm::vec3) * verticesSize, 2),
 model(shader, "model", modelMat), texture(texture), indices(indices)  {
     glGenVertexArrays(1, &VAO);

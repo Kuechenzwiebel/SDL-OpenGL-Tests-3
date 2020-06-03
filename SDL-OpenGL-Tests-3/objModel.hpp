@@ -31,7 +31,7 @@ bool operator==(const std::pair<std::string, std::unique_ptr<Texture>> &l, const
 
 class ObjModel: public Object {
 public:
-    ObjModel(const std::string &file, Shader *shader, const RenderData *data);
+    ObjModel(const std::string &file, Shader *shader);
     ~ObjModel();
     
     void addToTriangleList(std::vector<CoreTriangleCluster*> *oTriangles, std::list<std::pair<float, CoreTriangle*>> *tTriangles);
@@ -55,7 +55,6 @@ private:
     std::list<std::pair<float, CoreTriangle*>> *transparentTrianglePointer;
     
     Shader *shader;
-    const RenderData *data;
     Texture *texture;
 };
 

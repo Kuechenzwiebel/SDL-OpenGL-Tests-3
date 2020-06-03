@@ -8,14 +8,10 @@
 
 #include "coreTriangleElementCluster.hpp"
 
-CoreTriangleElementCluster<unsigned char>::CoreTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const unsigned char *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
-
-CoreTriangleCluster(shader, data, verticesSize, vertices, texture, uvs, normals, modelMat, reflection, reflectionMap, initLighting),
-
-indicesSize(indicesSize), vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
-
+CoreTriangleElementCluster<unsigned char>::CoreTriangleElementCluster(Shader *shader, unsigned int indicesSize, const unsigned char *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
+CoreTriangleCluster(shader, verticesSize, vertices, texture, uvs, normals, modelMat, reflection, reflectionMap, initLighting),
+indicesSize(indicesSize), vertices(vertices), uvs(uvs), normals(normals), shader(shader), modelMatPointer(modelMat),
 vertex(vertices, sizeof(glm::vec3) * verticesSize, 0), texCoord(uvs, sizeof(glm::vec2) * verticesSize, 1), normal(normals, sizeof(glm::vec3) * verticesSize, 2),
-
 model(shader, "model", modelMat), texture(texture), reflectionMap(reflectionMap), reflection(reflection), initLighting(initLighting), indices(indices), verticesSize(verticesSize) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -70,14 +66,10 @@ void CoreTriangleElementCluster<unsigned char>::render() {
 
 
 
-CoreTriangleElementCluster<unsigned short>::CoreTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const unsigned short *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
-
-CoreTriangleCluster(shader, data, verticesSize, vertices, texture, uvs, normals, modelMat, reflection, reflectionMap, initLighting),
-
-indicesSize(indicesSize), vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
-
+CoreTriangleElementCluster<unsigned short>::CoreTriangleElementCluster(Shader *shader, unsigned int indicesSize, const unsigned short *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
+CoreTriangleCluster(shader, verticesSize, vertices, texture, uvs, normals, modelMat, reflection, reflectionMap, initLighting),
+indicesSize(indicesSize), vertices(vertices), uvs(uvs), normals(normals), shader(shader), modelMatPointer(modelMat),
 vertex(vertices, sizeof(glm::vec3) * verticesSize, 0), texCoord(uvs, sizeof(glm::vec2) * verticesSize, 1), normal(normals, sizeof(glm::vec3) * verticesSize, 2),
-
 model(shader, "model", modelMat), texture(texture), reflectionMap(reflectionMap), reflection(reflection), initLighting(initLighting), indices(indices), verticesSize(verticesSize) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -132,14 +124,10 @@ void CoreTriangleElementCluster<unsigned short>::render() {
 
 
 
-CoreTriangleElementCluster<unsigned int>::CoreTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const unsigned int *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
-
-CoreTriangleCluster(shader, data, verticesSize, vertices, texture, uvs, normals, modelMat, reflection, reflectionMap, initLighting),
-
-indicesSize(indicesSize), vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
-
+CoreTriangleElementCluster<unsigned int>::CoreTriangleElementCluster(Shader *shader, unsigned int indicesSize, const unsigned int *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
+CoreTriangleCluster(shader, verticesSize, vertices, texture, uvs, normals, modelMat, reflection, reflectionMap, initLighting),
+indicesSize(indicesSize), vertices(vertices), uvs(uvs), normals(normals), shader(shader), modelMatPointer(modelMat),
 vertex(vertices, sizeof(glm::vec3) * verticesSize, 0), texCoord(uvs, sizeof(glm::vec2) * verticesSize, 1), normal(normals, sizeof(glm::vec3) * verticesSize, 2),
-
 model(shader, "model", modelMat), texture(texture), reflectionMap(reflectionMap), reflection(reflection), initLighting(initLighting), indices(indices), verticesSize(verticesSize) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);

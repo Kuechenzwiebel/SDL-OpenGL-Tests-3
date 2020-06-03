@@ -9,7 +9,7 @@
 
 #include "line.hpp"
 
-Line::Line(Shader *shader, const RenderData *data, const glm::vec3 vertices[], const glm::vec4 colors[]):
+Line::Line(Shader *shader, const glm::vec3 vertices[], const glm::vec4 colors[]):
 vertex(vertices, sizeof(glm::vec3) * 2, 0), color(colors, sizeof(glm::vec4) * 2, 1) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);

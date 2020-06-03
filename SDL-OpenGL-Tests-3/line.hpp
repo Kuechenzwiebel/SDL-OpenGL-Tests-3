@@ -16,7 +16,7 @@
 
 class Line {
 public:
-    Line(Shader *shader, const RenderData *data, const glm::vec3 vertices[], const glm::vec4 colors[]);
+    Line(Shader *shader, const glm::vec3 vertices[], const glm::vec4 colors[]);
     ~Line();
     
     void setData(const glm::vec3 vertices[], const glm::vec4 colors[]);
@@ -29,7 +29,6 @@ private:
     DynamicArrayBuffer<glm::vec4> color;
     
     Shader *shader;
-    const RenderData *data;
 };
 
 #endif /* line_hpp */

@@ -15,7 +15,7 @@
 
 class CoreTriangle {
 public:
-    CoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
+    CoreTriangle(Shader *shader, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
     ~CoreTriangle();
 
     Shader* getShaderPointer();
@@ -44,7 +44,6 @@ protected:
     int useReflectionMap;
     
     Shader *shader;
-    const RenderData *data;
     
     glm::mat4 *modelMatPointer;
     

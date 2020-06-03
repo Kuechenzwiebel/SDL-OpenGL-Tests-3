@@ -20,7 +20,7 @@
 
 class UIText: public Object {
 public:
-    UIText(std::string text, Shader *shader, const RenderData *data);
+    UIText(std::string text, Shader *shader);
     ~UIText();
     
     void setText(std::string newText);
@@ -38,7 +38,6 @@ private:
     
     
     Shader *shader;
-    const RenderData *data;
     
     Texture asciiBandTexture;
 };

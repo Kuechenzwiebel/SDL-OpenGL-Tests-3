@@ -18,7 +18,7 @@
 
 class MapDynamicTriangleElementCluster {
 public:
-    MapDynamicTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const MAP_INDICES_ARRAY_TYPE *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
+    MapDynamicTriangleElementCluster(Shader *shader, unsigned int indicesSize, const MAP_INDICES_ARRAY_TYPE *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat);
     ~MapDynamicTriangleElementCluster();
     
     void setData(const MAP_INDICES_ARRAY_TYPE *indices, const glm::vec3 vertices[], const glm::vec2 uvs[], const glm::vec3 normals[]);
@@ -44,7 +44,6 @@ private:
     Texture *texture;
     
     Shader *shader;
-    const RenderData *data;
     
     glm::mat4 *modelMatPointer;
     

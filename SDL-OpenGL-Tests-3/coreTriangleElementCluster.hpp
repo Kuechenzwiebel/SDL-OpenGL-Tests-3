@@ -25,7 +25,7 @@ class CoreTriangleElementCluster {
 template<>
 class CoreTriangleElementCluster<unsigned char>: public CoreTriangleCluster {
 public:
-    CoreTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const unsigned char *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
+    CoreTriangleElementCluster(Shader *shader, unsigned int indicesSize, const unsigned char *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
     ~CoreTriangleElementCluster();
     
     void render();
@@ -54,7 +54,6 @@ private:
     int useReflectionMap;
     
     Shader *shader;
-    const RenderData *data;
     
     glm::mat4 *modelMatPointer;
     
@@ -69,7 +68,7 @@ private:
 template<>
 class CoreTriangleElementCluster<unsigned short>: public CoreTriangleCluster {
 public:
-    CoreTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const unsigned short *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
+    CoreTriangleElementCluster(Shader *shader, unsigned int indicesSize, const unsigned short *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
     ~CoreTriangleElementCluster();
     
     void render();
@@ -98,7 +97,6 @@ private:
     int useReflectionMap;
     
     Shader *shader;
-    const RenderData *data;
     
     glm::mat4 *modelMatPointer;
     
@@ -113,7 +111,7 @@ private:
 template<>
 class CoreTriangleElementCluster<unsigned int>: public CoreTriangleCluster {
 public:
-    CoreTriangleElementCluster(Shader *shader, const RenderData *data, unsigned int indicesSize, const unsigned int *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
+    CoreTriangleElementCluster(Shader *shader, unsigned int indicesSize, const unsigned int *indices, const glm::vec3 vertices[], unsigned int verticesSize, Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
     ~CoreTriangleElementCluster();
     
     void render();
@@ -142,7 +140,6 @@ private:
     int useReflectionMap;
     
     Shader *shader;
-    const RenderData *data;
     
     glm::mat4 *modelMatPointer;
     

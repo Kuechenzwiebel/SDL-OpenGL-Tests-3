@@ -377,14 +377,6 @@ int main(int argc, const char * argv[]) {
     uiProjViewBuffer.modifyData(sizeof(mat4), 0, glm::value_ptr(uiProjection));
     uiProjViewBuffer.modifyData(sizeof(mat4), sizeof(mat4), glm::value_ptr(uiView));
     
-    RenderData renderData;
-    renderData.projection = &projectionMat;
-    renderData.viewMat = &cam.viewMat;
-    
-    RenderData uiData;
-    uiData.projection = &uiProjection;
-    uiData.viewMat = &uiView;
-    
     
     /*
      Texture loading
@@ -422,31 +414,31 @@ int main(int argc, const char * argv[]) {
     std::vector<std::unique_ptr<EquilateralTriangle>> tris;
     
     for(int i = 0; i < 20; i++) {
-        tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &renderData, &transparentTexture, 32, nullptr, true));
+        tris.push_back(std::make_unique<EquilateralTriangle>(&basicShader, &transparentTexture, 32, nullptr, true));
         tris[i]->addToTriangleList(&transparentTriangles);
         tris[i]->setTranslation(vec3(float(i / 3.0f) + 2.0f, 0.0f, 0.0f));
         tris[i]->setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     }
     
-    EquilateralTriangle e(&basicShader, &renderData, &transparentTexture, 32, nullptr, true);
+    EquilateralTriangle e(&basicShader, &transparentTexture, 32, nullptr, true);
     e.setTranslation(vec3(0.0f, 0.0f, -2.0f));
     e.setRotation(vec4(0.0f, 1.0f, 0.0f, HALF_PI));
     e.addToTriangleList(&transparentTriangles);
     
-    Cube cube(&basicShader, &renderData, &debug2Texture, 32, nullptr);
+    Cube cube(&basicShader, &debug2Texture, 32, nullptr);
     cube.setTranslation(vec3(3.0f, 4.0f, -1.0f));
     cube.addToTriangleList(&opaqueTriangles);
     
-    Cube container(&basicShader, &renderData, &containerTexture, 0, &containerReflectionTexture);
+    Cube container(&basicShader, &containerTexture, 0, &containerReflectionTexture);
     container.addToTriangleList(&opaqueTriangles);
     container.setTranslation(vec3(5.0f, 3.5f, 3.0f));
     
-    Cube light(&basicShader, &renderData, &debugTexture, 0, nullptr);
+    Cube light(&basicShader, &debugTexture, 0, nullptr);
     light.addToTriangleList(&opaqueTriangles);
     light.setTranslation(vec3(4.0f));
     light.setScale(vec3(0.2f));
     
-    Sphere sphere(&basicShader, &renderData, &stoneTexture, 32, nullptr);
+    Sphere sphere(&basicShader, &stoneTexture, 32, nullptr);
 //    sphere.addToTriangleList(&opaqueTriangles);
     
     
@@ -454,15 +446,15 @@ int main(int argc, const char * argv[]) {
      UI elements
      */
     
-    UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader, &uiData);
+    UIText fpsText("FPS:   0\nFrametime:   0ms", &uiShader);
     fpsText.setScale(vec3(fpsText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&fpsText);
     
-    UIText positionText("Position: X = 0.0  Y = 0.0  Z = 0.0", &uiShader, &uiData);
+    UIText positionText("Position: X = 0.0  Y = 0.0  Z = 0.0", &uiShader);
     positionText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
     uiTexts.push_back(&positionText);
     
-    UIText vehicleSpeedText("Velocity: 0.0 m/s", &uiShader, &uiData);
+    UIText vehicleSpeedText("Velocity: 0.0 m/s", &uiShader);
     vehicleSpeedText.setScale(vec3(positionText.getCharDimensions(), 0.0f) * 0.125f);
     
     
@@ -498,7 +490,7 @@ int main(int argc, const char * argv[]) {
         
         lights[i]->addToLightList(&lightSources);
         
-        lightCubes.push_back(std::make_unique<Cube>(&basicShader, &renderData, &debugTexture, 0, nullptr));
+        lightCubes.push_back(std::make_unique<Cube>(&basicShader, &debugTexture, 0, nullptr));
         lightCubes[i]->addToTriangleList(&opaqueTriangles);
         lightCubes[i]->setTranslation(lights[i]->position);
         lightCubes[i]->setScale(vec3(0.2));
@@ -545,9 +537,7 @@ int main(int argc, const char * argv[]) {
     
     float mapHeight = 0.0f;
     
-    float mouseRayEditHeight  = 0.0f;
-    bool mapChange = false, up = false;
-    bool xOver = false, yOver = false;
+    bool mapChange = false;
     
     vec2 mouseRayMapPosition, mouseRayChunkPosition, mouseRayRelativePosition;
     bool mapChangeDown = true;
@@ -560,30 +550,27 @@ int main(int argc, const char * argv[]) {
     
     float explosionOffset = 0.0f;
     
-    Sphere s1(&basicShader, &renderData, &stoneTexture, 32, nullptr);
-    s1.addToTriangleList(&opaqueTriangles);
-    s1.setScale(vec3(0.2f));
     
     
     /*
      Vehicle variables
      */
     
-    ObjModel vehicleBase("resources/model/vehicle/vehicle.obj", &basicShader, &renderData);
+    ObjModel vehicleBase("resources/model/vehicle/vehicle.obj", &basicShader);
     vehicleBase.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
-    ObjModel axisRear("resources/model/vehicle/axisRear.obj", &basicShader, &renderData);
+    ObjModel axisRear("resources/model/vehicle/axisRear.obj", &basicShader);
     axisRear.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
-    ObjModel axisFront("resources/model/vehicle/axisFront.obj", &basicShader, &renderData);
+    ObjModel axisFront("resources/model/vehicle/axisFront.obj", &basicShader);
     axisFront.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
-    ObjModel wheel_L("resources/model/vehicle/wheel_L.obj", &basicShader, &renderData);
+    ObjModel wheel_L("resources/model/vehicle/wheel_L.obj", &basicShader);
     wheel_L.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
-    ObjModel wheel_R("resources/model/vehicle/wheel_R.obj", &basicShader, &renderData);
+    ObjModel wheel_R("resources/model/vehicle/wheel_R.obj", &basicShader);
     wheel_R.addToTriangleList(&opaqueTriangles, &transparentTriangles);
     
     
@@ -663,11 +650,7 @@ int main(int argc, const char * argv[]) {
                             mouseRayArrayIndexX = mapMod(mouseRayMapPosition.x + CHUNK_WIDTH * 0.5f, CHUNK_WIDTH) * INVERSE_TRIANGLE_WIDTH;
                             mouseRayArrayIndexY = mapMod(mouseRayMapPosition.y + CHUNK_WIDTH * 0.5f, CHUNK_WIDTH) * INVERSE_TRIANGLE_WIDTH;
                             
-                            std::cout << mouseRayArrayIndexX << " " << mouseRayArrayIndexY << std::endl;
-                            
                             mouseRayRelativePosition = mouseRayMapPosition - mouseRayChunkPosition;
-                            
-                            s1.setTranslation(vec3(mouseRayMapPosition, 0.0f).xzy());
                             
                             break;
                         }
@@ -1183,7 +1166,7 @@ int main(int argc, const char * argv[]) {
                 
                 for(int i = 0; i < chunksToCreate.size(); i++) {
                     uint8_t arrayIdx = chunksToCreate[i];
-                    mapChunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &renderData, &stoneTexture, &mapVertices[arrayIdx], &mapUVs[arrayIdx], &mapNormals[arrayIdx]));
+                    mapChunks.emplace_back(std::make_unique<MapChunk>(&diffuseShader, &stoneTexture, &mapVertices[arrayIdx], &mapUVs[arrayIdx], &mapNormals[arrayIdx]));
                     mapChunks[mapChunks.size() - 1]->offset = (*mapVertices[arrayIdx])[0][0].xz() + vec2(CHUNK_WIDTH / 2.0f);
                     mapChunks[mapChunks.size() - 1]->addToTriangleList(&mapTriangleClusters);
                 }

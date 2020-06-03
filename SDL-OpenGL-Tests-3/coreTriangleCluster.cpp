@@ -8,8 +8,8 @@
 
 #include "coreTriangleCluster.hpp"
 
-CoreTriangleCluster::CoreTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
-size(size), vertices(vertices), uvs(uvs), normals(normals), shader(shader), data(data), modelMatPointer(modelMat),
+CoreTriangleCluster::CoreTriangleCluster(Shader *shader, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting):
+size(size), vertices(vertices), uvs(uvs), normals(normals), shader(shader), modelMatPointer(modelMat),
 vertex(vertices, sizeof(glm::vec3) * 3 * size, 0), texCoord(uvs, sizeof(glm::vec2) * 3 * size, 1), normal(normals, sizeof(glm::vec3) * 3 * size, 2),
 model(shader, "model", modelMat), texture(texture), reflectionMap(reflectionMap), reflection(reflection), initLighting(initLighting) {
     glGenVertexArrays(1, &VAO);

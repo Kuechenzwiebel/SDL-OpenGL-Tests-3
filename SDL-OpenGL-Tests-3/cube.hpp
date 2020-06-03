@@ -19,7 +19,7 @@
 
 class Cube: public Object {
 public:
-    Cube(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap);
+    Cube(Shader *shader, Texture *texture, int reflection, Texture *reflectionMap);
     ~Cube();
     
     void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);
@@ -33,7 +33,6 @@ private:
     int useReflectionMap;
     
     Shader *shader;
-    const RenderData *data;
     
     std::vector<CoreTriangleCluster*> *trianglePointer;
 };

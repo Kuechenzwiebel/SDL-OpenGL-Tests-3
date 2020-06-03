@@ -16,7 +16,7 @@
 
 class UICoreTriangle: public Object, public CoreTriangle {
 public:
-    UICoreTriangle(Shader *shader, const RenderData *data, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, glm::vec2 *texOffset);
+    UICoreTriangle(Shader *shader, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, glm::vec2 *texOffset);
     
     void addToTriangleList(std::vector<CoreTriangle*> *triangles);
     
@@ -27,7 +27,6 @@ public:
     
 private:
     Shader *shader;
-    const RenderData *data;
     Texture *texture;
     
     glm::vec2 *offset;

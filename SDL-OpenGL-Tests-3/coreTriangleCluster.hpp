@@ -16,7 +16,7 @@
 
 class CoreTriangleCluster {
 public:
-    CoreTriangleCluster(Shader *shader, const RenderData *data, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
+    CoreTriangleCluster(Shader *shader, unsigned int size, const glm::vec3 vertices[], Texture *texture, const glm::vec2 uvs[], const glm::vec3 normals[], glm::mat4 *modelMat, int reflection, Texture *reflectionMap, bool initLighting);
     ~CoreTriangleCluster();
     
     Shader* getShaderPointer();
@@ -46,7 +46,6 @@ protected:
     int useReflectionMap;
     
     Shader *shader;
-    const RenderData *data;
     
     glm::mat4 *modelMatPointer;
     

@@ -124,9 +124,9 @@ static unsigned char cubeIndices[] {
     21, 22, 23
 };
 
-Cube::Cube(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap):
-shader(shader), data(data), texture(texture), reflectionMap(reflectionMap), reflection(reflection),
-tris(shader, data, 36, cubeIndices, cubeVertices, 4 * 6, texture, cubeTexCoords, cubeNormals, &modelMat, reflection, reflectionMap, true), trianglePointer(nullptr) {
+Cube::Cube(Shader *shader, Texture *texture, int reflection, Texture *reflectionMap):
+shader(shader), texture(texture), reflectionMap(reflectionMap), reflection(reflection),
+tris(shader, 36, cubeIndices, cubeVertices, 4 * 6, texture, cubeTexCoords, cubeNormals, &modelMat, reflection, reflectionMap, true), trianglePointer(nullptr) {
     
 }
 

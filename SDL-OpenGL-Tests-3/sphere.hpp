@@ -21,7 +21,7 @@
 
 class Sphere: public Object {
 public:
-    Sphere(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap);
+    Sphere(Shader *shader, Texture *texture, int reflection, Texture *reflectionMap);
     ~Sphere();
     
     void addToTriangleList(std::vector<CoreTriangleCluster*> *triangles);
@@ -35,7 +35,6 @@ private:
     int useReflectionMap;
     
     Shader *shader;
-    const RenderData *data;
     
     std::vector<CoreTriangleCluster*> *trianglePointer;
 };

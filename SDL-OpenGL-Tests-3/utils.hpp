@@ -38,13 +38,6 @@ void printArray(glm::vec3 *array, int arraySize);
 
 void printMat4x4(glm::mat4 m);
 
-struct RenderData {
-    glm::mat4 *viewMat;
-    glm::mat4 *projection;
-    int *windowWidth;
-    int *windowHeight;
-};
-
 void swapBool(bool *b);
 
 bool fileExists(std::string fileName);

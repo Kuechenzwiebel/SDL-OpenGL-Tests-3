@@ -47,7 +47,7 @@ float mapMod(float a, float b);
 
 class MapChunk: public Object {
 public:
-    MapChunk(Shader *shader, const RenderData *data, Texture *texture, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals);
+    MapChunk(Shader *shader, Texture *texture, MapDataVec3Type *mapVertices, MapDataVec2Type *mapUVs, MapDataVec3Type *mapNormals);
     ~MapChunk();
     
     void addToTriangleList(std::vector<MapDynamicTriangleElementCluster*> *triangles);
@@ -60,7 +60,6 @@ private:
     MapDynamicTriangleElementCluster tris;
     
     Shader *shader;
-    const RenderData *data;
     Texture *texture;
     
     std::vector<MapDynamicTriangleElementCluster*> *trianglePointer;

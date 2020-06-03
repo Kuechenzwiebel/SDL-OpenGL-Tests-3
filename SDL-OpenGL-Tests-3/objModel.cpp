@@ -15,8 +15,8 @@ bool operator==(const std::pair<std::string, std::unique_ptr<Texture>> &l, const
         return false;
 }
 
-ObjModel::ObjModel(const std::string &file, Shader *shader, const RenderData *data):
-shader(shader), data(data), opaqueTrianglePointer(nullptr), transparentTrianglePointer(nullptr) {
+ObjModel::ObjModel(const std::string &file, Shader *shader):
+shader(shader), opaqueTrianglePointer(nullptr), transparentTrianglePointer(nullptr) {
     hg::File inputFile(file);
     
     std::vector<std::unique_ptr<std::string>> fileLines = inputFile.readFileLineByLine();
@@ -101,11 +101,11 @@ shader(shader), data(data), opaqueTrianglePointer(nullptr), transparentTriangleP
             
             if(texture->second->transparent) {
                 for(int j = objectInfo[objectIndex].objectBounds.first; j < objectInfo[objectIndex].objectBounds.second; j += 3) {
-                    transparentTriangles.push_back(std::make_unique<CoreTriangle>(shader, data, &vertices[j], texture->second.get(), &uvs[j], &normals[j], &modelMat, 32, nullptr, true));
+                    transparentTriangles.push_back(std::make_unique<CoreTriangle>(shader, &vertices[j], texture->second.get(), &uvs[j], &normals[j], &modelMat, 32, nullptr, true));
                 }
             }
             else {
-                opaqueTriangleClusters.push_back(std::make_unique<CoreTriangleCluster>(shader, data, (objectInfo[objectIndex].objectBounds.second - objectInfo[objectIndex].objectBounds.first) / 3, &vertices[objectInfo[objectIndex].objectBounds.first], texture->second.get(), &uvs[objectInfo[objectIndex].objectBounds.first], &normals[objectInfo[objectIndex].objectBounds.first], &modelMat, 32, nullptr, true));
+                opaqueTriangleClusters.push_back(std::make_unique<CoreTriangleCluster>(shader, (objectInfo[objectIndex].objectBounds.second - objectInfo[objectIndex].objectBounds.first) / 3, &vertices[objectInfo[objectIndex].objectBounds.first], texture->second.get(), &uvs[objectInfo[objectIndex].objectBounds.first], &normals[objectInfo[objectIndex].objectBounds.first], &modelMat, 32, nullptr, true));
             }
             
             objectIndex++;

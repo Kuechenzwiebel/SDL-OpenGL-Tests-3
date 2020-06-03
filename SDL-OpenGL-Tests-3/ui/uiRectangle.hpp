@@ -18,8 +18,8 @@
 
 class UIRectangle: public Object {
 public:
-    UIRectangle(Shader *shader, const RenderData *data, Texture *texture);
-    UIRectangle(Shader *shader, const RenderData *data, Texture *texture, const glm::vec2 customUVs[2][3]);
+    UIRectangle(Shader *shader, Texture *texture);
+    UIRectangle(Shader *shader, Texture *texture, const glm::vec2 customUVs[2][3]);
     
     void addToTriangleList(std::vector<CoreTriangle*> *triangles);
     
@@ -30,7 +30,6 @@ private:
     UICoreTriangle tri1, tri2;
     
     Shader *shader;
-    const RenderData *data;
     Texture *texture;
     
     glm::vec2 offset;

@@ -46,13 +46,13 @@ static void initSphere() {
     }
 }
 
-Sphere::Sphere(Shader *shader, const RenderData *data, Texture *texture, int reflection, Texture *reflectionMap):
-shader(shader), data(data), texture(texture), reflectionMap(reflectionMap), reflection(reflection), trianglePointer(nullptr) {
+Sphere::Sphere(Shader *shader, Texture *texture, int reflection, Texture *reflectionMap):
+shader(shader), texture(texture), reflectionMap(reflectionMap), reflection(reflection), trianglePointer(nullptr) {
     if(triangleVertices[0] == glm::vec3(0.0f)) {
         initSphere();
     }
     
-    tris = std::make_unique<CoreTriangleCluster>(shader, data, SPHERE_ARRAY_SIZE / 3, triangleVertices, texture, triangleUVs, triangleVertices, &modelMat, reflection, reflectionMap, true);
+    tris = std::make_unique<CoreTriangleCluster>(shader, SPHERE_ARRAY_SIZE / 3, triangleVertices, texture, triangleUVs, triangleVertices, &modelMat, reflection, reflectionMap, true);
 }
 
 Sphere::~Sphere() {
