@@ -61,7 +61,7 @@ void Camera::preProcessInput() {
                 footPosition += glm::normalize(movementVector) * *deltaTime * cameraMovementSpeed;
         }
         
-//        footPosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - timeSinceLastOnFloor) / 1000.0f, 2.0f) * *deltaTime;
+        footPosition.y -= 0.5f * gravitationalAcceleration * pow((SDL_GetTicks() - timeSinceLastOnFloor) / 1000.0f, 2.0f) * *deltaTime;
         
         if(movementVector != glm::vec3(0.0f))
             velocity = cameraMovementSpeed;
@@ -75,7 +75,6 @@ void Camera::preProcessInput() {
 }
 
 void Camera::processInput(MapDataVec3Type *mapVertices) {
-    /*
     if(keyBoardControl) {
         float mapHeight = mapSurface(mapVertices, footPosition.xz(), noise);
         if(footPosition.y < mapHeight) {
@@ -85,7 +84,7 @@ void Camera::processInput(MapDataVec3Type *mapVertices) {
         else {
             velocity += gravitationalAcceleration * (SDL_GetTicks() - timeSinceLastOnFloor) / 1000.0f;
         }
-    }*/
+    }
     
     eyePosition = footPosition + glm::vec3(0.0f, 1.73f, 0.0f);
     viewMat = glm::lookAt(this->eyePosition, this->eyePosition + this->front, this->up);
