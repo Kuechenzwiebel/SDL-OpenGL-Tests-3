@@ -640,7 +640,7 @@ int main(int argc, const char * argv[]) {
                         lastMouseRayPosition = mouseRayChunkPosition;
                         
                         
-                        if(mouseRay.position.y <= mapSurface(nullptr, mouseRay.position.xz(), &noise) * 0.0f) {
+                        if(mouseRay.position.y <= mapSurface(nullptr, mouseRay.position.xz(), &noise)) {
                             if(mouseRayChunkIndex < mapChunks.size() && mouseRayDataIndex < mapVertices.size())
                                 mouseRayMapCollision = true;
                             
